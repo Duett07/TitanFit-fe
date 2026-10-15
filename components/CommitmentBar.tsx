@@ -1,92 +1,180 @@
 import React from "react";
-import { ShieldCheck, Truck, RotateCcw, Headphones } from "lucide-react";
-
-interface CommitmentItem {
-  id: string;
-  icon: React.ElementType;
-  title: string;
-  badge: string;
-  description: string;
-  accentColor: string;
-}
-
-const commitments: CommitmentItem[] = [
-  {
-    id: "authentic",
-    icon: ShieldCheck,
-    title: "100% Chính Hãng",
-    badge: "CAM KẾT VÀNG",
-    description: "Đầy đủ tem cào chống giả, hoàn tiền 200% nếu phát hiện hàng nhái.",
-    accentColor: "text-primary bg-primary/10 border-primary/20",
-  },
-  {
-    id: "fast-delivery",
-    icon: Truck,
-    title: "Giao Nhanh 2H",
-    badge: "HỎA TỐC",
-    description: "Nội thành Hà Nội & TP.HCM nhận trong 2 giờ, hỗ trợ đồng kiểm tận tay.",
-    accentColor: "text-amber-500 bg-amber-500/10 border-amber-500/20",
-  },
-  {
-    id: "easy-return",
-    icon: RotateCcw,
-    title: "Đổi Trả 7 Ngày",
-    badge: "MIỄN PHÍ",
-    description: "Hỗ trợ đổi size tận nhà hoàn toàn miễn phí, thủ tục 1 chạm trong 24 giờ.",
-    accentColor: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
-  },
-  {
-    id: "free-consulting",
-    icon: Headphones,
-    title: "Tư Vấn Dinh Dưỡng Free",
-    badge: "CHUYÊN GIA 1-1",
-    description: "Đội ngũ HLV & Dược sĩ thể thao lên thực đơn và liệu trình Whey tối ưu.",
-    accentColor: "text-blue-500 bg-blue-500/10 border-blue-500/20",
-  },
-];
 
 export default function CommitmentBar() {
   return (
     <section
-      aria-label="Cam kết dịch vụ TITANFIT"
-      className="relative z-20 py-8 lg:py-10 bg-background border-b border-border"
+      style={{
+        borderTop: "1px solid var(--border)",
+        borderBottom: "1px solid var(--border)",
+        padding: "36px 0",
+        backgroundColor: "var(--card-surface)",
+      }}
     >
-      <div className="container-custom">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-          {commitments.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div
-                key={item.id}
-                className="group relative flex flex-col p-5 rounded-xl bg-card-surface border border-border hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5"
+      <div className="container">
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: "24px",
+          }}
+        >
+          {/* 1. 100% Chính Hãng */}
+          <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+            <div style={{ color: "var(--primary)" }}>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                {/* Header row: Icon & Badge */}
-                <div className="flex items-center justify-between mb-4">
-                  <div
-                    className={`w-11 h-11 rounded-lg border flex items-center justify-center transition-transform group-hover:scale-110 duration-300 ${item.accentColor}`}
-                  >
-                    <Icon size={22} className="stroke-[2.2]" />
-                  </div>
-                  <span className="text-[10px] font-extrabold tracking-wider px-2 py-0.5 rounded-full bg-secondary border border-border text-muted-foreground group-hover:text-primary group-hover:border-primary/30 transition-colors uppercase">
-                    {item.badge}
-                  </span>
-                </div>
-
-                {/* Title */}
-                <h3 className="font-heading text-base font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors flex items-center gap-1.5">
-                  {item.title}
-                </h3>
-
-                {/* Description */}
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {item.description}
-                </p>
-
-                {/* Subtle bottom accent line on hover */}
-                <div className="absolute bottom-0 left-5 right-5 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="m9 12 2 2 4-4" />
+              </svg>
+            </div>
+            <div>
+              <div
+                style={{
+                  fontWeight: 600,
+                  fontSize: "13.5px",
+                  color: "var(--foreground)",
+                }}
+              >
+                100% Chính Hãng
               </div>
-            );
-          })}
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: "var(--muted-foreground)",
+                  marginTop: "2px",
+                }}
+              >
+                Nhập khẩu tem phụ rõ ràng
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Giao Nhanh 2h */}
+          <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+            <div style={{ color: "var(--primary)" }}>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
+                <path d="M15 18H9" />
+                <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
+                <circle cx="17" cy="18" r="2" />
+                <circle cx="7" cy="18" r="2" />
+              </svg>
+            </div>
+            <div>
+              <div
+                style={{
+                  fontWeight: 600,
+                  fontSize: "13.5px",
+                  color: "var(--foreground)",
+                }}
+              >
+                Giao Nhanh 2h
+              </div>
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: "var(--muted-foreground)",
+                  marginTop: "2px",
+                }}
+              >
+                Miễn phí đơn từ 500.000₫
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Đổi Trả Trong 7 Ngày */}
+          <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+            <div style={{ color: "var(--primary)" }}>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+            </div>
+            <div>
+              <div
+                style={{
+                  fontWeight: 600,
+                  fontSize: "13.5px",
+                  color: "var(--foreground)",
+                }}
+              >
+                Đổi Trả Trong 7 Ngày
+              </div>
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: "var(--muted-foreground)",
+                  marginTop: "2px",
+                }}
+              >
+                Đổi size miễn phí tiện lợi
+              </div>
+            </div>
+          </div>
+
+          {/* 4. Tư Vấn Dinh Dưỡng Free */}
+          <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+            <div style={{ color: "var(--primary)" }}>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+              </svg>
+            </div>
+            <div>
+              <div
+                style={{
+                  fontWeight: 600,
+                  fontSize: "13.5px",
+                  color: "var(--foreground)",
+                }}
+              >
+                Tư Vấn Dinh Dưỡng Free
+              </div>
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: "var(--muted-foreground)",
+                  marginTop: "2px",
+                }}
+              >
+                Đội ngũ HLV &amp; Chuyên gia 1-1
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

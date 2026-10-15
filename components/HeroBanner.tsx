@@ -3,153 +3,219 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  ArrowRight,
-  ShoppingCart,
-  Dumbbell,
-  ShieldCheck,
-  Zap,
-  Star,
-  Award,
-} from "lucide-react";
 
 export default function HeroBanner() {
   return (
-    <section className="relative overflow-hidden pt-8 pb-16 md:pt-14 md:pb-24 bg-gradient-to-b from-card-surface via-background to-background border-b border-border">
-      {/* Background ambient lighting glows */}
-      <div className="absolute top-12 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-80 h-80 bg-orange-600/10 rounded-full blur-[120px] pointer-events-none" />
+    <>
+      {/* Hero Section — Wireframe exact boxed layout */}
+      <section style={{ padding: "32px 0 20px" }}>
+        <div className="container">
+          <div
+            style={{
+              backgroundColor: "var(--card-surface)",
+              border: "1px solid var(--border)",
+              borderRadius: "var(--radius-xl)",
+              overflow: "hidden",
+              position: "relative",
+            }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-12 min-h-[440px]">
+              {/* Hero Text */}
+              <div className="md:col-span-7 p-8 md:p-12 flex flex-col justify-center">
+                <div style={{ marginBottom: "14px" }}>
+                  <span className="badge badge-default">
+                    Dinh Dưỡng Thể Hình &amp; Đồ Tập Chính Hãng
+                  </span>
+                </div>
 
-      <div className="container-custom relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
-          {/* Cột Trái: Typography, Slogan, CTA và Tín nhiệm */}
-          <div className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left">
-            {/* Tagline Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-secondary border border-border text-xs font-semibold text-primary mb-6 shadow-sm hover:border-primary/40 transition-colors">
-              <Zap size={14} className="text-primary fill-primary animate-pulse" />
-              <span>TITAN PRO ATHLETE 2026 — ĐỈNH CAO NĂNG LƯỢNG</span>
-            </div>
+                <h1
+                  className="font-heading"
+                  style={{
+                    fontSize: "40px",
+                    lineHeight: "1.15",
+                    marginBottom: "14px",
+                    fontWeight: 800,
+                  }}
+                >
+                  Bứt Phá Giới Hạn Cùng{" "}
+                  <span style={{ color: "var(--primary)" }}>TITANFIT</span>
+                </h1>
 
-            {/* Slogan Chính */}
-            <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.12] mb-6">
-              Bứt Phá Giới Hạn Cùng{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-400 to-amber-500">
-                TITANFIT
-              </span>
-            </h1>
+                <p
+                  style={{
+                    color: "var(--muted-foreground)",
+                    fontSize: "15px",
+                    maxWidth: "480px",
+                    marginBottom: "28px",
+                    lineHeight: "1.6",
+                  }}
+                >
+                  Hệ thống bán lẻ chuyên sâu các dòng Whey Isolate tinh khiết, Creatine
+                  tăng sức mạnh cùng trang phục tập gym co giãn 4 chiều chuyên dụng.
+                </p>
 
-            {/* Đoạn mô tả thương hiệu */}
-            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mb-8 leading-relaxed font-sans">
-              Trang phục thể thao hiệu năng cao chống mồ hôi &amp; thực phẩm bổ sung
-              dinh dưỡng thể hình nhập khẩu chính ngạch 100%. Đồng hành cùng các vận
-              động viên và gymer chinh phục mọi mục tiêu thể hình đỉnh cao.
-            </p>
+                <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                  <Link
+                    href="/catalog?type=SUPPLEMENTS"
+                    className="btn btn-primary btn-lg"
+                  >
+                    <span>Mua Sắm Ngay</span>
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M5 12h14" />
+                      <path d="m12 5 7 7-7 7" />
+                    </svg>
+                  </Link>
+                  <Link
+                    href="/catalog?type=SPORTS_GEAR"
+                    className="btn btn-outline btn-lg"
+                  >
+                    <span>Xem Đồ Tập Thể Thao</span>
+                  </Link>
+                </div>
+              </div>
 
-            {/* Nút Kêu Gọi Hành Động (CTA) */}
-            <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto mb-10">
-              <Link
-                href="/do-the-thao"
-                className="btn btn-primary h-13 px-8 text-sm font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all flex items-center justify-center gap-2.5 w-full sm:w-auto group"
+              {/* Hero Image */}
+              <div
+                className="md:col-span-5 relative overflow-hidden min-h-[300px] md:min-h-full"
+                style={{ backgroundColor: "var(--secondary)" }}
               >
-                <ShoppingCart size={18} className="group-hover:rotate-6 transition-transform" />
-                <span>Mua Sắm Ngay</span>
-                <ArrowRight size={17} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                href="/dinh-duong"
-                className="btn btn-secondary h-13 px-7 text-sm font-semibold hover:border-foreground/30 transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
-              >
-                <Dumbbell size={17} className="text-primary" />
-                <span>Khám Phá Dinh Dưỡng</span>
-              </Link>
-            </div>
-
-            {/* Social Proof & Đánh giá */}
-            <div className="pt-6 border-t border-border/80 w-full flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-5">
-              <div className="flex items-center gap-1.5">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={16}
-                    className="text-amber-400 fill-amber-400"
-                  />
-                ))}
-                <span className="font-heading font-bold text-sm text-foreground ml-1">
-                  4.9/5
-                </span>
-              </div>
-              <div className="hidden sm:block text-border text-xs">|</div>
-              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                <Award size={16} className="text-primary" />
-                <span>
-                  Hơn <strong className="text-foreground font-semibold">50.000+</strong> vận
-                  động viên &amp; Gymer toàn quốc tin dùng
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Cột Phải: Hình ảnh thể hình cơ bắp & Thẻ thông số nổi */}
-          <div className="lg:col-span-5 relative flex items-center justify-center">
-            {/* Vòng sáng nền tạo chiều sâu cho ảnh */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-orange-500/10 rounded-2xl filter blur-2xl transform scale-95" />
-
-            {/* Khung chứa ảnh thể hình */}
-            <div className="relative w-full max-w-[460px] aspect-[4/3] rounded-2xl overflow-hidden border border-border/90 shadow-2xl bg-card-surface group">
-              <Image
-                src="/images/hero-fitness-athlete.jpg"
-                alt="Vận động viên thể hình cơ bắp đỉnh cao TITANFIT"
-                fill
-                sizes="(max-width: 768px) 100vw, 460px"
-                className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
-                priority
-              />
-
-              {/* Lớp phủ dải màu bóng tối nhẹ phía dưới */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none" />
-
-              {/* Huy hiệu thành tích góc dưới ảnh */}
-              <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-xs text-zinc-200 backdrop-blur-md bg-black/40 px-3.5 py-2 rounded-xl border border-white/10">
-                <span className="font-heading font-bold text-white flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-primary animate-ping" />
-                  TITAN ATHLETE ELITE
-                </span>
-                <span className="text-zinc-300 text-[11px]">Thi Đấu Đỉnh Cao</span>
-              </div>
-            </div>
-
-            {/* Thẻ nổi 1: 100% Chính Hãng (Góc trên bên trái) */}
-            <div className="absolute -top-4 -left-4 sm:-top-5 sm:-left-6 bg-card-surface/95 backdrop-blur-md border border-border p-3 rounded-xl shadow-xl hidden sm:flex items-center gap-3 animate-in fade-in duration-300">
-              <div className="w-10 h-10 rounded-lg bg-primary/15 text-primary flex items-center justify-center flex-shrink-0">
-                <ShieldCheck size={22} />
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  Kiểm định an toàn
-                </p>
-                <p className="text-xs font-bold text-foreground font-heading">
-                  100% Thể Thao Chính Hãng
-                </p>
-              </div>
-            </div>
-
-            {/* Thẻ nổi 2: Tăng trưởng & Năng lượng (Góc dưới bên phải) */}
-            <div className="absolute -bottom-5 -right-3 sm:-bottom-6 sm:-right-5 bg-card-surface/95 backdrop-blur-md border border-border p-3.5 rounded-xl shadow-xl hidden sm:flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center flex-shrink-0">
-                <Dumbbell size={20} />
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold text-muted-foreground">
-                  Dinh dưỡng Whey &amp; Quần áo
-                </p>
-                <p className="text-xs font-bold text-foreground font-heading">
-                  Tăng Sức Bền • Phát Triển Cơ Bắp
-                </p>
+                <Image
+                  src="/images/hero-fitness-athlete.jpg"
+                  alt="Athletic Training"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 45vw"
+                  className="object-cover object-center"
+                  style={{ opacity: 0.88 }}
+                  priority
+                />
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background:
+                      "linear-gradient(to right, var(--card-surface) 0%, transparent 40%)",
+                    pointerEvents: "none",
+                  }}
+                />
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Clean Editorial Category Showcase — Wireframe exact */}
+      <section style={{ padding: "16px 0 32px" }}>
+        <div className="container">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Category Card 1 */}
+            <Link
+              href="/catalog?type=SUPPLEMENTS"
+              className="card"
+              style={{
+                padding: "24px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                textDecoration: "none",
+              }}
+            >
+              <div>
+                <span className="badge badge-outline" style={{ marginBottom: "8px" }}>
+                  Dinh Dưỡng Thể Thao
+                </span>
+                <h3
+                  className="font-heading"
+                  style={{ fontSize: "20px", marginBottom: "4px" }}
+                >
+                  Whey Protein &amp; Creatine
+                </h3>
+                <p style={{ fontSize: "13px", color: "var(--muted-foreground)" }}>
+                  Tăng cơ nạc, phục hồi và bứt phá sức mạnh
+                </p>
+              </div>
+              <div
+                style={{
+                  color: "var(--muted-foreground)",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <span className="btn btn-outline btn-sm">
+                  <span>Khám phá</span>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M5 12h14" />
+                    <path d="m12 5 7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
+            </Link>
+
+            {/* Category Card 2 */}
+            <Link
+              href="/catalog?type=SPORTS_GEAR"
+              className="card"
+              style={{
+                padding: "24px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                textDecoration: "none",
+              }}
+            >
+              <div>
+                <span className="badge badge-outline" style={{ marginBottom: "8px" }}>
+                  Trang Phục Phòng Gym
+                </span>
+                <h3
+                  className="font-heading"
+                  style={{ fontSize: "20px", marginBottom: "4px" }}
+                >
+                  Đồ Tập &amp; Phụ Kiện
+                </h3>
+                <p style={{ fontSize: "13px", color: "var(--muted-foreground)" }}>
+                  Thoáng khí, thấm hút mồ hôi và đai bảo hộ
+                </p>
+              </div>
+              <div
+                style={{
+                  color: "var(--muted-foreground)",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <span className="btn btn-outline btn-sm">
+                  <span>Khám phá</span>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M5 12h14" />
+                    <path d="m12 5 7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
