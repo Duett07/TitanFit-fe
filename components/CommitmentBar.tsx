@@ -2,24 +2,12 @@ import React from "react";
 
 export default function CommitmentBar() {
   return (
-    <section
-      style={{
-        borderTop: "1px solid var(--border)",
-        padding: "36px 0",
-        backgroundColor: "var(--card-surface)",
-      }}
-    >
-      <div className="container">
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            gap: "24px",
-          }}
-        >
+    <section className="border-t border-border py-9 bg-card">
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* 1. Giao Hàng Nhanh 24h */}
-          <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-            <div style={{ color: "var(--primary)" }}>
+          <div className="flex gap-3 items-start">
+            <div className="text-primary shrink-0">
               <svg
                 width="20"
                 height="20"
@@ -38,30 +26,18 @@ export default function CommitmentBar() {
               </svg>
             </div>
             <div>
-              <div
-                style={{
-                  fontWeight: 600,
-                  fontSize: "13.5px",
-                  color: "var(--foreground)",
-                }}
-              >
+              <div className="font-semibold text-sm text-foreground">
                 Giao Hàng Nhanh 24h
               </div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "var(--muted-foreground)",
-                  marginTop: "2px",
-                }}
-              >
+              <div className="text-xs text-muted-foreground mt-0.5">
                 Miễn phí đơn từ 500.000₫
               </div>
             </div>
           </div>
 
           {/* 2. 100% Chính Hãng */}
-          <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-            <div style={{ color: "var(--primary)" }}>
+          <div className="flex gap-3 items-start">
+            <div className="text-primary shrink-0">
               <svg
                 width="20"
                 height="20"
@@ -77,30 +53,18 @@ export default function CommitmentBar() {
               </svg>
             </div>
             <div>
-              <div
-                style={{
-                  fontWeight: 600,
-                  fontSize: "13.5px",
-                  color: "var(--foreground)",
-                }}
-              >
+              <div className="font-semibold text-sm text-foreground">
                 100% Chính Hãng
               </div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "var(--muted-foreground)",
-                  marginTop: "2px",
-                }}
-              >
+              <div className="text-xs text-muted-foreground mt-0.5">
                 Nhập khẩu tem phụ rõ ràng
               </div>
             </div>
           </div>
 
           {/* 3. Đổi Trả Trong 7 Ngày */}
-          <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-            <div style={{ color: "var(--primary)" }}>
+          <div className="flex gap-3 items-start">
+            <div className="text-primary shrink-0">
               <svg
                 width="20"
                 height="20"
@@ -116,30 +80,18 @@ export default function CommitmentBar() {
               </svg>
             </div>
             <div>
-              <div
-                style={{
-                  fontWeight: 600,
-                  fontSize: "13.5px",
-                  color: "var(--foreground)",
-                }}
-              >
+              <div className="font-semibold text-sm text-foreground">
                 Đổi Trả Trong 7 Ngày
               </div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "var(--muted-foreground)",
-                  marginTop: "2px",
-                }}
-              >
+              <div className="text-xs text-muted-foreground mt-0.5">
                 Đổi size miễn phí tiện lợi
               </div>
             </div>
           </div>
 
           {/* 4. VietQR Tự Động Khớp Lệnh */}
-          <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-            <div style={{ color: "var(--primary)" }}>
+          <div className="flex gap-3 items-start">
+            <div className="text-primary shrink-0">
               <svg
                 width="20"
                 height="20"
@@ -165,22 +117,10 @@ export default function CommitmentBar() {
               </svg>
             </div>
             <div>
-              <div
-                style={{
-                  fontWeight: 600,
-                  fontSize: "13.5px",
-                  color: "var(--foreground)",
-                }}
-              >
+              <div className="font-semibold text-sm text-foreground">
                 VietQR Tự Động Khớp Lệnh
               </div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "var(--muted-foreground)",
-                  marginTop: "2px",
-                }}
-              >
+              <div className="text-xs text-muted-foreground mt-0.5">
                 Quét mã chuyển khoản chuẩn xác
               </div>
             </div>

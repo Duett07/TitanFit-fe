@@ -49,7 +49,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground selection:bg-primary/20 selection:text-primary">
-        <Suspense fallback={<header className="app-header h-[72px]" />}>
+        <Suspense fallback={<header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur h-[72px]" />}>
           <Navbar />
         </Suspense>
         <main className="flex-1">{children}</main>

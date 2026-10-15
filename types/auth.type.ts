@@ -16,6 +16,9 @@ export interface UserResponse {
   fullName: string;
   email: string;
   role: string;
+  phone?: string;
   phoneNumber?: string;
   avatarUrl?: string;
+  createdAt?: string;
+  tier?: string;
 }

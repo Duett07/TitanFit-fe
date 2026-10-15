@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import Logo from "@/components/Logo";
 import {
   PhoneCall,
   Mail,
@@ -27,21 +28,13 @@ export default function Footer() {
   };
 
   return (
-    <footer className="site-footer">
-      <div className="container">
-        <div className="footer-grid">
+    <footer className="bg-card border-t border-border pt-12 pb-8 text-foreground transition-colors">
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Cột 1: Thông tin thương hiệu TITANFIT & Giấy phép */}
           <div className="flex flex-col">
-            <Link href="/" className="inline-block mb-4">
-              <div className="relative h-8 w-44">
-                <Image
-                  src="/logo.svg"
-                  alt="TITANFIT Sports & Nutrition"
-                  fill
-                  sizes="176px"
-                  className="object-contain"
-                />
-              </div>
+            <Link href="/" className="inline-block mb-4" aria-label="TITANFIT Trang Chủ">
+              <Logo className="h-8 w-auto" height={32} />
             </Link>
 
             <p className="text-xs leading-relaxed text-muted-foreground mb-4">
@@ -50,7 +43,7 @@ export default function Footer() {
               chuẩn thi đấu quốc tế, đồng hành cùng bạn bứt phá mọi giới hạn thể lực.
             </p>
 
-            <div className="text-xs text-subtle-foreground space-y-1 mb-4">
+            <div className="text-xs text-muted-foreground space-y-1 mb-4">
               <p>
                 <strong className="text-foreground">Giấy phép thể thao:</strong>{" "}
                 0108998899/GP-SVHTT do Sở Văn Hóa &amp; Thể Thao cấp.
@@ -62,18 +55,18 @@ export default function Footer() {
             </div>
 
             {/* Chứng nhận thể thao chính hãng */}
-            <div className="cert-badge">
+            <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-4">
               <ShieldCheck size={18} className="text-primary flex-shrink-0" />
               <span>Chứng nhận thể thao &amp; dinh dưỡng chính hãng 100%</span>
             </div>
 
             {/* Mạng xã hội */}
-            <div className="footer-social-row">
+            <div className="flex items-center gap-2 mt-1">
               <a
                 href="https://facebook.com"
                 target="_blank"
                 rel="noreferrer"
-                className="footer-social-btn"
+                className="w-8 h-8 rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
                 aria-label="TITANFIT trên Facebook"
                 title="Facebook"
               >
@@ -89,7 +82,7 @@ export default function Footer() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noreferrer"
-                className="footer-social-btn"
+                className="w-8 h-8 rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
                 aria-label="TITANFIT trên Instagram"
                 title="Instagram"
               >
@@ -105,7 +98,7 @@ export default function Footer() {
                 href="https://youtube.com"
                 target="_blank"
                 rel="noreferrer"
-                className="footer-social-btn"
+                className="w-8 h-8 rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
                 aria-label="TITANFIT trên YouTube"
                 title="YouTube"
               >
@@ -121,7 +114,7 @@ export default function Footer() {
                 href="https://tiktok.com"
                 target="_blank"
                 rel="noreferrer"
-                className="footer-social-btn"
+                className="w-8 h-8 rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
                 aria-label="TITANFIT trên TikTok"
                 title="TikTok"
               >
@@ -138,35 +131,37 @@ export default function Footer() {
 
           {/* Cột 2: Chính sách & Bảo hành */}
           <div>
-            <h3 className="footer-col-title">Chính Sách Bảo Hành</h3>
-            <ul className="footer-links-list">
+            <h3 className="font-heading text-xs font-bold text-foreground mb-4 uppercase tracking-wider">
+              Chính Sách Bảo Hành
+            </h3>
+            <ul className="space-y-2.5 list-none p-0 m-0 text-xs text-muted-foreground">
               <li>
-                <Link href="/chinh-sach-bao-hanh">
+                <Link href="/chinh-sach-bao-hanh" className="hover:text-primary transition-colors">
                   Chính sách bảo hành chính hãng
                 </Link>
               </li>
               <li>
-                <Link href="/chinh-sach-doi-tra">
+                <Link href="/chinh-sach-doi-tra" className="hover:text-primary transition-colors">
                   Đổi trả miễn phí 30 ngày tận nơi
                 </Link>
               </li>
               <li>
-                <Link href="/huong-dan-chon-size">
+                <Link href="/huong-dan-chon-size" className="hover:text-primary transition-colors">
                   Hướng dẫn chọn size đồ thể thao
                 </Link>
               </li>
               <li>
-                <Link href="/chinh-sach-kiem-hang">
+                <Link href="/chinh-sach-kiem-hang" className="hover:text-primary transition-colors">
                   Chính sách kiểm hàng &amp; giao vận
                 </Link>
               </li>
               <li>
-                <Link href="/huong-dan-bao-quan">
+                <Link href="/huong-dan-bao-quan" className="hover:text-primary transition-colors">
                   Hướng dẫn bảo quản đồ tập &amp; whey
                 </Link>
               </li>
               <li>
-                <Link href="/tra-cuu-bao-hanh">
+                <Link href="/tra-cuu-bao-hanh" className="hover:text-primary transition-colors">
                   Tra cứu tiến độ bảo hành điện tử
                 </Link>
               </li>
@@ -175,37 +170,41 @@ export default function Footer() {
 
           {/* Cột 3: Danh mục thể thao */}
           <div>
-            <h3 className="footer-col-title">Danh Mục Sản Phẩm</h3>
-            <ul className="footer-links-list">
+            <h3 className="font-heading text-xs font-bold text-foreground mb-4 uppercase tracking-wider">
+              Danh Mục Sản Phẩm
+            </h3>
+            <ul className="space-y-2.5 list-none p-0 m-0 text-xs text-muted-foreground">
               <li>
-                <Link href="/do-the-thao-nam">Đồ thể thao &amp; Gym nam</Link>
+                <Link href="/do-the-thao-nam" className="hover:text-primary transition-colors">Đồ thể thao &amp; Gym nam</Link>
               </li>
               <li>
-                <Link href="/do-the-thao-nu">Quần áo &amp; Set tập gym nữ</Link>
+                <Link href="/do-the-thao-nu" className="hover:text-primary transition-colors">Quần áo &amp; Set tập gym nữ</Link>
               </li>
               <li>
-                <Link href="/whey-protein">Whey Protein &amp; Isolate</Link>
+                <Link href="/whey-protein" className="hover:text-primary transition-colors">Whey Protein &amp; Isolate</Link>
               </li>
               <li>
-                <Link href="/sua-tang-can">Sữa tăng cân Mass Gainer</Link>
+                <Link href="/sua-tang-can" className="hover:text-primary transition-colors">Sữa tăng cân Mass Gainer</Link>
               </li>
               <li>
-                <Link href="/phuc-hoi-bcaa">BCAA, EAA &amp; Phục hồi cơ</Link>
+                <Link href="/phuc-hoi-bcaa" className="hover:text-primary transition-colors">BCAA, EAA &amp; Phục hồi cơ</Link>
               </li>
               <li>
-                <Link href="/phu-kien-gym">Đai lưng &amp; Phụ kiện tập nặng</Link>
+                <Link href="/phu-kien-gym" className="hover:text-primary transition-colors">Đai lưng &amp; Phụ kiện tập nặng</Link>
               </li>
             </ul>
           </div>
 
           {/* Cột 4: Hotline CSKH 1900 8899 & Đăng ký */}
           <div>
-            <h3 className="footer-col-title">Tổng Đài CSKH &amp; Hỗ Trợ</h3>
-            <div className="space-y-2 mb-4 text-xs text-muted-foreground">
-              <div className="footer-contact-item">
-                <PhoneCall size={16} className="text-primary flex-shrink-0" />
+            <h3 className="font-heading text-xs font-bold text-foreground mb-4 uppercase tracking-wider">
+              Tổng Đài CSKH &amp; Hỗ Trợ
+            </h3>
+            <div className="space-y-2.5 mb-4 text-xs text-muted-foreground">
+              <div className="flex items-start gap-2.5">
+                <PhoneCall size={16} className="text-primary flex-shrink-0 mt-0.5" />
                 <div>
-                  <span className="block text-[11px] text-subtle-foreground">
+                  <span className="block text-[11px] text-muted-foreground">
                     Hotline tư vấn &amp; CSKH (8:00 - 22:00)
                   </span>
                   <a
@@ -217,53 +216,53 @@ export default function Footer() {
                 </div>
               </div>
 
-              <div className="footer-contact-item">
-                <Clock size={16} className="text-subtle-foreground flex-shrink-0" />
-                <span>Thứ 2 - Chủ Nhật: 08:00 - 22:00 (Kể cả ngày lễ)</span>
+              <div className="flex items-center gap-2.5">
+                <Clock size={16} className="text-muted-foreground flex-shrink-0" />
+                <span>Thứ 2 - Chủ Nhật: 08:00 - 22:00</span>
               </div>
 
-              <div className="footer-contact-item">
-                <Mail size={16} className="text-subtle-foreground flex-shrink-0" />
+              <div className="flex items-center gap-2.5">
+                <Mail size={16} className="text-muted-foreground flex-shrink-0" />
                 <a
                   href="mailto:support@titanfit.vn"
-                  className="hover:text-foreground"
+                  className="hover:text-foreground transition-colors"
                 >
                   support@titanfit.vn
                 </a>
               </div>
 
-              <div className="footer-contact-item">
-                <MapPin size={16} className="text-subtle-foreground flex-shrink-0" />
+              <div className="flex items-start gap-2.5">
+                <MapPin size={16} className="text-muted-foreground flex-shrink-0 mt-0.5" />
                 <span>
-                  Tầng 5, Tòa nhà Titan Sport Center, 88 Hoàng Cầu, Đống Đa, Hà Nội
+                  Tầng 5, Tòa nhà Titan Sport, 88 Hoàng Cầu, Đống Đa, Hà Nội
                 </span>
               </div>
             </div>
 
             {/* Newsletter Subscription */}
             <div className="pt-2">
-              <span className="text-[12px] font-semibold text-foreground block mb-1">
+              <span className="text-xs font-semibold text-foreground block mb-1.5">
                 Nhận voucher 100K cho đơn đầu tiên:
               </span>
-              <form onSubmit={handleSubscribe} className="newsletter-form">
+              <form onSubmit={handleSubscribe} className="flex items-center gap-1.5">
                 <input
                   type="email"
                   placeholder="Nhập email của bạn..."
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="input-field text-xs h-9 bg-secondary"
+                  className="w-full h-9 px-3 rounded-lg bg-secondary border border-border text-foreground text-xs placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-all"
                 />
                 <button
                   type="submit"
-                  className="btn btn-primary h-9 px-3 text-xs"
+                  className="h-9 px-3.5 rounded-lg bg-primary hover:bg-primary/90 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
                   aria-label="Đăng ký nhận tin"
                 >
                   <Send size={14} />
                 </button>
               </form>
               {subscribed && (
-                <div className="flex items-center gap-1.5 text-xs text-emerald-400 mt-2 font-medium">
+                <div className="flex items-center gap-1.5 text-xs text-emerald-500 mt-2 font-medium">
                   <CheckCircle2 size={14} />
                   <span>Đăng ký thành công! Mã 100K đã gửi về email.</span>
                 </div>
@@ -271,29 +270,29 @@ export default function Footer() {
             </div>
 
             {/* Phương thức thanh toán */}
-            <div className="payment-badges-row">
-              <span className="payment-badge">VISA</span>
-              <span className="payment-badge">MASTERCARD</span>
-              <span className="payment-badge">VNPAY</span>
-              <span className="payment-badge">MOMO</span>
-              <span className="payment-badge">COD</span>
+            <div className="flex flex-wrap items-center gap-1.5 mt-5">
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider bg-secondary border border-border text-muted-foreground">VISA</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider bg-secondary border border-border text-muted-foreground">MASTERCARD</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider bg-secondary border border-border text-muted-foreground">VNPAY</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider bg-secondary border border-border text-muted-foreground">MOMO</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider bg-secondary border border-border text-muted-foreground">COD</span>
             </div>
           </div>
         </div>
 
         {/* Footer Bottom Line */}
-        <div className="footer-bottom">
+        <div className="pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>© 2026 TITANFIT Sports &amp; Nutrition. Tất cả các quyền được bảo lưu.</p>
           <div className="flex items-center gap-4 text-xs">
-            <Link href="/dieu-khoan" className="hover:text-foreground">
+            <Link href="/dieu-khoan" className="hover:text-foreground transition-colors">
               Điều khoản dịch vụ
             </Link>
             <span>•</span>
-            <Link href="/chinh-sach-bao-mat" className="hover:text-foreground">
+            <Link href="/chinh-sach-bao-mat" className="hover:text-foreground transition-colors">
               Chính sách bảo mật
             </Link>
             <span>•</span>
-            <Link href="/quy-che-hoat-dong" className="hover:text-foreground">
+            <Link href="/quy-che-hoat-dong" className="hover:text-foreground transition-colors">
               Quy chế hoạt động sàn TMĐT
             </Link>
           </div>

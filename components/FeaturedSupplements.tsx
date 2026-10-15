@@ -79,31 +79,21 @@ export default function FeaturedSupplements({
   };
 
   return (
-    <section style={{ padding: "20px 0 40px" }}>
-      <div className="container">
+    <section className="py-8 md:py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            marginBottom: "20px",
-          }}
-        >
+        <div className="flex justify-between items-end mb-6">
           <div>
-            <span
-              className="badge badge-default"
-              style={{ marginBottom: "6px" }}
-            >
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-muted text-foreground mb-2">
               Bán Chạy Nhất
             </span>
-            <h2 className="font-heading" style={{ fontSize: "24px" }}>
+            <h2 className="text-2xl font-bold font-heading text-foreground">
               Thực Phẩm Bổ Sung Nổi Bật
             </h2>
           </div>
           <Link
             href="/products?category=supplements"
-            className="btn btn-ghost btn-sm"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
             <span>Xem tất cả</span>
             <svg
@@ -121,70 +111,19 @@ export default function FeaturedSupplements({
         </div>
 
         {/* Product Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-            gap: "20px",
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
           {loading
             ? Array.from({ length: 4 }).map((_, idx) => (
                 <div
                   key={idx}
-                  className="product-card"
-                  style={{
-                    border: "1px solid var(--border)",
-                    borderRadius: "var(--radius-lg)",
-                    overflow: "hidden",
-                    backgroundColor: "var(--card-surface)",
-                  }}
+                  className="group relative flex flex-col rounded-2xl border border-border bg-card overflow-hidden"
                 >
-                  <div
-                    className="animate-pulse"
-                    style={{
-                      width: "100%",
-                      aspectRatio: "1 / 1",
-                      backgroundColor: "var(--secondary)",
-                    }}
-                  />
-                  <div
-                    style={{ padding: "16px" }}
-                    className="space-y-3 animate-pulse"
-                  >
-                    <div
-                      style={{
-                        height: "12px",
-                        width: "40%",
-                        borderRadius: "4px",
-                        backgroundColor: "var(--secondary)",
-                      }}
-                    />
-                    <div
-                      style={{
-                        height: "16px",
-                        width: "80%",
-                        borderRadius: "4px",
-                        backgroundColor: "var(--secondary)",
-                      }}
-                    />
-                    <div
-                      style={{
-                        height: "18px",
-                        width: "50%",
-                        borderRadius: "4px",
-                        backgroundColor: "var(--secondary)",
-                      }}
-                    />
-                    <div
-                      style={{
-                        height: "36px",
-                        width: "100%",
-                        borderRadius: "6px",
-                        backgroundColor: "var(--secondary)",
-                        marginTop: "12px",
-                      }}
-                    />
+                  <div className="w-full aspect-square bg-muted animate-pulse" />
+                  <div className="p-4 space-y-3 animate-pulse">
+                    <div className="h-3 w-2/5 rounded bg-muted" />
+                    <div className="h-4 w-4/5 rounded bg-muted" />
+                    <div className="h-5 w-1/2 rounded bg-muted" />
+                    <div className="h-9 w-full rounded-lg bg-muted mt-3" />
                   </div>
                 </div>
               ))
@@ -198,14 +137,17 @@ export default function FeaturedSupplements({
                   : null;
 
                 return (
-                  <div key={product.id} className="product-card">
-                    <div className="product-thumb-wrap">
+                  <div
+                    key={product.id}
+                    className="group relative flex flex-col rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg hover:border-primary/40 transition-all duration-300"
+                  >
+                    <div className="relative aspect-square w-full overflow-hidden bg-muted">
                       {discountPercent && discountPercent > 0 ? (
-                        <span className="badge badge-primary product-tag font-bold">
+                        <span className="absolute top-3 left-3 z-10 px-2 py-0.5 rounded-full text-xs font-bold bg-primary text-white shadow-sm">
                           -{discountPercent}%
                         </span>
                       ) : product.badge ? (
-                        <span className="badge badge-default product-tag">
+                        <span className="absolute top-3 left-3 z-10 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-900/80 text-white backdrop-blur-sm">
                           {product.badge}
                         </span>
                       ) : null}
@@ -218,49 +160,48 @@ export default function FeaturedSupplements({
                           alt={product.name}
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                          className="object-cover transition-transform duration-300"
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </Link>
                     </div>
-                    <div className="product-info">
-                      <span className="product-category">
+                    <div className="flex flex-col flex-1 p-4">
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
                         {product.categoryLabel}
                       </span>
                       <Link
                         href={`/products/${product.slug}`}
-                        className="product-name hover:text-[var(--primary)] transition-colors"
+                        className="font-medium text-sm text-foreground line-clamp-2 hover:text-primary transition-colors min-h-[2.5rem] mb-2"
                         title={product.name}
                       >
                         {product.name}
                       </Link>
-                      <div className="product-price-row">
-                        <span className="price-main">
+                      <div className="flex items-baseline gap-2 mt-auto mb-3">
+                        <span className="text-base font-bold text-primary">
                           {formatVND(product.price)}
                         </span>
                         {product.originalPrice && (
-                          <span className="price-del">
+                          <span className="text-xs text-muted-foreground line-through">
                             {formatVND(product.originalPrice)}
                           </span>
                         )}
                       </div>
-                      <div className="product-actions">
+                      <div className="flex items-center gap-2">
                         <Link
                           href={`/products/${product.slug}`}
-                          className="btn btn-secondary btn-sm"
-                          style={{ flex: 1, textAlign: "center" }}
+                          className="flex-1 text-center py-2 px-3 text-xs font-semibold rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
                         >
                           Xem chi tiết
                         </Link>
                         <button
                           type="button"
-                          className="btn btn-outline btn-sm btn-icon"
+                          className="p-2 rounded-xl border border-border text-foreground hover:bg-primary hover:text-white hover:border-primary transition-colors"
                           onClick={() => handleAddToCart(product)}
                           title="Thêm vào giỏ"
                           aria-label={`Thêm ${product.name} vào giỏ hàng`}
                         >
                           <svg
-                            width="14"
-                            height="14"
+                            width="16"
+                            height="16"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
