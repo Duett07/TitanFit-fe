@@ -28,14 +28,14 @@ export default function Footer() {
 
   return (
     <footer className="site-footer">
-      <div className="container-custom">
+      <div className="container">
         <div className="footer-grid">
           {/* Cột 1: Thông tin thương hiệu TITANFIT & Giấy phép */}
           <div className="flex flex-col">
             <Link href="/" className="inline-block mb-4">
-              <div className="relative h-9 w-44">
+              <div className="relative h-8 w-44">
                 <Image
-                  src="/images/titanfit-logo-dark.png"
+                  src="/logo.svg"
                   alt="TITANFIT Sports & Nutrition"
                   fill
                   sizes="176px"

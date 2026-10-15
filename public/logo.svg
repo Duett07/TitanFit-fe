@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 64" width="100%" height="100%">
+  <!-- Minimalist Geometric Athletic Mark: Stylized T / Delta Blade -->
+  <g transform="translate(4, 12)">
+    <path d="M4 4 H36 V12 H24 V36 H16 V12 H4 Z" fill="#FAFAFA" />
+    <polygon points="26,14 36,4 36,24" fill="#F97316" />
+  </g>
+
+  <!-- Clean Wordmark (Dark theme default) -->
+  <text x="52" y="38" font-family="'Outfit', -apple-system, sans-serif" font-weight="800" font-size="26" letter-spacing="-0.03em" fill="#FAFAFA">
+    TITAN<tspan fill="#F97316">FIT</tspan>
+  </text>
+  <text x="53" y="50" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="8.5" letter-spacing="0.22em" fill="#71717A">
+    SPORTS &amp; NUTRITION
+  </text>
+</svg>
