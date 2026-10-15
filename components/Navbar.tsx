@@ -5,22 +5,48 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 
+const subscribeTheme = (callback: () => void) => {
+  window.addEventListener("storage", callback);
+  window.addEventListener("themechange", callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener("themechange", callback);
+  };
+};
+
+const getThemeSnapshot = (): "dark" | "light" => {
+  if (typeof window === "undefined") return "light";
+  return (localStorage.getItem("titanfit_theme_mode") as "dark" | "light") || "light";
+};
+
+const getThemeServerSnapshot = (): "dark" | "light" => "light";
+
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState("");
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const theme = React.useSyncExternalStore(
+    subscribeTheme,
+    getThemeSnapshot,
+    getThemeServerSnapshot
+  );
 
   const toggleTheme = () => {
     const nextTheme = theme === "dark" ? "light" : "dark";
-    setTheme(nextTheme);
+    try {
+      localStorage.setItem("titanfit_theme_mode", nextTheme);
+      localStorage.setItem("titanfit_theme", nextTheme);
+      window.dispatchEvent(new Event("themechange"));
+    } catch {
+      // Ignore in SSR
+    }
     document.documentElement.setAttribute("data-theme", nextTheme);
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/catalog?q=${encodeURIComponent(searchQuery)}`);
+      router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
     }
   };
 
@@ -60,16 +86,22 @@ export default function Navbar() {
               </li>
               <li>
                 <Link
-                  href="/catalog?type=SUPPLEMENTS"
-                  className={`nav-link ${pathname.includes("SUPPLEMENTS") ? "active" : ""}`}
+                  href="/products?category=supplements"
+                  className={`nav-link ${pathname === "/products" && typeof window !== "undefined" && window.location.search.includes("supplements")
+                    ? "active"
+                    : ""
+                    }`}
                 >
                   Thực Phẩm Bổ Sung
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/catalog?type=SPORTS_GEAR"
-                  className={`nav-link ${pathname.includes("SPORTS_GEAR") ? "active" : ""}`}
+                  href="/products?category=apparel"
+                  className={`nav-link ${pathname === "/products" && typeof window !== "undefined" && window.location.search.includes("apparel")
+                    ? "active"
+                    : ""
+                    }`}
                 >
                   Đồ Tập &amp; Phụ Kiện
                 </Link>
@@ -165,10 +197,24 @@ export default function Navbar() {
               </span>
             </Link>
 
-            {/* Đăng Nhập */}
-            <div className="header-auth-container">
-              <Link href="/login" className="btn btn-primary btn-sm">
+            {/* Đăng Nhập & Đăng Ký — Wireframe exact */}
+            <div
+              className="header-auth-container"
+              style={{ display: "flex", alignItems: "center", gap: "8px" }}
+            >
+              <Link
+                href="/login"
+                className="btn btn-ghost btn-sm"
+                style={{ fontWeight: 600 }}
+              >
                 Đăng Nhập
+              </Link>
+              <Link
+                href="/register"
+                className="btn btn-primary btn-sm"
+                style={{ fontWeight: 600 }}
+              >
+                Đăng Ký
               </Link>
             </div>
           </div>

@@ -84,7 +84,7 @@ export default function FeaturedApparel() {
             </h2>
           </div>
           <Link
-            href="/catalog?type=SPORTS_GEAR"
+            href="/products?category=apparel"
             className="btn btn-ghost btn-sm"
           >
             <span>Xem tất cả</span>

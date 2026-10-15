@@ -85,7 +85,7 @@ export default function FeaturedSupplements() {
             </h2>
           </div>
           <Link
-            href="/catalog?type=SUPPLEMENTS"
+            href="/products?category=supplements"
             className="btn btn-ghost btn-sm"
           >
             <span>Xem tất cả</span>

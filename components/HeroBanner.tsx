@@ -20,8 +20,11 @@ export default function HeroBanner() {
             }}
           >
             <div className="grid grid-cols-1 md:grid-cols-12 min-h-[440px]">
-              {/* Hero Text */}
-              <div className="md:col-span-7 p-8 md:p-12 flex flex-col justify-center">
+              {/* Hero Text — 48px exact wireframe padding */}
+              <div
+                className="md:col-span-7 flex flex-col justify-center hero-text-wrap"
+                style={{ padding: "48px" }}
+              >
                 <div style={{ marginBottom: "14px" }}>
                   <span className="badge badge-default">
                     Dinh Dưỡng Thể Hình &amp; Đồ Tập Chính Hãng
@@ -34,11 +37,12 @@ export default function HeroBanner() {
                     fontSize: "40px",
                     lineHeight: "1.15",
                     marginBottom: "14px",
-                    fontWeight: 800,
+                    fontWeight: 700,
                   }}
                 >
-                  Bứt Phá Giới Hạn Cùng{" "}
-                  <span style={{ color: "var(--primary)" }}>TITANFIT</span>
+                  Hiệu Suất Tối Đa.
+                  <br />
+                  Thể Hình Đỉnh Cao.
                 </h1>
 
                 <p
@@ -56,10 +60,10 @@ export default function HeroBanner() {
 
                 <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                   <Link
-                    href="/catalog?type=SUPPLEMENTS"
+                    href="/products?category=supplements"
                     className="btn btn-primary btn-lg"
                   >
-                    <span>Mua Sắm Ngay</span>
+                    <span>Xem Thực Phẩm Bổ Sung</span>
                     <svg
                       width="15"
                       height="15"
@@ -73,7 +77,7 @@ export default function HeroBanner() {
                     </svg>
                   </Link>
                   <Link
-                    href="/catalog?type=SPORTS_GEAR"
+                    href="/products?category=apparel"
                     className="btn btn-outline btn-lg"
                   >
                     <span>Xem Đồ Tập Thể Thao</span>
@@ -92,7 +96,7 @@ export default function HeroBanner() {
                   fill
                   sizes="(max-width: 768px) 100vw, 45vw"
                   className="object-cover object-center"
-                  style={{ opacity: 0.88 }}
+                  style={{ opacity: 0.85 }}
                   priority
                 />
                 <div
@@ -111,13 +115,13 @@ export default function HeroBanner() {
       </section>
 
       {/* Clean Editorial Category Showcase — Wireframe exact */}
-      <section style={{ padding: "16px 0 32px" }}>
+      <section style={{ padding: "24px 0 36px" }}>
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Category Card 1 */}
             <Link
-              href="/catalog?type=SUPPLEMENTS"
-              className="card"
+              href="/products?category=supplements"
+              className="card group hover:border-[var(--primary)] transition-all"
               style={{
                 padding: "24px",
                 display: "flex",
@@ -147,7 +151,7 @@ export default function HeroBanner() {
                   alignItems: "center",
                 }}
               >
-                <span className="btn btn-outline btn-sm">
+                <span className="btn btn-outline btn-sm group-hover:bg-[var(--secondary)]">
                   <span>Khám phá</span>
                   <svg
                     width="14"
@@ -166,8 +170,8 @@ export default function HeroBanner() {
 
             {/* Category Card 2 */}
             <Link
-              href="/catalog?type=SPORTS_GEAR"
-              className="card"
+              href="/products?category=apparel"
+              className="card group hover:border-[var(--primary)] transition-all"
               style={{
                 padding: "24px",
                 display: "flex",
@@ -197,7 +201,7 @@ export default function HeroBanner() {
                   alignItems: "center",
                 }}
               >
-                <span className="btn btn-outline btn-sm">
+                <span className="btn btn-outline btn-sm group-hover:bg-[var(--secondary)]">
                   <span>Khám phá</span>
                   <svg
                     width="14"

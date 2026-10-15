@@ -35,10 +35,17 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
-      data-theme="dark"
+      data-theme="light"
       suppressHydrationWarning
       className={`${outfit.variable} ${plusJakartaSans.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("titanfit_theme_mode")||"light";document.documentElement.setAttribute("data-theme",t);}catch(e){document.documentElement.setAttribute("data-theme","light");}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground selection:bg-primary/20 selection:text-primary">
         <Navbar />
         <main className="flex-1">{children}</main>
