@@ -18,13 +18,11 @@ import { transformBackendProductSummary } from "@/lib/backend-adapter";
 // Fallback loader while searchParams resolve
 function ProductsLoading() {
   return (
-    <div className="container" style={{ padding: "40px 0", minHeight: "50vh" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", color: "var(--muted-foreground)" }}>
-        <svg className="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="10" />
-        </svg>
-        <span>Đang tải danh mục sản phẩm TITANFIT...</span>
-      </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 min-h-[50vh] flex items-center justify-center gap-3 text-muted-foreground">
+      <svg className="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="10" />
+      </svg>
+      <span className="text-sm font-medium">Đang tải danh mục sản phẩm TITANFIT...</span>
     </div>
   );
 }
@@ -256,59 +254,44 @@ function ProductsContent() {
         </div>
       )}
 
-      {/* Clean Breadcrumbs Header - Match Wireframe */}
-      <div
-        style={{
-          borderBottom: "1px solid var(--border)",
-          padding: "18px 0",
-          backgroundColor: "var(--card-surface)",
-        }}
-      >
-        <div className="container">
-          <div
-            style={{
-              fontSize: "12px",
-              color: "var(--subtle-foreground)",
-              marginBottom: "6px",
-            }}
-          >
-            <Link href="/" style={{ color: "var(--muted-foreground)" }}>
+      {/* Clean Breadcrumbs Header */}
+      <div className="border-b border-border py-5 bg-card/40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-xs text-muted-foreground mb-1.5">
+            <Link href="/" className="hover:text-foreground transition-colors">
               Trang Chủ
             </Link>{" "}
-            / <span style={{ color: "var(--foreground)" }}>Danh Mục Sản Phẩm</span>
+            / <span className="text-foreground font-medium">Danh Mục Sản Phẩm</span>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: "10px" }}>
-            <h1
-              className="font-heading"
-              style={{ fontSize: "26px", fontWeight: "700" }}
-            >
+          <div className="flex justify-between items-baseline flex-wrap gap-2.5">
+            <h1 className="font-heading text-2xl sm:text-3xl font-extrabold text-foreground">
               {activeCategory === "supplements"
                 ? "Thực Phẩm Bổ Sung Thể Hình"
                 : activeCategory === "apparel"
                   ? "Đồ Tập & Phụ Kiện Thể Thao"
                   : "Tất Cả Sản Phẩm Dinh Dưỡng & Đồ Tập"}
             </h1>
-            <span style={{ fontSize: "13px", color: "var(--muted-foreground)" }}>
+            <span className="text-xs sm:text-sm text-muted-foreground">
               Hiển thị <strong>{filteredProducts.length}</strong> sản phẩm
             </span>
           </div>
         </div>
       </div>
 
-      <main className="container">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Mobile Filter Trigger Button */}
-        <div className="md:hidden flex items-center justify-between py-3 border-b border-[var(--border)] mb-4">
+        <div className="md:hidden flex items-center justify-between py-3 border-b border-border mb-4">
           <button
             type="button"
             onClick={() => setIsMobileFilterOpen(true)}
-            className="btn btn-outline btn-sm flex items-center gap-2"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-border text-xs font-semibold hover:bg-muted transition-colors text-foreground"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
             </svg>
             <span>Bộ Lọc</span>
             {activeFiltersCount > 0 && (
-              <span className="badge badge-primary px-1.5 py-0.2 text-[11px] font-bold">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-primary text-white">
                 {activeFiltersCount}
               </span>
             )}
@@ -317,36 +300,23 @@ function ProductsContent() {
           {activeFiltersCount > 0 && (
             <button
               onClick={handleResetFilters}
-              className="text-xs text-[var(--primary)] hover:underline"
+              className="text-xs font-medium text-primary hover:underline"
             >
               Xóa bộ lọc
             </button>
           )}
         </div>
 
-        <div className="catalog-grid">
+        <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[260px_1fr] gap-6">
           {/* CỘT TRÁI: SIDEBAR FILTER (Desktop) */}
-          <aside className="filter-card hidden md:block">
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "16px",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    color: "var(--foreground)",
-                  }}
-                >
+          <aside className="hidden md:block bg-card border border-border rounded-2xl p-5 sticky top-24 self-start">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-foreground">
                   Bộ Lọc Tìm Kiếm
                 </span>
                 {activeFiltersCount > 0 && (
-                  <span className="badge badge-primary text-[10px] px-1.5 py-0.5">
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-primary text-white">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -355,7 +325,7 @@ function ProductsContent() {
                 <button
                   type="button"
                   onClick={handleResetFilters}
-                  className="btn btn-ghost btn-sm text-[11.5px] p-1 h-auto"
+                  className="text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted px-2 py-1 rounded transition-colors"
                 >
                   Xóa lọc
                 </button>
@@ -363,111 +333,119 @@ function ProductsContent() {
             </div>
 
             {/* Phân loại danh mục */}
-            <div className="filter-sec">
-              <div className="filter-heading">Phân Loại Danh Mục</div>
-              <label className="check-label">
+            <div className="py-4 border-b border-border">
+              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Phân Loại Danh Mục</div>
+              <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                 <input
                   type="radio"
                   name="category"
                   checked={activeCategory === "all"}
                   onChange={() => handleCategoryChange("all")}
+                  className="accent-primary"
                 />
-                <span style={{ fontWeight: activeCategory === "all" ? 600 : 400 }}>
+                <span className={activeCategory === "all" ? "font-bold text-foreground" : ""}>
                   Tất cả ({categoryCounts.total})
                 </span>
               </label>
-              <label className="check-label">
+              <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                 <input
                   type="radio"
                   name="category"
                   checked={activeCategory === "apparel"}
                   onChange={() => handleCategoryChange("apparel")}
+                  className="accent-primary"
                 />
-                <span style={{ fontWeight: activeCategory === "apparel" ? 600 : 400 }}>
+                <span className={activeCategory === "apparel" ? "font-bold text-foreground" : ""}>
                   Đồ thể thao ({categoryCounts.apparel})
                 </span>
               </label>
-              <label className="check-label">
+              <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                 <input
                   type="radio"
                   name="category"
                   checked={activeCategory === "supplements"}
                   onChange={() => handleCategoryChange("supplements")}
+                  className="accent-primary"
                 />
-                <span style={{ fontWeight: activeCategory === "supplements" ? 600 : 400 }}>
+                <span className={activeCategory === "supplements" ? "font-bold text-foreground" : ""}>
                   Thực phẩm bổ sung ({categoryCounts.supplements})
                 </span>
               </label>
             </div>
 
             {/* Lọc theo khoảng giá */}
-            <div className="filter-sec">
-              <div className="filter-heading">Khoảng Giá</div>
-              <label className="check-label">
+            <div className="py-4 border-b border-border">
+              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Khoảng Giá</div>
+              <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                 <input
                   type="radio"
                   name="price"
                   checked={activePrice === "all"}
                   onChange={() => handlePriceChange("all")}
+                  className="accent-primary"
                 />
-                <span style={{ fontWeight: activePrice === "all" ? 600 : 400 }}>
+                <span className={activePrice === "all" ? "font-bold text-foreground" : ""}>
                   Tất cả khoảng giá
                 </span>
               </label>
-              <label className="check-label">
+              <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                 <input
                   type="radio"
                   name="price"
                   checked={activePrice === "under500k"}
                   onChange={() => handlePriceChange("under500k")}
+                  className="accent-primary"
                 />
-                <span style={{ fontWeight: activePrice === "under500k" ? 600 : 400 }}>
+                <span className={activePrice === "under500k" ? "font-bold text-foreground" : ""}>
                   Dưới 500k
                 </span>
               </label>
-              <label className="check-label">
+              <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                 <input
                   type="radio"
                   name="price"
                   checked={activePrice === "500k-1tr"}
                   onChange={() => handlePriceChange("500k-1tr")}
+                  className="accent-primary"
                 />
-                <span style={{ fontWeight: activePrice === "500k-1tr" ? 600 : 400 }}>
+                <span className={activePrice === "500k-1tr" ? "font-bold text-foreground" : ""}>
                   500k - 1tr
                 </span>
               </label>
-              <label className="check-label">
+              <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                 <input
                   type="radio"
                   name="price"
                   checked={activePrice === "1tr-2tr"}
                   onChange={() => handlePriceChange("1tr-2tr")}
+                  className="accent-primary"
                 />
-                <span style={{ fontWeight: activePrice === "1tr-2tr" ? 600 : 400 }}>
+                <span className={activePrice === "1tr-2tr" ? "font-bold text-foreground" : ""}>
                   1tr - 2tr
                 </span>
               </label>
-              <label className="check-label">
+              <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                 <input
                   type="radio"
                   name="price"
                   checked={activePrice === "over2tr"}
                   onChange={() => handlePriceChange("over2tr")}
+                  className="accent-primary"
                 />
-                <span style={{ fontWeight: activePrice === "over2tr" ? 600 : 400 }}>
+                <span className={activePrice === "over2tr" ? "font-bold text-foreground" : ""}>
                   Trên 2tr
                 </span>
               </label>
             </div>
 
             {/* Nút Đặt lại bộ lọc */}
-            <div style={{ paddingTop: "8px" }}>
+            <div className="pt-4">
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="btn btn-outline btn-sm w-full justify-center"
+                className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border text-xs font-medium hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
                   <path d="M21 3v5h-5" />
                   <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
@@ -481,25 +459,16 @@ function ProductsContent() {
           {/* CỘT PHẢI: PRODUCT GRID & TOOLBAR */}
           <section>
             {/* Thanh chọn sắp xếp & đếm sản phẩm */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "20px",
-                flexWrap: "wrap",
-                gap: "12px",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <span style={{ fontSize: "13px", color: "var(--muted-foreground)" }}>
+            <div className="flex justify-between items-center mb-5 flex-wrap gap-3">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xs sm:text-sm text-muted-foreground">
                   Tìm thấy <strong>{filteredProducts.length}</strong> sản phẩm
                 </span>
 
                 {/* Tags bộ lọc đang chọn */}
                 <div className="hidden lg:flex items-center gap-1.5 flex-wrap">
                   {searchQuery && (
-                    <span className="badge badge-secondary text-xs flex items-center gap-1">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
                       Tìm: &ldquo;{searchQuery}&rdquo;
                       <button
                         onClick={handleClearSearch}
@@ -510,7 +479,7 @@ function ProductsContent() {
                     </span>
                   )}
                   {activeCategory !== "all" && (
-                    <span className="badge badge-secondary text-xs flex items-center gap-1">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
                       {activeCategory === "apparel" ? "Đồ thể thao" : "Thực phẩm bổ sung"}
                       <button
                         onClick={() => handleCategoryChange("all")}
@@ -521,7 +490,7 @@ function ProductsContent() {
                     </span>
                   )}
                   {activePrice !== "all" && (
-                    <span className="badge badge-secondary text-xs flex items-center gap-1">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
                       {activePrice === "under500k"
                         ? "Dưới 500k"
                         : activePrice === "500k-1tr"
@@ -541,20 +510,14 @@ function ProductsContent() {
               </div>
 
               {/* Thanh chọn sắp xếp */}
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span
-                  style={{
-                    fontSize: "12.5px",
-                    color: "var(--subtle-foreground)",
-                  }}
-                >
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">
                   Sắp xếp:
                 </span>
                 <select
                   value={activeSort}
                   onChange={handleSortChange}
-                  className="input cursor-pointer"
-                  style={{ width: "170px", height: "34px", fontSize: "12.5px" }}
+                  className="px-3 py-1.5 rounded-xl border border-border bg-card text-foreground text-xs font-medium cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option value="newest">Mới nhất</option>
                   <option value="price-asc">Giá tăng dần</option>
@@ -566,99 +529,26 @@ function ProductsContent() {
             {/* LƯỚI SẢN PHẨM, LOADING SKELETON HOẶC EMPTY STATE */}
             {isLoading ? (
               /* Loading Skeleton Grid */
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-                  gap: "18px",
-                }}
-              >
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {Array.from({ length: 6 }).map((_, idx) => (
                   <div
                     key={idx}
-                    className="product-card"
-                    style={{
-                      border: "1px solid var(--border)",
-                      borderRadius: "var(--radius-lg)",
-                      overflow: "hidden",
-                      backgroundColor: "var(--card-surface)",
-                    }}
+                    className="group relative flex flex-col rounded-2xl border border-border bg-card overflow-hidden"
                   >
-                    <div
-                      className="animate-pulse"
-                      style={{
-                        width: "100%",
-                        aspectRatio: "1 / 1",
-                        backgroundColor: "var(--secondary)",
-                      }}
-                    />
-                    <div style={{ padding: "16px" }} className="space-y-3 animate-pulse">
-                      <div
-                        style={{
-                          height: "12px",
-                          width: "40%",
-                          borderRadius: "4px",
-                          backgroundColor: "var(--secondary)",
-                        }}
-                      />
-                      <div
-                        style={{
-                          height: "16px",
-                          width: "85%",
-                          borderRadius: "4px",
-                          backgroundColor: "var(--secondary)",
-                        }}
-                      />
-                      <div
-                        style={{
-                          height: "18px",
-                          width: "50%",
-                          borderRadius: "4px",
-                          backgroundColor: "var(--secondary)",
-                        }}
-                      />
-                      <div
-                        style={{
-                          height: "36px",
-                          width: "100%",
-                          borderRadius: "6px",
-                          backgroundColor: "var(--secondary)",
-                          marginTop: "12px",
-                        }}
-                      />
+                    <div className="w-full aspect-square bg-muted animate-pulse" />
+                    <div className="p-4 space-y-3 animate-pulse">
+                      <div className="h-3 w-2/5 rounded bg-muted" />
+                      <div className="h-4 w-4/5 rounded bg-muted" />
+                      <div className="h-5 w-1/2 rounded bg-muted" />
+                      <div className="h-9 w-full rounded-lg bg-muted mt-3" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
               /* Trạng thái rỗng (Empty state) */
-              <div
-                className="card"
-                style={{
-                  padding: "60px 24px",
-                  textAlign: "center",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "var(--card-surface)",
-                  border: "1px dashed var(--border)",
-                  borderRadius: "var(--radius-lg)",
-                }}
-              >
-                <div
-                  style={{
-                    width: "64px",
-                    height: "64px",
-                    borderRadius: "50%",
-                    backgroundColor: "var(--secondary)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginBottom: "16px",
-                    color: "var(--muted-foreground)",
-                  }}
-                >
+              <div className="p-12 text-center flex flex-col items-center justify-center bg-card border border-dashed border-border rounded-2xl">
+                <div className="w-16 h-16 rounded-full bg-secondary text-muted-foreground flex items-center justify-center mb-4">
                   <svg
                     width="32"
                     height="32"
@@ -672,27 +562,16 @@ function ProductsContent() {
                     <line x1="8" y1="11" x2="14" y2="11" />
                   </svg>
                 </div>
-                <h3
-                  className="font-heading"
-                  style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px" }}
-                >
+                <h3 className="font-heading text-lg font-bold text-foreground mb-2">
                   Không tìm thấy sản phẩm nào
                 </h3>
-                <p
-                  style={{
-                    fontSize: "13.5px",
-                    color: "var(--muted-foreground)",
-                    maxWidth: "420px",
-                    lineHeight: "1.5",
-                    marginBottom: "24px",
-                  }}
-                >
+                <p className="text-sm text-muted-foreground max-w-md leading-relaxed mb-6">
                   Không có sản phẩm nào phù hợp với danh mục hoặc khoảng giá bạn đã chọn. Hãy thử nới lỏng bộ lọc hoặc đặt lại bộ lọc.
                 </p>
                 <button
                   type="button"
                   onClick={handleResetFilters}
-                  className="btn btn-primary"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors shadow-sm text-sm"
                 >
                   <svg
                     width="14"
@@ -701,7 +580,6 @@ function ProductsContent() {
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
-                    className="mr-1.5"
                   >
                     <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
                     <path d="M21 3v5h-5" />
@@ -713,13 +591,7 @@ function ProductsContent() {
               </div>
             ) : (
               /* Lưới sản phẩm (Product Grid) */
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-                  gap: "18px",
-                }}
-              >
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filteredProducts.map((product) => {
                   const discountPercent = product.originalPrice
                     ? Math.round(
@@ -728,68 +600,73 @@ function ProductsContent() {
                     : null;
 
                   return (
-                    <div key={product.id} className="product-card">
+                    <div
+                      key={product.id}
+                      className="group relative flex flex-col rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg hover:border-primary/40 transition-all duration-300"
+                    >
                       {/* Ảnh Thumbnail & Nhãn giảm giá / badge */}
-                      <div className="product-thumb-wrap">
+                      <div className="relative aspect-square w-full overflow-hidden bg-muted">
                         {discountPercent && discountPercent > 0 ? (
-                          <span className="badge badge-primary product-tag font-bold">
+                          <span className="absolute top-3 left-3 z-10 px-2 py-0.5 rounded-full text-xs font-bold bg-primary text-white shadow-sm">
                             -{discountPercent}%
                           </span>
                         ) : product.badge ? (
-                          <span className="badge badge-default product-tag">
+                          <span className="absolute top-3 left-3 z-10 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-900/80 text-white backdrop-blur-sm">
                             {product.badge}
                           </span>
                         ) : null}
 
-                        <Link href={`/products/${product.slug}`} className="block w-full h-full">
+                        <Link href={`/products/${product.slug}`} className="block w-full h-full relative">
                           <Image
                             src={product.image}
                             alt={product.name}
-                            width={320}
-                            height={320}
-                            className="w-full h-full object-cover transition-transform duration-300"
+                            fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
                             priority={typeof product.id === "number" ? product.id <= 4 : false}
                           />
                         </Link>
                       </div>
 
                       {/* Thông tin sản phẩm */}
-                      <div className="product-info">
-                        <span className="product-category">{product.categoryLabel}</span>
+                      <div className="flex flex-col flex-1 p-4">
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                          {product.categoryLabel}
+                        </span>
                         <Link
                           href={`/products/${product.slug}`}
-                          className="product-name hover:text-[var(--primary)] transition-colors"
+                          className="font-medium text-sm text-foreground line-clamp-2 hover:text-primary transition-colors min-h-[2.5rem] mb-2"
                           title={product.name}
                         >
                           {product.name}
                         </Link>
 
                         {/* Hàng giá bán dạng xxx.xxx ₫ */}
-                        <div className="product-price-row">
-                          <span className="price-main">{formatVND(product.price)}</span>
+                        <div className="flex items-baseline gap-2 mt-auto mb-3">
+                          <span className="text-base font-bold text-primary">{formatVND(product.price)}</span>
                           {product.originalPrice && (
-                            <span className="price-del">{formatVND(product.originalPrice)}</span>
+                            <span className="text-xs text-muted-foreground line-through">{formatVND(product.originalPrice)}</span>
                           )}
                         </div>
 
                         {/* Nút hành động */}
-                        <div className="product-actions">
+                        <div className="flex items-center gap-2">
                           <Link
                             href={`/products/${product.slug}`}
-                            className="btn btn-secondary btn-sm flex-1 text-center justify-center font-medium"
+                            className="flex-1 text-center py-2 px-3 text-xs font-semibold rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
                           >
                             Xem chi tiết
                           </Link>
                           <button
                             type="button"
                             onClick={() => handleAddToCart(product)}
-                            className="btn btn-outline btn-sm btn-icon"
+                            className="p-2 rounded-xl border border-border text-foreground hover:bg-primary hover:text-white hover:border-primary transition-colors"
                             title="Thêm nhanh vào giỏ"
                             aria-label={`Thêm ${product.name} vào giỏ hàng`}
                           >
                             <svg
-                              width="14"
-                              height="14"
+                              width="16"
+                              height="16"
                               viewBox="0 0 24 24"
                               fill="none"
                               stroke="currentColor"
@@ -825,14 +702,14 @@ function ProductsContent() {
 
           {/* Drawer content */}
           <div
-            className="relative ml-auto w-full max-w-xs h-full bg-[var(--background)] border-l border-[var(--border)] p-5 flex flex-col z-10 shadow-2xl animate-in slide-in-from-right duration-200"
+            className="relative ml-auto w-full max-w-xs h-full bg-background border-l border-border p-5 flex flex-col z-10 shadow-2xl animate-in slide-in-from-right duration-200"
           >
-            <div className="flex items-center justify-between pb-4 border-b border-[var(--border)]">
-              <h3 className="font-heading font-semibold text-base">Bộ Lọc Sản Phẩm</h3>
+            <div className="flex items-center justify-between pb-4 border-b border-border">
+              <h3 className="font-heading font-semibold text-base text-foreground">Bộ Lọc Sản Phẩm</h3>
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="btn btn-ghost btn-sm btn-icon"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
                 ✕
               </button>
@@ -841,31 +718,34 @@ function ProductsContent() {
             <div className="flex-1 overflow-y-auto py-4 space-y-6">
               {/* Danh mục */}
               <div>
-                <div className="filter-heading">Phân Loại Danh Mục</div>
-                <label className="check-label">
+                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Phân Loại Danh Mục</div>
+                <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                   <input
                     type="radio"
                     name="mobile-category"
                     checked={activeCategory === "all"}
                     onChange={() => handleCategoryChange("all")}
+                    className="accent-primary"
                   />
                   <span>Tất cả ({categoryCounts.total})</span>
                 </label>
-                <label className="check-label">
+                <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                   <input
                     type="radio"
                     name="mobile-category"
                     checked={activeCategory === "apparel"}
                     onChange={() => handleCategoryChange("apparel")}
+                    className="accent-primary"
                   />
                   <span>Đồ thể thao ({categoryCounts.apparel})</span>
                 </label>
-                <label className="check-label">
+                <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                   <input
                     type="radio"
                     name="mobile-category"
                     checked={activeCategory === "supplements"}
                     onChange={() => handleCategoryChange("supplements")}
+                    className="accent-primary"
                   />
                   <span>Thực phẩm bổ sung ({categoryCounts.supplements})</span>
                 </label>
@@ -873,49 +753,54 @@ function ProductsContent() {
 
               {/* Khoảng giá */}
               <div>
-                <div className="filter-heading">Khoảng Giá</div>
-                <label className="check-label">
+                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Khoảng Giá</div>
+                <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                   <input
                     type="radio"
                     name="mobile-price"
                     checked={activePrice === "all"}
                     onChange={() => handlePriceChange("all")}
+                    className="accent-primary"
                   />
                   <span>Tất cả</span>
                 </label>
-                <label className="check-label">
+                <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                   <input
                     type="radio"
                     name="mobile-price"
                     checked={activePrice === "under500k"}
                     onChange={() => handlePriceChange("under500k")}
+                    className="accent-primary"
                   />
                   <span>Dưới 500k</span>
                 </label>
-                <label className="check-label">
+                <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                   <input
                     type="radio"
                     name="mobile-price"
                     checked={activePrice === "500k-1tr"}
                     onChange={() => handlePriceChange("500k-1tr")}
+                    className="accent-primary"
                   />
                   <span>500k - 1tr</span>
                 </label>
-                <label className="check-label">
+                <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                   <input
                     type="radio"
                     name="mobile-price"
                     checked={activePrice === "1tr-2tr"}
                     onChange={() => handlePriceChange("1tr-2tr")}
+                    className="accent-primary"
                   />
                   <span>1tr - 2tr</span>
                 </label>
-                <label className="check-label">
+                <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                   <input
                     type="radio"
                     name="mobile-price"
                     checked={activePrice === "over2tr"}
                     onChange={() => handlePriceChange("over2tr")}
+                    className="accent-primary"
                   />
                   <span>Trên 2tr</span>
                 </label>
@@ -923,18 +808,18 @@ function ProductsContent() {
             </div>
 
             {/* Footer actions */}
-            <div className="pt-4 border-t border-[var(--border)] flex gap-2">
+            <div className="pt-4 border-t border-border flex gap-2">
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="btn btn-outline btn-sm flex-1 justify-center"
+                className="flex-1 py-2 rounded-xl border border-border text-xs font-semibold hover:bg-muted transition-colors text-foreground"
               >
                 Đặt lại
               </button>
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="btn btn-primary btn-sm flex-1 justify-center"
+                className="flex-1 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors shadow-sm"
               >
                 Áp dụng
               </button>

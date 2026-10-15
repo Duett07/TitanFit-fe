@@ -198,9 +198,9 @@ export default function ProductDetailClient({
 
   if (loading) {
     return (
-      <div className="container py-16 text-center">
-        <div className="inline-block w-8 h-8 border-3 border-[var(--primary)] border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm text-[var(--muted-foreground)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+        <div className="inline-block w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sm text-muted-foreground">
           Đang tải dữ liệu chi tiết sản phẩm &amp; biến thể...
         </p>
       </div>
@@ -209,17 +209,17 @@ export default function ProductDetailClient({
 
   if (!product) {
     return (
-      <div className="container py-16 text-center">
-        <div className="w-16 h-16 rounded-full bg-[var(--secondary)] flex items-center justify-center mx-auto mb-4 text-[var(--muted-foreground)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4 text-muted-foreground text-xl">
           ✕
         </div>
-        <h1 className="font-heading font-bold text-2xl mb-2">
+        <h1 className="font-heading font-bold text-2xl text-foreground mb-2">
           Không tìm thấy sản phẩm
         </h1>
-        <p className="text-sm text-[var(--muted-foreground)] mb-6">
+        <p className="text-sm text-muted-foreground mb-6">
           Sản phẩm với đường dẫn &ldquo;{slug}&rdquo; không tồn tại hoặc đã ngừng kinh doanh.
         </p>
-        <Link href="/products" className="btn btn-primary rounded-md">
+        <Link href="/products" className="inline-flex items-center px-6 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors">
           Quay Về Danh Sách Sản Phẩm
         </Link>
       </div>
@@ -232,34 +232,32 @@ export default function ProductDetailClient({
     : null;
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      {/* Segmented Control Demo Switcher (Exact Wireframe layout) */}
-      <div style={{ backgroundColor: "var(--card-surface)", borderBottom: "1px solid var(--border)", padding: "10px 0" }}>
-        <div className="container flex flex-wrap items-center justify-between gap-3">
-          <div style={{ fontSize: "13px", color: "var(--muted-foreground)" }}>
+    <div className="min-h-screen bg-background">
+      {/* Segmented Control Demo Switcher */}
+      <div className="bg-card/50 border-b border-border py-2.5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-3">
+          <div className="text-xs text-muted-foreground">
             Kiểm thử logic biến thể nghiệp vụ:
           </div>
 
-          <div style={{ display: "inline-flex", backgroundColor: "var(--secondary)", padding: "3px", borderRadius: "var(--radius-md)", border: "1px solid var(--border)", gap: "4px" }}>
+          <div className="inline-flex items-center bg-muted/60 p-1 rounded-xl border border-border gap-1">
             <Link
               href="/products/whey-gold-standard-100"
-              className={`btn btn-sm ${
+              className={`px-3 py-1 rounded-lg text-xs transition-colors ${
                 product.slug === "whey-gold-standard-100" || product.slug === "whey-gold-standard-100-isolate-5lbs"
-                  ? "btn-secondary font-semibold"
-                  : "btn-ghost"
+                  ? "bg-background text-foreground font-semibold shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
-              style={{ height: "28px" }}
             >
               Mẫu 1: Whey Protein (BE data)
             </Link>
             <Link
               href="/products/ao-thun-the-thao-titanfit-dry-fit-athletics"
-              className={`btn btn-sm ${
+              className={`px-3 py-1 rounded-lg text-xs transition-colors ${
                 product.slug === "ao-thun-the-thao-titanfit-dry-fit-athletics" || product.slug === "ao-thun-pro-combat-co-gian-4-chieu"
-                  ? "btn-secondary font-semibold"
-                  : "btn-ghost"
+                  ? "bg-background text-foreground font-semibold shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
-              style={{ height: "28px" }}
             >
               Mẫu 2: Áo Tập Gym (BE data)
             </Link>
@@ -267,15 +265,15 @@ export default function ProductDetailClient({
         </div>
       </div>
 
-      {/* Main PDP Grid (Exact Wireframe structure & styling) */}
-      <main className="container">
-        <div className="pdp-grid">
+      {/* Main PDP Grid */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Left: Image Gallery */}
-          <div>
-            <div className="pdp-gallery-main">
+          <div className="lg:col-span-6">
+            <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-card border border-border flex items-center justify-center mb-4">
               {product.badge && (
-                <div style={{ position: "absolute", top: "12px", left: "12px", zIndex: 10 }}>
-                  <span className="badge badge-primary" style={{ padding: "3px 8px", fontSize: "11px", fontWeight: "700" }}>
+                <div className="absolute top-3 left-3 z-10">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary text-white shadow-sm">
                     {product.badge}
                   </span>
                 </div>
@@ -284,18 +282,21 @@ export default function ProductDetailClient({
               <img
                 src={selectedImage || product.image}
                 alt={product.name}
+                className="w-full h-full object-cover"
               />
             </div>
 
             {/* Thumbnails row */}
-            <div className="pdp-thumbs">
+            <div className="flex items-center gap-3 overflow-x-auto pb-2">
               {product.images.map((img, idx) => {
                 const isActive = selectedImage === img;
                 return (
                   <button
                     key={idx}
                     type="button"
-                    className={`thumb-btn ${isActive ? "active" : ""}`}
+                    className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
+                      isActive ? "border-primary shadow-sm" : "border-border hover:border-primary/50"
+                    }`}
                     onClick={() => setSelectedImage(img)}
                     aria-label={`Xem ảnh ${idx + 1}`}
                   >
@@ -303,6 +304,7 @@ export default function ProductDetailClient({
                     <img
                       src={img}
                       alt={`${product.name} thumbnail ${idx + 1}`}
+                      className="w-full h-full object-cover"
                     />
                   </button>
                 );
@@ -311,54 +313,54 @@ export default function ProductDetailClient({
           </div>
 
           {/* Right: Product Info & Variants */}
-          <div>
+          <div className="lg:col-span-6">
             {/* Meta Tags: Category, SKU & Stock Indicator */}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px", flexWrap: "wrap" }}>
-              <span className="badge badge-default" style={{ fontSize: "11px" }}>
+            <div className="flex items-center gap-2.5 mb-2 flex-wrap">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-foreground">
                 {product.categoryLabel}
               </span>
 
-              <span className="font-mono" style={{ fontSize: "11px", color: "var(--subtle-foreground)" }}>
-                SKU: <span style={{ color: "var(--foreground)" }}>{currentVariant?.sku || "TITAN-SKU"}</span>
+              <span className="font-mono text-xs text-muted-foreground">
+                SKU: <span className="text-foreground font-semibold">{currentVariant?.sku || "TITAN-SKU"}</span>
               </span>
 
               {isOutOfStock ? (
-                <span className="badge badge-destructive" style={{ fontSize: "11px" }}>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-destructive/10 text-destructive border border-destructive/20">
                   ● Tạm Hết Hàng
                 </span>
               ) : (
-                <span className="badge badge-success" style={{ fontSize: "11px" }}>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                   ● Còn <span>{currentStock}</span> {isApparel ? "chiếc" : "hộp"}
                 </span>
               )}
             </div>
 
             {/* Product Title */}
-            <h1 style={{ fontSize: "28px", lineHeight: "1.25", marginBottom: "12px", fontFamily: "'Outfit', sans-serif", fontWeight: 700 }}>
+            <h1 className="text-2xl sm:text-3xl font-bold font-heading text-foreground mb-3 leading-tight">
               {product.name}
             </h1>
 
             {/* Price & Discount */}
-            <div style={{ display: "flex", alignItems: "baseline", gap: "10px", marginBottom: "20px" }}>
-              <span style={{ fontSize: "24px", fontWeight: "700", color: "var(--foreground)", fontFamily: "'Outfit', sans-serif" }}>
+            <div className="flex items-baseline gap-2.5 mb-5">
+              <span className="text-2xl sm:text-3xl font-extrabold text-foreground font-heading">
                 {formatVND(currentPrice)}
               </span>
 
               {currentOriginalPrice && currentOriginalPrice > currentPrice && (
-                <span style={{ fontSize: "13.5px", color: "var(--subtle-foreground)", textDecoration: "line-through" }}>
+                <span className="text-sm text-muted-foreground line-through">
                   {formatVND(currentOriginalPrice)}
                 </span>
               )}
 
               {discountPercent && discountPercent > 0 && (
-                <span className="badge badge-primary" style={{ fontSize: "11px" }}>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-primary text-white">
                   -{discountPercent}%
                 </span>
               )}
             </div>
 
             {/* Description */}
-            <p style={{ color: "var(--muted-foreground)", fontSize: "13.5px", lineHeight: "1.6", marginBottom: "24px" }}>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-6">
               {product.description}
             </p>
 
@@ -367,13 +369,13 @@ export default function ProductDetailClient({
               const selectedVal = selectedOptions[group.name];
 
               return (
-                <div key={group.name} className="variant-group">
-                  <div className="variant-label">
+                <div key={group.name} className="mb-5">
+                  <div className="flex justify-between items-center text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                     <span>{group.name}</span>
-                    <strong>{selectedVal}</strong>
+                    <strong className="text-foreground">{selectedVal}</strong>
                   </div>
 
-                  <div className="variant-options">
+                  <div className="flex flex-wrap gap-2">
                     {group.values.map((val) => {
                       const isSelected = selectedVal === val;
 
@@ -394,7 +396,11 @@ export default function ProductDetailClient({
                           key={val}
                           type="button"
                           onClick={() => handleSelectOption(group.name, val)}
-                          className={`variant-btn ${isSelected ? "active" : ""} ${
+                          className={`px-3.5 py-2 rounded-xl text-xs font-medium border transition-all ${
+                            isSelected
+                              ? "bg-primary text-white border-primary shadow-xs font-bold"
+                              : "border-border bg-card text-foreground hover:border-primary/50"
+                          } ${
                             isValOutOfStock && !isSelected ? "opacity-40" : ""
                           }`}
                         >
@@ -409,25 +415,23 @@ export default function ProductDetailClient({
             })}
 
             {/* Action Row: Stepper, Add to Cart & Buy Now */}
-            <div style={{ display: "flex", gap: "12px", alignItems: "center", marginTop: "28px" }}>
-              <div className="stepper" style={{ height: "40px", padding: "0 4px" }}>
+            <div className="flex flex-wrap gap-3 items-center mt-7">
+              <div className="inline-flex items-center border border-border rounded-xl bg-card overflow-hidden h-11">
                 <button
                   type="button"
-                  className="stepper-btn"
-                  style={{ width: "28px" }}
+                  className="w-10 h-full flex items-center justify-center text-sm font-bold text-foreground hover:bg-muted transition-colors disabled:opacity-40"
                   onClick={handleDecreaseQty}
                   disabled={effectiveQty <= 1 || isOutOfStock}
                   aria-label="Giảm số lượng"
                 >
                   −
                 </button>
-                <span className="stepper-val" style={{ width: "32px", fontSize: "13.5px" }}>
+                <span className="w-10 text-center text-sm font-semibold text-foreground">
                   {effectiveQty}
                 </span>
                 <button
                   type="button"
-                  className="stepper-btn"
-                  style={{ width: "28px" }}
+                  className="w-10 h-full flex items-center justify-center text-sm font-bold text-foreground hover:bg-muted transition-colors disabled:opacity-40"
                   onClick={handleIncreaseQty}
                   disabled={effectiveQty >= currentStock || isOutOfStock}
                   aria-label="Tăng số lượng"
@@ -438,8 +442,7 @@ export default function ProductDetailClient({
 
               <button
                 type="button"
-                className="btn btn-primary btn-lg"
-                style={{ flex: 1, height: "40px", fontWeight: 600 }}
+                className="flex-1 h-11 inline-flex items-center justify-center px-6 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50"
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
               >
@@ -448,8 +451,7 @@ export default function ProductDetailClient({
 
               <button
                 type="button"
-                className="btn btn-outline btn-lg"
-                style={{ height: "40px", fontWeight: 600 }}
+                className="h-11 inline-flex items-center justify-center px-6 rounded-xl border border-border text-foreground text-sm font-semibold hover:bg-muted transition-colors disabled:opacity-50"
                 onClick={handleBuyNow}
                 disabled={isOutOfStock}
               >
@@ -457,18 +459,18 @@ export default function ProductDetailClient({
               </button>
             </div>
 
-            {/* Specs Card (Exact wireframe styling) */}
+            {/* Specs Card */}
             {product.specs && product.specs.length > 0 && (
-              <div className="card" style={{ marginTop: "28px", padding: "18px" }}>
-                <div style={{ fontWeight: 600, fontSize: "13px", color: "var(--foreground)", marginBottom: "10px" }}>
+              <div className="mt-7 p-5 rounded-2xl bg-card border border-border">
+                <div className="font-semibold text-xs text-foreground uppercase tracking-wider mb-3">
                   {isApparel ? "Thông Số Chất Liệu & Bảo Hành" : "Thành Phần Dinh Dưỡng Mỗi Khẩu Phần"}
                 </div>
-                <table className="specs-table">
+                <table className="w-full text-xs">
                   <tbody>
                     {product.specs.map((spec, i) => (
-                      <tr key={i}>
-                        <td>{spec.label}</td>
-                        <td>{spec.value}</td>
+                      <tr key={i} className="border-b border-border/60 last:border-0">
+                        <td className="py-2.5 text-muted-foreground">{spec.label}</td>
+                        <td className="py-2.5 text-right font-medium text-foreground">{spec.value}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -486,7 +488,7 @@ export default function ProductDetailClient({
           <span className="text-xs font-medium">{toastMessage}</span>
           <button
             onClick={openDrawer}
-            className="text-xs text-[var(--primary)] font-bold ml-2 underline hover:no-underline"
+            className="text-xs text-primary font-bold ml-2 underline hover:no-underline"
           >
             Xem giỏ
           </button>

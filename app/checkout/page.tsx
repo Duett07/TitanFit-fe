@@ -8,7 +8,6 @@ import { z } from "zod";
 import { useCartStore } from "@/stores/useCartStore";
 import { formatVND } from "@/data/products";
 import orderApiRequest from "@/apiRequest/order";
-import authApiRequest from "@/apiRequest/auth";
 import { CreateOrderRequest } from "@/types/order.type";
 
 // Zod Validation Schema
@@ -86,7 +85,6 @@ export default function CheckoutPage() {
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormValues, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authErrorModal, setAuthErrorModal] = useState(false);
-  const [quickLoginLoading, setQuickLoginLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleChange = (
@@ -108,50 +106,6 @@ export default function CheckoutPage() {
     const demoCode = `TF-${Math.floor(100000 + Math.random() * 900000)}`;
     cartStore.clearCart();
     router.push(`/order-success/${demoCode}`);
-  };
-
-  // Quick login handler when 401 occurs
-  const handleQuickLoginAndSubmit = async () => {
-    setQuickLoginLoading(true);
-    try {
-      const res = await authApiRequest.login({
-        email: "test@titanfit.vn",
-        password: "Password123@",
-      });
-      if (res.data?.data) {
-        localStorage.setItem("user", JSON.stringify(res.data.data));
-      }
-      setAuthErrorModal(false);
-      setTimeout(() => {
-        handleSubmitOrder();
-      }, 150);
-    } catch {
-      // If login fails (user does not exist yet), auto register then login
-      try {
-        await authApiRequest.register({
-          email: "test@titanfit.vn",
-          password: "Password123@",
-          fullName: formData.fullName || "Khách Hàng TitanFit",
-          phoneNumber: formData.phone || "0987654321",
-        });
-        const loginRes = await authApiRequest.login({
-          email: "test@titanfit.vn",
-          password: "Password123@",
-        });
-        if (loginRes.data?.data) {
-          localStorage.setItem("user", JSON.stringify(loginRes.data.data));
-        }
-        setAuthErrorModal(false);
-        setTimeout(() => {
-          handleSubmitOrder();
-        }, 150);
-      } catch {
-        // As a graceful fallback for offline/demo testing
-        handleDemoOrder();
-      }
-    } finally {
-      setQuickLoginLoading(false);
-    }
   };
 
   const handleSubmitOrder = async (e?: React.FormEvent) => {
@@ -706,23 +660,19 @@ export default function CheckoutPage() {
               </svg>
             </div>
             <h3 className="text-lg font-bold text-center text-foreground mb-2">
-              Yêu Cầu Xác Thực Tài Khoản
+              Yêu Cầu Đăng Nhập
             </h3>
             <p className="text-xs text-muted-foreground text-center mb-6">
-              Hệ thống backend yêu cầu phiên đăng nhập để lưu trữ đơn hàng vào lịch sử cá nhân của bạn.
+              Vui lòng đăng nhập tài khoản của bạn để tiếp tục đặt hàng và theo dõi tiến trình giao hàng.
             </p>
 
             <div className="flex flex-col gap-3">
               <button
                 type="button"
-                onClick={handleQuickLoginAndSubmit}
-                disabled={quickLoginLoading}
+                onClick={() => router.push("/login?redirect=/checkout")}
                 className="w-full py-3 px-4 rounded-xl font-semibold text-white bg-[var(--primary)] hover:bg-[var(--primary-dark)] transition-all shadow text-sm flex items-center justify-center gap-2"
               >
-                {quickLoginLoading ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : null}
-                <span>Đăng Nhập Nhanh & Đặt Hàng Ngay</span>
+                <span>Đăng Nhập Tài Khoản</span>
               </button>
 
               <button
