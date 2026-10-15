@@ -43,24 +43,6 @@ const http = axios.create({
   withCredentials: true,
 });
 
-let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (value?: unknown) => void;
-  reject: (reason?: unknown) => void;
-}> = [];
-
-const processQueue = (error: unknown) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve();
-    }
-  });
-
-  failedQueue = [];
-};
-
 // ===== REQUEST INTERCEPTOR =====
 http.interceptors.request.use(
   (config) => config,
@@ -79,52 +61,12 @@ http.interceptors.response.use(
       });
     }
 
-    const originalRequest = error.config;
-
-    // If error is 401 and we haven't already tried to refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      const url = originalRequest.url || "";
-      if (
-        url.includes("/login") ||
-        url.includes("/register") ||
-        url.includes("/refresh")
-      ) {
-        return Promise.reject(error);
+    // If error is 401 (Unauthorized)
+    if (error.response?.status === 401) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("user");
       }
-
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then(() => {
-            return http(originalRequest);
-          })
-          .catch((err) => Promise.reject(err));
-      }
-
-      originalRequest._retry = true;
-      isRefreshing = true;
-
-      try {
-        await http.post(
-          `${envConfig.NEXT_PUBLIC_API_ENDPOINT}/api/auth/refresh`,
-          {},
-          { withCredentials: true },
-        );
-
-        processQueue(null);
-        return http(originalRequest);
-      } catch (refreshErr) {
-        processQueue(refreshErr);
-
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("user");
-        }
-
-        return Promise.reject(refreshErr);
-      } finally {
-        isRefreshing = false;
-      }
+      return Promise.reject(error);
     }
 
     // Throw out EntityError if it's 422

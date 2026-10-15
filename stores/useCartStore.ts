@@ -6,6 +6,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 export interface CartItem {
   id: string; // Unique combination of productId + variant key
   productId: number | string;
+  variantId?: string; // Backend variant UUID
   slug: string;
   name: string;
   image: string;
@@ -23,6 +24,7 @@ interface CartState {
   addItem: (
     product: {
       productId: number | string;
+      variantId?: string;
       slug: string;
       name: string;
       image: string;
@@ -110,6 +112,7 @@ export const useCartStore = create<CartState>()(
           const newItem: CartItem = {
             id: itemId,
             productId: product.productId,
+            variantId: product.variantId,
             slug: product.slug,
             name: product.name,
             image: product.image,
@@ -147,8 +150,12 @@ export const useCartStore = create<CartState>()(
         set({ items: [] });
       },
 
-      openDrawer: () => set({ isDrawerOpen: true }),
-      closeDrawer: () => set({ isDrawerOpen: false }),
+      openDrawer: () => {
+        if (!get().isDrawerOpen) set({ isDrawerOpen: true });
+      },
+      closeDrawer: () => {
+        if (get().isDrawerOpen) set({ isDrawerOpen: false });
+      },
       toggleDrawer: () => set({ isDrawerOpen: !get().isDrawerOpen }),
 
       getTotalCount: () => {
