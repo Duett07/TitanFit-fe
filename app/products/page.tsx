@@ -12,6 +12,8 @@ import {
   SortOptionKey,
   formatVND,
 } from "@/data/products";
+import productApiRequest from "@/apiRequest/product";
+import { transformBackendProductSummary } from "@/lib/backend-adapter";
 
 // Fallback loader while searchParams resolve
 function ProductsLoading() {
@@ -130,9 +132,54 @@ function ProductsContent() {
     }, 3000);
   };
 
+  // Dynamic product list fetched from backend
+  const [productList, setProductList] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    async function loadProducts() {
+      setIsLoading(true);
+      try {
+        const res = await productApiRequest.getProducts({ page: 0, size: 50 });
+        const content = res.data?.data?.content;
+        if (content && Array.isArray(content) && content.length > 0 && isMounted) {
+          setProductList(content.map(transformBackendProductSummary));
+        } else if (isMounted) {
+          setProductList(PRODUCTS);
+        }
+      } catch (err) {
+        console.warn("Error fetching products via productApiRequest:", err);
+        if (isMounted) {
+          setProductList(PRODUCTS);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+    loadProducts();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Category item counts derived from loaded products
+  const categoryCounts = useMemo(() => {
+    const list = productList.length > 0 ? productList : PRODUCTS;
+    const apparel = list.filter((p) => p.category === "apparel").length;
+    const supplements = list.filter((p) => p.category === "supplements").length;
+    return {
+      total: list.length,
+      apparel,
+      supplements,
+    };
+  }, [productList]);
+
   // Filter & Sort Logic
   const filteredProducts = useMemo(() => {
-    let result = [...PRODUCTS];
+    let result = [...productList];
 
     // 0. Filter by search query
     if (searchQuery) {
@@ -171,12 +218,14 @@ function ProductsContent() {
       result.sort((a, b) => {
         if (a.isNew && !b.isNew) return -1;
         if (!a.isNew && b.isNew) return 1;
-        return b.id - a.id;
+        return typeof b.id === "number" && typeof a.id === "number"
+          ? b.id - a.id
+          : String(b.id).localeCompare(String(a.id));
       });
     }
 
     return result;
-  }, [searchQuery, activeCategory, activePrice, activeSort]);
+  }, [productList, searchQuery, activeCategory, activePrice, activeSort]);
 
   // Count active filters (for badge)
   const activeFiltersCount = useMemo(() => {
@@ -324,7 +373,7 @@ function ProductsContent() {
                   onChange={() => handleCategoryChange("all")}
                 />
                 <span style={{ fontWeight: activeCategory === "all" ? 600 : 400 }}>
-                  Tất cả ({PRODUCTS.length})
+                  Tất cả ({categoryCounts.total})
                 </span>
               </label>
               <label className="check-label">
@@ -335,7 +384,7 @@ function ProductsContent() {
                   onChange={() => handleCategoryChange("apparel")}
                 />
                 <span style={{ fontWeight: activeCategory === "apparel" ? 600 : 400 }}>
-                  Đồ thể thao ({PRODUCTS.filter((p) => p.category === "apparel").length})
+                  Đồ thể thao ({categoryCounts.apparel})
                 </span>
               </label>
               <label className="check-label">
@@ -346,7 +395,7 @@ function ProductsContent() {
                   onChange={() => handleCategoryChange("supplements")}
                 />
                 <span style={{ fontWeight: activeCategory === "supplements" ? 600 : 400 }}>
-                  Thực phẩm bổ sung ({PRODUCTS.filter((p) => p.category === "supplements").length})
+                  Thực phẩm bổ sung ({categoryCounts.supplements})
                 </span>
               </label>
             </div>
@@ -514,8 +563,74 @@ function ProductsContent() {
               </div>
             </div>
 
-            {/* LƯỚI SẢN PHẨM HOẶC EMPTY STATE */}
-            {filteredProducts.length === 0 ? (
+            {/* LƯỚI SẢN PHẨM, LOADING SKELETON HOẶC EMPTY STATE */}
+            {isLoading ? (
+              /* Loading Skeleton Grid */
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+                  gap: "18px",
+                }}
+              >
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="product-card"
+                    style={{
+                      border: "1px solid var(--border)",
+                      borderRadius: "var(--radius-lg)",
+                      overflow: "hidden",
+                      backgroundColor: "var(--card-surface)",
+                    }}
+                  >
+                    <div
+                      className="animate-pulse"
+                      style={{
+                        width: "100%",
+                        aspectRatio: "1 / 1",
+                        backgroundColor: "var(--secondary)",
+                      }}
+                    />
+                    <div style={{ padding: "16px" }} className="space-y-3 animate-pulse">
+                      <div
+                        style={{
+                          height: "12px",
+                          width: "40%",
+                          borderRadius: "4px",
+                          backgroundColor: "var(--secondary)",
+                        }}
+                      />
+                      <div
+                        style={{
+                          height: "16px",
+                          width: "85%",
+                          borderRadius: "4px",
+                          backgroundColor: "var(--secondary)",
+                        }}
+                      />
+                      <div
+                        style={{
+                          height: "18px",
+                          width: "50%",
+                          borderRadius: "4px",
+                          backgroundColor: "var(--secondary)",
+                        }}
+                      />
+                      <div
+                        style={{
+                          height: "36px",
+                          width: "100%",
+                          borderRadius: "6px",
+                          backgroundColor: "var(--secondary)",
+                          marginTop: "12px",
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filteredProducts.length === 0 ? (
               /* Trạng thái rỗng (Empty state) */
               <div
                 className="card"
@@ -633,7 +748,7 @@ function ProductsContent() {
                             width={320}
                             height={320}
                             className="w-full h-full object-cover transition-transform duration-300"
-                            priority={product.id <= 4}
+                            priority={typeof product.id === "number" ? product.id <= 4 : false}
                           />
                         </Link>
                       </div>
@@ -734,7 +849,7 @@ function ProductsContent() {
                     checked={activeCategory === "all"}
                     onChange={() => handleCategoryChange("all")}
                   />
-                  <span>Tất cả ({PRODUCTS.length})</span>
+                  <span>Tất cả ({categoryCounts.total})</span>
                 </label>
                 <label className="check-label">
                   <input
@@ -743,7 +858,7 @@ function ProductsContent() {
                     checked={activeCategory === "apparel"}
                     onChange={() => handleCategoryChange("apparel")}
                   />
-                  <span>Đồ thể thao ({PRODUCTS.filter((p) => p.category === "apparel").length})</span>
+                  <span>Đồ thể thao ({categoryCounts.apparel})</span>
                 </label>
                 <label className="check-label">
                   <input
@@ -752,7 +867,7 @@ function ProductsContent() {
                     checked={activeCategory === "supplements"}
                     onChange={() => handleCategoryChange("supplements")}
                   />
-                  <span>Thực phẩm bổ sung ({PRODUCTS.filter((p) => p.category === "supplements").length})</span>
+                  <span>Thực phẩm bổ sung ({categoryCounts.supplements})</span>
                 </label>
               </div>
 

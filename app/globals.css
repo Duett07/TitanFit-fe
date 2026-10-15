@@ -250,6 +250,7 @@ img {
 }
 
 .container {
+  width: 100%;
   max-width: 1240px;
   margin: 0 auto;
   padding: 0 24px;
@@ -652,6 +653,96 @@ header.app-header {
 .product-actions {
   display: flex;
   gap: 8px;
+}
+
+/* Product Detail Page (PDP) Layout from wireframe */
+.pdp-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 48px;
+  padding: 36px 0 60px;
+}
+
+.pdp-gallery-main {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: var(--secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.pdp-gallery-main img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pdp-thumbs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.thumb-btn {
+  width: 68px;
+  height: 68px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  opacity: 0.6;
+  transition: var(--transition-fast);
+  background-color: var(--secondary);
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.thumb-btn.active,
+.thumb-btn:hover {
+  opacity: 1;
+  border-color: var(--primary);
+}
+
+.thumb-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.specs-table {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: collapse;
+}
+
+.specs-table td {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.specs-table td:first-child {
+  color: var(--muted-foreground);
+}
+
+.specs-table td:last-child {
+  text-align: right;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+@media (max-width: 860px) {
+  .pdp-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
 }
 
 /* Variant Selectors */
