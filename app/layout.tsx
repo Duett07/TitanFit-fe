@@ -36,6 +36,7 @@ export default function RootLayout({
     <html
       lang="vi"
       data-theme="dark"
+      suppressHydrationWarning
       className={`${outfit.variable} ${plusJakartaSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground selection:bg-primary/20 selection:text-primary">
