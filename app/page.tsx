@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import HeroBanner from "@/components/HeroBanner";
 import FeaturedSupplements from "@/components/FeaturedSupplements";
 import FeaturedApparel from "@/components/FeaturedApparel";
@@ -7,8 +8,12 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <HeroBanner />
-      <FeaturedSupplements />
-      <FeaturedApparel />
+      <Suspense fallback={null}>
+        <FeaturedSupplements />
+      </Suspense>
+      <Suspense fallback={null}>
+        <FeaturedApparel />
+      </Suspense>
       <CommitmentBar />
     </div>
   );

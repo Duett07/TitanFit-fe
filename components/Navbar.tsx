@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
+import { useCartStore } from "@/stores/useCartStore";
 
 const subscribeTheme = (callback: () => void) => {
   window.addEventListener("storage", callback);
@@ -25,6 +26,17 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState("");
+  const { openDrawer, items } = useCartStore();
+  const isHydrated = React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+
+  const cartCount = isHydrated
+    ? items.reduce((total, item) => total + item.quantity, 0)
+    : 2;
+
   const theme = React.useSyncExternalStore(
     subscribeTheme,
     getThemeSnapshot,
@@ -175,7 +187,13 @@ export default function Navbar() {
             </form>
 
             {/* Giỏ Hàng */}
-            <Link href="/cart" className="btn btn-outline cart-trigger-btn">
+            <button
+              type="button"
+              onClick={openDrawer}
+              className="btn btn-outline cart-trigger-btn rounded-md"
+              title="Xem giỏ hàng"
+              aria-label={`Giỏ Hàng (${cartCount})`}
+            >
               <svg
                 width="15"
                 height="15"
@@ -190,12 +208,12 @@ export default function Navbar() {
               </svg>
               <span>Giỏ Hàng</span>
               <span
-                className="badge badge-primary cart-badge"
+                className="badge badge-primary cart-badge rounded-full"
                 style={{ padding: "1px 6px", fontSize: "10px" }}
               >
-                2
+                {cartCount}
               </span>
-            </Link>
+            </button>
 
             {/* Đăng Nhập & Đăng Ký — Wireframe exact */}
             <div

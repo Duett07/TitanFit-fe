@@ -1,17 +1,30 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+## Cấu Hình Môi Trường (Environment Setup)
 
-First, run the development server:
+Trước khi khởi chạy dự án, hãy tạo file `.env.local` từ file mẫu `.env.example`:
 
 ```bash
+# Di chuyển vào thư mục fe (nếu đang ở root)
+cd fe
+
+# Tạo file môi trường từ file mẫu
+cp .env.example .env.local
+```
+
+### Các biến môi trường trong `.env.local`:
+- `NEXT_PUBLIC_API_ENDPOINT`: URL của Backend Spring Boot (mặc định: `http://localhost:8080`).
+- `NEXT_PUBLIC_APP_URL`: URL của Frontend (mặc định: `http://localhost:3000`).
+
+---
+
+## Khởi Chạy Ứng Dụng (Getting Started)
+
+Cài đặt thư viện và chạy server phát triển:
+
+```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.

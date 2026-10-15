@@ -1,65 +1,80 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { formatVND, ProductDetail } from "@/data/products";
+import productApiRequest from "@/apiRequest/product";
+import { transformBackendProductSummary } from "@/lib/backend-adapter";
+import { useCartStore } from "@/stores/useCartStore";
 
-interface ApparelItem {
-  id: number;
-  name: string;
-  category: string;
-  price: string;
-  delPrice?: string;
-  badge?: string;
-  image: string;
-  actionText: string;
+interface FeaturedApparelProps {
+  initialProducts?: ProductDetail[];
 }
 
-const apparelList: ApparelItem[] = [
-  {
-    id: 5,
-    name: "Áo Thun Pro-Combat Co Giãn 4 Chiều",
-    category: "Áo Tập Nam",
-    price: "320.000 ₫",
-    delPrice: "400.000 ₫",
-    badge: "-20%",
-    image: "/images/products/ao-pro-combat.jpg",
-    actionText: "Chọn Size S - XL",
-  },
-  {
-    id: 6,
-    name: "Quần Short 2 Lớp Co Giãn Có Túi Khóa",
-    category: "Quần Tập Gym",
-    price: "280.000 ₫",
-    badge: "HOT",
-    image: "/images/products/quan-short-2-lop.jpg",
-    actionText: "Chọn Size",
-  },
-  {
-    id: 7,
-    name: "Bình Lắc Shaker Inox 700ml Giữ Nhiệt",
-    category: "Phụ Kiện Gymer",
-    price: "240.000 ₫",
-    image: "/images/products/binh-shaker-inox.jpg",
-    actionText: "Chi Tiết",
-  },
-  {
-    id: 8,
-    name: "Đai Lưng Squat Da Bò Chuyên Dụng",
-    category: "Bảo Hộ Tập Nặng",
-    price: "490.000 ₫",
-    delPrice: "590.000 ₫",
-    badge: "-17%",
-    image: "/images/products/dai-lung-squat.jpg",
-    actionText: "Chọn Size",
-  },
-];
-
-export default function FeaturedApparel() {
+export default function FeaturedApparel({
+  initialProducts,
+}: FeaturedApparelProps) {
+  const [products, setProducts] = useState<ProductDetail[]>(
+    initialProducts || []
+  );
+  const [loading, setLoading] = useState(
+    !initialProducts || initialProducts.length === 0
+  );
   const [toastText, setToastText] = useState<string | null>(null);
+  const { addItem } = useCartStore();
 
-  const handleAddToCart = (name: string) => {
-    setToastText(`Đã thêm "${name}" vào giỏ hàng!`);
+  useEffect(() => {
+    if (initialProducts && initialProducts.length > 0) {
+      return;
+    }
+
+    let isMounted = true;
+    async function loadApparel() {
+      try {
+        const res = await productApiRequest.getProducts({ page: 0, size: 50 });
+        const content = res.data?.data?.content;
+        if (
+          content &&
+          Array.isArray(content) &&
+          content.length > 0 &&
+          isMounted
+        ) {
+          const all = content.map(transformBackendProductSummary);
+          const apparel = all
+            .filter((p) => p.category === "apparel")
+            .slice(0, 4);
+          setProducts(apparel);
+        }
+      } catch (err) {
+        console.warn(
+          "Failed to fetch featured apparel via productApiRequest:",
+          err
+        );
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+
+    loadApparel();
+    return () => {
+      isMounted = false;
+    };
+  }, [initialProducts]);
+
+  const handleAddToCart = (product: ProductDetail) => {
+    addItem({
+      productId: product.id,
+      slug: product.slug,
+      name: product.name,
+      image: product.image,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      selectedVariants: {},
+      variantSummary: product.categoryLabel,
+      stock: 50,
+    });
+    setToastText(`Đã thêm "${product.name}" vào giỏ hàng!`);
     setTimeout(() => setToastText(null), 3000);
   };
 
@@ -76,7 +91,10 @@ export default function FeaturedApparel() {
           }}
         >
           <div>
-            <span className="badge badge-default" style={{ marginBottom: "6px" }}>
+            <span
+              className="badge badge-default"
+              style={{ marginBottom: "6px" }}
+            >
               Thời Trang Phòng Gym
             </span>
             <h2 className="font-heading" style={{ fontSize: "24px" }}>
@@ -110,86 +128,171 @@ export default function FeaturedApparel() {
             gap: "20px",
           }}
         >
-          {apparelList.map((item) => (
-            <div key={item.id} className="product-card">
-              <div className="product-thumb-wrap">
-                {item.badge && (
-                  <span className="badge badge-default product-tag">
-                    {item.badge}
-                  </span>
-                )}
-                <Image
-                  src={item.image}
-                  alt={item.name}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  className="object-cover"
-                />
-              </div>
-              <div className="product-info">
-                <span className="product-category">{item.category}</span>
-                <Link
-                  href={`/product-detail?id=${item.id}`}
-                  className="product-name"
+          {loading
+            ? Array.from({ length: 4 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="product-card"
+                  style={{
+                    border: "1px solid var(--border)",
+                    borderRadius: "var(--radius-lg)",
+                    overflow: "hidden",
+                    backgroundColor: "var(--card-surface)",
+                  }}
                 >
-                  {item.name}
-                </Link>
-                <div className="product-price-row">
-                  <span className="price-main">{item.price}</span>
-                  {item.delPrice && (
-                    <span className="price-del">{item.delPrice}</span>
-                  )}
-                </div>
-                <div className="product-actions">
-                  <Link
-                    href={`/product-detail?id=${item.id}`}
-                    className="btn btn-secondary btn-sm"
-                    style={{ flex: 1 }}
+                  <div
+                    className="animate-pulse"
+                    style={{
+                      width: "100%",
+                      aspectRatio: "1 / 1",
+                      backgroundColor: "var(--secondary)",
+                    }}
+                  />
+                  <div
+                    style={{ padding: "16px" }}
+                    className="space-y-3 animate-pulse"
                   >
-                    {item.actionText}
-                  </Link>
-                  <button
-                    type="button"
-                    className="btn btn-outline btn-sm btn-icon"
-                    onClick={() => handleAddToCart(item.name)}
-                    title="Thêm vào giỏ"
-                    aria-label={`Thêm ${item.name} vào giỏ hàng`}
-                  >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path d="M5 12h14" />
-                      <path d="M12 5v14" />
-                    </svg>
-                  </button>
+                    <div
+                      style={{
+                        height: "12px",
+                        width: "40%",
+                        borderRadius: "4px",
+                        backgroundColor: "var(--secondary)",
+                      }}
+                    />
+                    <div
+                      style={{
+                        height: "16px",
+                        width: "80%",
+                        borderRadius: "4px",
+                        backgroundColor: "var(--secondary)",
+                      }}
+                    />
+                    <div
+                      style={{
+                        height: "18px",
+                        width: "50%",
+                        borderRadius: "4px",
+                        backgroundColor: "var(--secondary)",
+                      }}
+                    />
+                    <div
+                      style={{
+                        height: "36px",
+                        width: "100%",
+                        borderRadius: "6px",
+                        backgroundColor: "var(--secondary)",
+                        marginTop: "12px",
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              ))
+            : products.map((product) => {
+                const discountPercent = product.originalPrice
+                  ? Math.round(
+                      ((product.originalPrice - product.price) /
+                        product.originalPrice) *
+                        100
+                    )
+                  : null;
+
+                return (
+                  <div key={product.id} className="product-card">
+                    <div className="product-thumb-wrap">
+                      {discountPercent && discountPercent > 0 ? (
+                        <span className="badge badge-primary product-tag font-bold">
+                          -{discountPercent}%
+                        </span>
+                      ) : product.badge ? (
+                        <span className="badge badge-default product-tag">
+                          {product.badge}
+                        </span>
+                      ) : null}
+                      <Link
+                        href={`/products/${product.slug}`}
+                        className="block w-full h-full relative"
+                      >
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                          className="object-cover transition-transform duration-300"
+                        />
+                      </Link>
+                    </div>
+                    <div className="product-info">
+                      <span className="product-category">
+                        {product.categoryLabel}
+                      </span>
+                      <Link
+                        href={`/products/${product.slug}`}
+                        className="product-name hover:text-[var(--primary)] transition-colors"
+                        title={product.name}
+                      >
+                        {product.name}
+                      </Link>
+                      <div className="product-price-row">
+                        <span className="price-main">
+                          {formatVND(product.price)}
+                        </span>
+                        {product.originalPrice && (
+                          <span className="price-del">
+                            {formatVND(product.originalPrice)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="product-actions">
+                        <Link
+                          href={`/products/${product.slug}`}
+                          className="btn btn-secondary btn-sm"
+                          style={{ flex: 1, textAlign: "center" }}
+                        >
+                          Xem chi tiết
+                        </Link>
+                        <button
+                          type="button"
+                          className="btn btn-outline btn-sm btn-icon"
+                          onClick={() => handleAddToCart(product)}
+                          title="Thêm vào giỏ"
+                          aria-label={`Thêm ${product.name} vào giỏ hàng`}
+                        >
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M5 12h14" />
+                            <path d="M12 5v14" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
         </div>
       </div>
 
       {/* Toast Notification */}
       {toastText && (
-        <div className="toast-container">
-          <div className="toast show">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#10b981"
-              strokeWidth="2"
-            >
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-            <span>{toastText}</span>
-          </div>
+        <div
+          className="fixed bottom-6 right-6 z-50 bg-[#18181b] text-white border border-[#27272a] shadow-2xl px-5 py-3 rounded-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-3 duration-200"
+          role="status"
+          aria-live="polite"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-sm font-medium">{toastText}</span>
+          <button
+            onClick={() => setToastText(null)}
+            className="text-zinc-400 hover:text-white ml-2 text-xs"
+          >
+            ✕
+          </button>
         </div>
       )}
     </section>
