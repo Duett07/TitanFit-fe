@@ -32,7 +32,7 @@ export default function ProductDetailClient({
   initialProduct?: ProductDetail | null;
 }) {
   const router = useRouter();
-  const { addItem, openDrawer } = useCartStore();
+  const { addItem, closeDrawer, openDrawer } = useCartStore();
 
   const [product, setProduct] = useState<ProductDetail | null>(initialProduct || null);
   const [loading, setLoading] = useState(!initialProduct);
@@ -155,6 +155,7 @@ export default function ProductDetailClient({
     addItem(
       {
         productId: product.id,
+        variantId: currentVariant?.id,
         slug: product.slug,
         name: product.name,
         image: selectedImage || product.image,
@@ -178,6 +179,7 @@ export default function ProductDetailClient({
     addItem(
       {
         productId: product.id,
+        variantId: currentVariant?.id,
         slug: product.slug,
         name: product.name,
         image: selectedImage || product.image,
@@ -190,6 +192,7 @@ export default function ProductDetailClient({
       effectiveQty
     );
 
+    closeDrawer();
     router.push("/checkout");
   };
 

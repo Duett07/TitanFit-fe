@@ -4,10 +4,10 @@ export interface OrderItemRequest {
 }
 
 export interface CreateOrderRequest {
-  fullName: string;
+  customerName: string;
   phone: string;
   shippingAddress: string;
-  paymentMethod: "COD" | "BANK_TRANSFER" | "VNPAY" | string;
+  paymentMethod: "COD" | "VIETQR" | string;
   note?: string;
   items: OrderItemRequest[];
 }
@@ -24,12 +24,13 @@ export interface OrderItemResponse {
 export interface OrderResponse {
   id: string;
   orderCode: string;
-  fullName: string;
+  customerName: string;
   phone: string;
   shippingAddress: string;
+  note?: string;
   totalAmount: number;
-  status: string;
-  paymentMethod: string;
+  orderStatus: string;
+  paymentMethod: "COD" | "VIETQR" | string;
   paymentStatus: string;
   items: OrderItemResponse[];
   createdAt: string;
