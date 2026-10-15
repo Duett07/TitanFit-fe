@@ -11,8 +11,6 @@ import {
   Zap,
   Star,
   Award,
-  Truck,
-  RotateCcw,
 } from "lucide-react";
 
 export default function HeroBanner() {
@@ -148,54 +146,6 @@ export default function HeroBanner() {
                   Tăng Sức Bền • Phát Triển Cơ Bắp
                 </p>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 3 Thẻ Lợi Ích Dịch Vụ Cốt Lõi (Value Proposition Strip) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-16 pt-10 border-t border-border/80">
-          <div className="flex items-start gap-3.5 p-4 rounded-xl bg-card-surface border border-border hover:border-primary/40 transition-colors">
-            <div className="w-10 h-10 rounded-lg bg-secondary text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-              <ShieldCheck size={20} />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-foreground font-heading">
-                100% Chính Hãng Nhập Khẩu
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Tem kiểm định thể thao minh bạch, xuất xứ rõ ràng từ các nhà máy &amp;
-                thương hiệu thể hình hàng đầu.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3.5 p-4 rounded-xl bg-card-surface border border-border hover:border-primary/40 transition-colors">
-            <div className="w-10 h-10 rounded-lg bg-secondary text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-              <Truck size={20} />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-foreground font-heading">
-                Giao Hỏa Tốc 2 Giờ
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Đóng gói chuyên nghiệp, giao nhanh nội thành Hà Nội &amp; TP.HCM, hỗ trợ
-                đồng kiểm trước khi thanh toán.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3.5 p-4 rounded-xl bg-card-surface border border-border hover:border-primary/40 transition-colors">
-            <div className="w-10 h-10 rounded-lg bg-secondary text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-              <RotateCcw size={20} />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-foreground font-heading">
-                Đổi Trả 30 Ngày &amp; Bảo Hành
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Đổi size tận nơi hoàn toàn miễn phí, bảo hành đường chỉ đồ tập trọn đời,
-                an tâm tập luyện bứt phá.
-              </p>
             </div>
           </div>
         </div>
