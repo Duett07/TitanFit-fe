@@ -14,11 +14,13 @@ export interface CreateOrderRequest {
 
 export interface OrderItemResponse {
   id: string;
+  variantId?: string;
   productName: string;
   variantName: string;
   price: number;
   quantity: number;
-  subTotal: number;
+  totalPrice?: number;
+  subTotal?: number;
 }
 
 export interface OrderResponse {

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { useCartStore } from "@/stores/useCartStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { formatVND } from "@/data/products";
 import orderApiRequest from "@/apiRequest/order";
 import { CreateOrderRequest } from "@/types/order.type";
@@ -40,11 +41,29 @@ const FALLBACK_VARIANT_UUIDS: Record<string, string> = {
 export default function CheckoutPage() {
   const router = useRouter();
   const cartStore = useCartStore();
+  const { isAuthenticated } = useAuthStore();
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
 
   // Close drawer once when arriving at checkout page
   useEffect(() => {
     useCartStore.getState().closeDrawer();
   }, []);
+
+  // Enforce authentication: Redirect to login immediately if not logged in
+  useEffect(() => {
+    let hasUser = false;
+    if (typeof window !== "undefined") {
+      try {
+        hasUser = !!localStorage.getItem("user");
+      } catch {}
+    }
+
+    if (!isAuthenticated && !hasUser) {
+      router.replace("/login?redirect=/checkout");
+      return;
+    }
+    setIsAuthChecking(false);
+  }, [isAuthenticated, router]);
 
   // Hydration-safe store subscription
   const isHydrated = useSyncExternalStore(
@@ -84,7 +103,6 @@ export default function CheckoutPage() {
 
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormValues, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [authErrorModal, setAuthErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleChange = (
@@ -172,7 +190,8 @@ export default function CheckoutPage() {
       const anyErr = err as { response?: { status?: number; data?: { message?: string } } };
       if (anyErr?.response?.status === 401) {
         // Requires authentication
-        setAuthErrorModal(true);
+        router.replace("/login?redirect=/checkout");
+        return;
       } else {
         setErrorMessage(
           anyErr?.response?.data?.message ||
@@ -183,6 +202,18 @@ export default function CheckoutPage() {
       setIsSubmitting(false);
     }
   };
+
+  // Auth checking view
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center py-20 px-4">
+        <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sm font-medium text-muted-foreground">
+          Đang kiểm tra quyền truy cập...
+        </p>
+      </div>
+    );
+  }
 
   // Empty cart view
   if (isHydrated && items.length === 0) {
@@ -639,61 +670,6 @@ export default function CheckoutPage() {
           </div>
         </form>
       </div>
-
-      {/* Quick Login Modal if Session Expired (401) */}
-      {authErrorModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95">
-            <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-            </div>
-            <h3 className="text-lg font-bold text-center text-foreground mb-2">
-              Yêu Cầu Đăng Nhập
-            </h3>
-            <p className="text-xs text-muted-foreground text-center mb-6">
-              Vui lòng đăng nhập tài khoản của bạn để tiếp tục đặt hàng và theo dõi tiến trình giao hàng.
-            </p>
-
-            <div className="flex flex-col gap-3">
-              <button
-                type="button"
-                onClick={() => router.push("/login?redirect=/checkout")}
-                className="w-full py-3 px-4 rounded-xl font-semibold text-white bg-[var(--primary)] hover:bg-[var(--primary-dark)] transition-all shadow text-sm flex items-center justify-center gap-2"
-              >
-                <span>Đăng Nhập Tài Khoản</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleDemoOrder}
-                className="w-full py-2.5 px-4 rounded-xl font-semibold text-xs border border-border hover:bg-muted text-foreground transition-colors"
-              >
-                Tiếp Tục Đặt Hàng (Không Cần Đăng Nhập)
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setAuthErrorModal(false)}
-                className="w-full py-2 px-4 rounded-xl font-medium text-xs text-muted-foreground hover:bg-muted transition-colors"
-              >
-                Đóng
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
