@@ -25,12 +25,9 @@ export default function CartDrawer() {
     getTotalCount,
   } = useCartStore();
 
-  if (pathname?.startsWith("/admin")) {
-    return null;
-  }
-
   // Close drawer on ESC key
   useEffect(() => {
+    if (pathname?.startsWith("/admin")) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isDrawerOpen) {
         closeDrawer();
@@ -38,10 +35,11 @@ export default function CartDrawer() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isDrawerOpen, closeDrawer]);
+  }, [isDrawerOpen, closeDrawer, pathname]);
 
   // Lock body scroll when drawer is open
   useEffect(() => {
+    if (pathname?.startsWith("/admin")) return;
     if (isDrawerOpen) {
       document.body.style.overflow = "hidden";
     } else {
@@ -50,7 +48,11 @@ export default function CartDrawer() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isDrawerOpen]);
+  }, [isDrawerOpen, pathname]);
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   const handleCheckout = () => {
     closeDrawer();

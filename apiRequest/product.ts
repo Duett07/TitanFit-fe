@@ -49,6 +49,35 @@ export const productApiRequest = {
       )
     );
   },
+
+  adminGetAllProducts: (): Promise<AxiosResponse<ApiResponse<ProductSummaryDto[]>>> => {
+    return http.get<ApiResponse<ProductSummaryDto[]>>("/api/admin/products");
+  },
+
+  adminToggleActive: (
+    id: string,
+    active?: boolean
+  ): Promise<AxiosResponse<ApiResponse<ProductSummaryDto>>> => {
+    const query = active !== undefined ? `?active=${active}` : "";
+    return http.patch<ApiResponse<ProductSummaryDto>>(`/api/admin/products/${id}/toggle-active${query}`);
+  },
+
+  adminCreateProduct: (
+    body: import("@/types/product.type").AdminProductFormDto
+  ): Promise<AxiosResponse<ApiResponse<ProductDetailDto>>> => {
+    return http.post<ApiResponse<ProductDetailDto>>("/api/admin/products", body);
+  },
+
+  adminUpdateProduct: (
+    id: string,
+    body: import("@/types/product.type").AdminProductFormDto
+  ): Promise<AxiosResponse<ApiResponse<ProductDetailDto>>> => {
+    return http.put<ApiResponse<ProductDetailDto>>(`/api/admin/products/${id}`, body);
+  },
+
+  adminDeleteProduct: (id: string): Promise<AxiosResponse<ApiResponse<void>>> => {
+    return http.delete<ApiResponse<void>>(`/api/admin/products/${id}`);
+  },
 };
 
 export default productApiRequest;
