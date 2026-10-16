@@ -2,12 +2,13 @@
 
 import React, { useEffect } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useCartStore } from "@/stores/useCartStore";
 import { formatVND } from "@/data/products";
 
 export default function CartDrawer() {
   const router = useRouter();
+  const pathname = usePathname();
   const isMounted = React.useSyncExternalStore(
     () => () => {},
     () => true,
@@ -23,6 +24,10 @@ export default function CartDrawer() {
     getTotalPrice,
     getTotalCount,
   } = useCartStore();
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   // Close drawer on ESC key
   useEffect(() => {
