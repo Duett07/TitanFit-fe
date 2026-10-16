@@ -12,6 +12,19 @@ export const orderApiRequest = {
     ),
   getOrderByCode: (orderCode: string) =>
     http.get<ApiResponse<OrderResponse>>(`/api/orders/${orderCode}`),
+  getAllOrders: (cookieHeader?: string) =>
+    http.get<ApiResponse<OrderResponse[]>>(
+      "/api/admin/orders",
+      cookieHeader ? { headers: { Cookie: cookieHeader } } : {}
+    ),
+  updateOrderStatus: (
+    orderId: string,
+    newStatus: "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED"
+  ) =>
+    http.patch<ApiResponse<OrderResponse>>(
+      `/api/admin/orders/${orderId}/status?newStatus=${newStatus}`,
+      { newStatus }
+    ),
 };
 
 export default orderApiRequest;
