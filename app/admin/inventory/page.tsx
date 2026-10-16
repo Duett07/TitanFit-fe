@@ -5,6 +5,7 @@ import Link from "next/link";
 import productApiRequest from "@/apiRequest/product";
 import { ProductSummaryDto, VariantDto } from "@/types/product.type";
 import { formatVND } from "@/data/products";
+import { useAutoSync } from "@/lib/sync";
 
 interface LowStockItem {
   id: string;
@@ -22,9 +23,11 @@ export default function AdminInventoryPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [threshold, setThreshold] = useState<number>(10);
 
-  const fetchInventory = useCallback(async () => {
-    setIsLoading(true);
-    setErrorMessage(null);
+  const fetchInventory = useCallback(async (isSilent = false) => {
+    if (!isSilent) {
+      setIsLoading(true);
+      setErrorMessage(null);
+    }
     try {
       const res = await productApiRequest.getProducts({ size: 100 });
       const products: ProductSummaryDto[] = res.data?.data?.content || [];
@@ -51,19 +54,31 @@ export default function AdminInventoryPage() {
       setInventory(items);
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
-      setErrorMessage(
-        errorObj.response?.data?.message ||
-        errorObj.message ||
-        "Không thể tải dữ liệu tồn kho từ backend."
-      );
+      if (!isSilent) {
+        setErrorMessage(
+          errorObj.response?.data?.message ||
+          errorObj.message ||
+          "Không thể tải dữ liệu tồn kho từ backend."
+        );
+      }
     } finally {
-      setIsLoading(false);
+      if (!isSilent) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
     fetchInventory();
   }, [fetchInventory]);
+
+  // Real-time synchronization: Auto-refresh inventory when stock changes or products are saved
+  useAutoSync({
+    eventTypes: ["INVENTORY_UPDATED", "PRODUCT_UPDATED", "ORDER_UPDATED"],
+    onSync: () => fetchInventory(true),
+    intervalMs: 6000,
+    enableFocusSync: true,
+  });
 
   const alertItems = useMemo(() => {
     return inventory.filter((item) => item.stock <= threshold);
@@ -90,7 +105,7 @@ export default function AdminInventoryPage() {
         <div className="flex items-center gap-2 self-start md:self-auto">
           <button
             type="button"
-            onClick={fetchInventory}
+            onClick={() => fetchInventory(false)}
             disabled={isLoading}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-card hover:bg-secondary text-foreground border border-border transition-colors cursor-pointer disabled:opacity-50"
           >
@@ -125,7 +140,7 @@ export default function AdminInventoryPage() {
           <span>{errorMessage}</span>
           <button
             type="button"
-            onClick={fetchInventory}
+            onClick={() => fetchInventory(false)}
             className="px-3 py-1 rounded bg-destructive text-white font-bold"
           >
             Thử Lại

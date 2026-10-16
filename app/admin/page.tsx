@@ -6,6 +6,7 @@ import orderApiRequest from "@/apiRequest/order";
 import productApiRequest from "@/apiRequest/product";
 import { ProductSummaryDto, VariantDto } from "@/types/product.type";
 import { formatVND } from "@/data/products";
+import { emitSyncEvent, useAutoSync } from "@/lib/sync";
 
 interface UrgentOrder {
   id: string;
@@ -139,6 +140,14 @@ export default function AdminDashboardPage() {
     loadDashboardData();
   }, [loadDashboardData]);
 
+  // Real-time synchronization: Auto-refresh dashboard KPIs and urgent orders
+  useAutoSync({
+    eventTypes: ["ORDER_UPDATED", "PRODUCT_UPDATED", "INVENTORY_UPDATED"],
+    onSync: () => loadDashboardData(true),
+    intervalMs: 5000,
+    enableFocusSync: true,
+  });
+
   // KPI Calculations from REAL database data
   const totalRevenue = useMemo(() => {
     return orders
@@ -252,6 +261,13 @@ export default function AdminDashboardPage() {
       } else {
         showToast(`Đã xác nhận đơn #${orderCode}.`, "info");
       }
+
+      // Phát sự kiện đồng bộ thời gian thực sang tab Buyer và các trang khác
+      emitSyncEvent("ORDER_UPDATED", { orderCode, status: newStatus });
+      if (newStatus === "CANCELLED") {
+        emitSyncEvent("INVENTORY_UPDATED");
+      }
+
       // Re-sync with backend silently
       loadDashboardData(true);
     } catch (e: unknown) {

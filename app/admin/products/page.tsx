@@ -12,6 +12,7 @@ import {
 } from "@/types/product.type";
 import { CategoryDto } from "@/types/category.type";
 import { formatVND } from "@/data/products";
+import { emitSyncEvent, useAutoSync } from "@/lib/sync";
 
 // Mẫu ảnh sẵn cho tiện chọn nhanh khi thêm sản phẩm mới
 const SAMPLE_IMAGES = [
@@ -108,6 +109,14 @@ export default function AdminProductsPage() {
     fetchProducts();
   }, [fetchCategories, fetchProducts]);
 
+  // Real-time synchronization: Auto-refresh products when updated from other tabs or actions
+  useAutoSync({
+    eventTypes: ["PRODUCT_UPDATED", "INVENTORY_UPDATED"],
+    onSync: () => fetchProducts(true),
+    intervalMs: 6000,
+    enableFocusSync: true,
+  });
+
   // Bật/Tắt trạng thái is_active trực tiếp trên bảng
   const handleToggleActive = async (p: ProductSummaryDto) => {
     const currentActive = p.isActive !== undefined ? p.isActive : true;
@@ -127,6 +136,8 @@ export default function AdminProductsPage() {
       } else {
         showToast(`Đã chuyển sản phẩm "${p.name}" sang TẠM ẨN!`, "info");
       }
+      // Bắn sự kiện đồng bộ tức thời sang trang chủ và trang danh mục sản phẩm của Buyer
+      emitSyncEvent("PRODUCT_UPDATED", { productId: p.id, isActive: nextActive });
     } catch (err) {
       console.error("Toggle active error:", err);
       // Revert lại nếu có lỗi
@@ -307,6 +318,9 @@ export default function AdminProductsPage() {
         showToast(`Đã thêm mới sản phẩm "${payload.name}" thành công!`, "success");
       }
       closeModal();
+      // Bắn sự kiện đồng bộ để trang Buyer cập nhật sản phẩm mới ngay lập tức
+      emitSyncEvent("PRODUCT_UPDATED");
+      emitSyncEvent("INVENTORY_UPDATED");
       await fetchProducts(true);
     } catch (err: unknown) {
       console.error("Save product error:", err);
@@ -333,6 +347,8 @@ export default function AdminProductsPage() {
     try {
       await productApiRequest.adminDeleteProduct(p.id);
       showToast(`Đã xóa sản phẩm "${p.name}" thành công!`, "success");
+      emitSyncEvent("PRODUCT_UPDATED");
+      emitSyncEvent("INVENTORY_UPDATED");
       fetchProducts(true);
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string } }; message?: string };

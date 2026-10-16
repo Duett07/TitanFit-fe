@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatVND } from "@/data/products";
 import orderApiRequest from "@/apiRequest/order";
 import { OrderResponse } from "@/types/order.type";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useAutoSync } from "@/lib/sync";
 
 interface OrderSuccessClientProps {
   orderCode: string;
@@ -44,46 +45,48 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
     setIsAuthChecking(false);
   }, [isAuthenticated, orderCode, router]);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function fetchOrder() {
-      try {
-        const res = await orderApiRequest.getOrderByCode(orderCode);
-        if (res.data?.data && isMounted) {
-          setOrder(res.data.data);
-          setLoading(false);
-          return;
-        }
-      } catch (err) {
-        console.warn("Could not fetch order from backend via orderCode:", err);
+  const fetchOrder = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      const res = await orderApiRequest.getOrderByCode(orderCode);
+      if (res.data?.data) {
+        setOrder(res.data.data);
+        if (!silent) setLoading(false);
+        return;
       }
-
-      // Fallback display if backend session is not available
-      if (isMounted) {
-        setOrder({
-          id: "temp-id",
-          orderCode: orderCode,
-          customerName: "Quý Khách Hàng",
-          phone: "0987654321",
-          shippingAddress: "Địa chỉ giao hàng đã đăng ký",
-          totalAmount: 1550000,
-          paymentMethod: "VIETQR",
-          paymentStatus: "UNPAID",
-          orderStatus: "PENDING",
-          createdAt: new Date().toISOString(),
-          items: [],
-        });
-        setLoading(false);
-      }
+    } catch (err) {
+      console.warn("Could not fetch order from backend via orderCode:", err);
     }
 
-    fetchOrder();
-
-    return () => {
-      isMounted = false;
-    };
+    if (!silent) {
+      setOrder({
+        id: "temp-id",
+        orderCode: orderCode,
+        customerName: "Quý Khách Hàng",
+        phone: "0987654321",
+        shippingAddress: "Địa chỉ giao hàng đã đăng ký",
+        totalAmount: 1550000,
+        paymentMethod: "VIETQR",
+        paymentStatus: "UNPAID",
+        orderStatus: "PENDING",
+        createdAt: new Date().toISOString(),
+        items: [],
+      });
+      setLoading(false);
+    }
   }, [orderCode]);
+
+  useEffect(() => {
+    fetchOrder(false);
+  }, [fetchOrder]);
+
+  // Real-time synchronization: Auto-refresh order status when updated by admin or on tab focus
+  useAutoSync({
+    eventTypes: ["ORDER_UPDATED"],
+    onSync: () => fetchOrder(true),
+    intervalMs: 5000,
+    enableFocusSync: true,
+  });
 
   const handleCopy = (text: string, fieldName: string) => {
     navigator.clipboard.writeText(text);

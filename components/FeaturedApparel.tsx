@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatVND, ProductDetail } from "@/data/products";
 import productApiRequest from "@/apiRequest/product";
 import { transformBackendProductSummary } from "@/lib/backend-adapter";
 import { useCartStore } from "@/stores/useCartStore";
+import { useAutoSync } from "@/lib/sync";
 
 interface FeaturedApparelProps {
   initialProducts?: ProductDetail[];
@@ -24,43 +25,44 @@ export default function FeaturedApparel({
   const [toastText, setToastText] = useState<string | null>(null);
   const { addItem } = useCartStore();
 
-  useEffect(() => {
-    if (initialProducts && initialProducts.length > 0) {
-      return;
-    }
-
-    let isMounted = true;
-    async function loadApparel() {
-      try {
-        const res = await productApiRequest.getProducts({ page: 0, size: 50 });
-        const content = res.data?.data?.content;
-        if (
-          content &&
-          Array.isArray(content) &&
-          content.length > 0 &&
-          isMounted
-        ) {
-          const all = content.map(transformBackendProductSummary);
-          const apparel = all
-            .filter((p) => p.category === "apparel")
-            .slice(0, 4);
-          setProducts(apparel);
-        }
-      } catch (err) {
-        console.warn(
-          "Failed to fetch featured apparel via productApiRequest:",
-          err
-        );
-      } finally {
-        if (isMounted) setLoading(false);
+  const loadApparel = useCallback(async () => {
+    try {
+      const res = await productApiRequest.getProducts({ page: 0, size: 50 });
+      const content = res.data?.data?.content;
+      if (
+        content &&
+        Array.isArray(content) &&
+        content.length > 0
+      ) {
+        const all = content.map(transformBackendProductSummary);
+        const apparel = all
+          .filter((p) => p.category === "apparel")
+          .slice(0, 4);
+        setProducts(apparel);
       }
+    } catch (err) {
+      console.warn(
+        "Failed to fetch featured apparel via productApiRequest:",
+        err
+      );
+    } finally {
+      setLoading(false);
     }
+  }, []);
 
-    loadApparel();
-    return () => {
-      isMounted = false;
-    };
-  }, [initialProducts]);
+  useEffect(() => {
+    if (!initialProducts || initialProducts.length === 0) {
+      loadApparel();
+    }
+  }, [initialProducts, loadApparel]);
+
+  // Tự động đồng bộ thời gian thực khi Admin thêm/sửa sản phẩm hoặc khi người dùng quay lại tab Buyer
+  useAutoSync({
+    eventTypes: ["PRODUCT_UPDATED"],
+    onSync: loadApparel,
+    intervalMs: 8000,
+    enableFocusSync: true,
+  });
 
   const handleAddToCart = (product: ProductDetail) => {
     addItem({
