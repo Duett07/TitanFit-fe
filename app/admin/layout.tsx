@@ -5,6 +5,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/useAuthStore";
 import Logo from "@/components/Logo";
+import orderApiRequest from "@/apiRequest/order";
+import productApiRequest from "@/apiRequest/product";
+import { ProductSummaryDto, VariantDto } from "@/types/product.type";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -24,27 +27,9 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
   {
     id: "notif-1",
     type: "order",
-    title: "Đơn hàng mới #TF-849201",
-    description: "Khách đặt Whey Gold + Áo Pro-Combat (2.490.000₫)",
-    time: "5 phút trước",
-    isRead: false,
-    link: "/admin/orders",
-  },
-  {
-    id: "notif-2",
-    type: "inventory",
-    title: "Cảnh báo tồn kho SKU",
-    description: "Whey vị Dâu 2lbs chỉ còn 2 hộp trong kho!",
-    time: "15 phút trước",
-    isRead: false,
-    link: "/admin/inventory",
-  },
-  {
-    id: "notif-3",
-    type: "payment",
-    title: "Thanh toán VietQR hoàn tất",
-    description: "Đơn hàng #TF-712894 đã nhận tiền 1.850.000₫",
-    time: "1 giờ trước",
+    title: "Đơn hàng mới trong hệ thống",
+    description: "Có đơn hàng mới đang chờ xử lý và xuất kho",
+    time: "Vừa xong",
     isRead: false,
     link: "/admin/orders",
   },
@@ -60,6 +45,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [pendingCount, setPendingCount] = useState<number>(0);
+  const [lowStockCount, setLowStockCount] = useState<number>(0);
 
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -143,6 +130,42 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     router.replace("/login");
   };
 
+  // Sync real counts from backend
+  useEffect(() => {
+    if (!isCheckingRole) {
+      orderApiRequest
+        .getAllOrders()
+        .then((res) => {
+          const raw = res.data?.data || [];
+          const count = raw.filter(
+            (o) =>
+              (o.orderStatus || "").toUpperCase() === "PENDING" ||
+              (o.orderStatus || "").toUpperCase() === "CONFIRMED"
+          ).length;
+          setPendingCount(count);
+        })
+        .catch(() => {});
+
+      productApiRequest
+        .getProducts({ size: 100 })
+        .then((res) => {
+          const products: ProductSummaryDto[] = res.data?.data?.content || [];
+          let count = 0;
+          products.forEach((p: ProductSummaryDto) => {
+            if (p.variants && Array.isArray(p.variants)) {
+              p.variants.forEach((v: VariantDto) => {
+                if (v.stockQuantity !== undefined && v.stockQuantity < 10) {
+                  count++;
+                }
+              });
+            }
+          });
+          setLowStockCount(count);
+        })
+        .catch(() => {});
+    }
+  }, [isCheckingRole, pathname]);
+
   // Loading state while checking admin permissions
   if (isCheckingRole) {
     return (
@@ -182,11 +205,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1Z" />
         </svg>
       ),
-      badge: (
+      badge: pendingCount > 0 ? (
         <span className="ml-auto text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/15 text-primary">
-          3
+          {pendingCount}
         </span>
-      ),
+      ) : null,
       isActive: pathname.startsWith("/admin/orders"),
     },
     {
@@ -216,11 +239,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <line x1="3" x2="3.01" y1="18" y2="18" />
         </svg>
       ),
-      badge: (
+      badge: lowStockCount > 0 ? (
         <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
-          <span>⚠️</span> 2 cảnh báo
+          <span>⚠️</span> {lowStockCount} SKU
         </span>
-      ),
+      ) : null,
       isActive: pathname.startsWith("/admin/inventory"),
     },
   ];
