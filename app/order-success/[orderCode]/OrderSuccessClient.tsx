@@ -2,9 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { formatVND } from "@/data/products";
 import orderApiRequest from "@/apiRequest/order";
 import { OrderResponse } from "@/types/order.type";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 interface OrderSuccessClientProps {
   orderCode: string;
@@ -19,9 +21,28 @@ const BANK_CONFIG = {
 };
 
 export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProps) {
+  const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [order, setOrder] = useState<OrderResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  // Enforce authentication: Redirect to login immediately if not logged in
+  useEffect(() => {
+    let hasUser = false;
+    if (typeof window !== "undefined") {
+      try {
+        hasUser = !!localStorage.getItem("user");
+      } catch {}
+    }
+
+    if (!isAuthenticated && !hasUser) {
+      router.replace(`/login?redirect=/order-success/${orderCode}`);
+      return;
+    }
+    setIsAuthChecking(false);
+  }, [isAuthenticated, orderCode, router]);
 
   useEffect(() => {
     let isMounted = true;
@@ -70,12 +91,12 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
     setTimeout(() => setCopiedField(null), 2500);
   };
 
-  if (loading) {
+  if (isAuthChecking || loading) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center py-20 px-4">
-        <div className="w-10 h-10 border-3 border-[var(--primary)] border-t-transparent rounded-full animate-spin mb-4" />
+        <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin mb-4" />
         <p className="text-sm font-medium text-muted-foreground">
-          Đang xác nhận mã đơn hàng #{orderCode}...
+          {isAuthChecking ? "Đang kiểm tra quyền truy cập..." : `Đang xác nhận mã đơn hàng #${orderCode}...`}
         </p>
       </div>
     );
@@ -311,13 +332,43 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
           </div>
         </div>
 
+        {/* Order Items Breakdown */}
+        {order?.items && order.items.length > 0 && (
+          <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-sm">
+            <h3 className="text-base font-bold text-foreground pb-3 mb-4 border-b border-border flex items-center justify-between">
+              <span>Sản Phẩm Trong Đơn Hàng ({order.items.length})</span>
+              <span className="text-xs text-muted-foreground font-normal">
+                Tổng cộng: <strong className="text-foreground font-bold">{formatVND(totalAmount)}</strong>
+              </span>
+            </h3>
+            <div className="divide-y divide-border/60">
+              {order.items.map((item, index) => (
+                <div key={item.id || index} className="py-3.5 flex items-center justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-foreground truncate">{item.productName}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.variantName || "Tiêu Chuẩn"}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Số lượng: x{item.quantity}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-bold text-primary">
+                      {formatVND((Number(item.price) || 0) * (item.quantity || 1))}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {formatVND(Number(item.price) || 0)} / món
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
           <Link
-            href="/products"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3.5 px-8 rounded-xl font-bold text-white bg-[var(--primary)] hover:bg-[var(--primary-dark)] transition-all shadow-md active:scale-95 text-sm"
+            href={`/order-tracking?order=${orderCode}`}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3.5 px-8 rounded-xl font-bold text-white bg-primary hover:bg-primary/90 transition-all shadow-md active:scale-95 text-sm cursor-pointer"
           >
-            <span>Tiếp Tục Mua Sắm</span>
             <svg
               className="w-4 h-4"
               fill="none"
@@ -328,13 +379,20 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M14 5l7 7m0 0l-7 7m7-7H3"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
               />
             </svg>
+            <span>Theo Dõi Hành Trình Đơn Hàng</span>
+          </Link>
+          <Link
+            href="/products"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl font-bold text-foreground bg-secondary hover:bg-secondary/80 border border-border transition-all text-sm"
+          >
+            <span>Tiếp Tục Mua Sắm</span>
           </Link>
           <Link
             href="/"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3.5 px-8 rounded-xl font-semibold text-foreground bg-card border border-border hover:bg-muted transition-colors text-sm"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl font-semibold text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted transition-colors text-sm"
           >
             <span>Về Trang Chủ</span>
           </Link>
