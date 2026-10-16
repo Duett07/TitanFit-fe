@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import orderApiRequest from "@/apiRequest/order";
 import { formatVND } from "@/data/products";
+import { emitSyncEvent, useAutoSync } from "@/lib/sync";
 
 export interface AdminOrderItem {
   name: string;
@@ -146,6 +147,14 @@ export default function AdminOrdersPage() {
     fetchOrders();
   }, [fetchOrders]);
 
+  // Real-time synchronization: Auto-refresh when new orders arrive or are modified elsewhere
+  useAutoSync({
+    eventTypes: ["ORDER_UPDATED"],
+    onSync: () => fetchOrders(true),
+    intervalMs: 5000,
+    enableFocusSync: true,
+  });
+
   // Cập nhật trạng thái đơn hàng (CONFIRMED, SHIPPING, COMPLETED, CANCELLED)
   const handleUpdateStatus = async (
     orderCode: string,
@@ -191,6 +200,13 @@ export default function AdminOrdersPage() {
       }
 
       setToastMessage({ type: toastType, text: msg });
+
+      // Phát sự kiện đồng bộ thời gian thực đến tất cả các tab (Trang Tra cứu đơn của Buyer, Dashboard Admin, etc.)
+      emitSyncEvent("ORDER_UPDATED", { orderCode, status: newStatus });
+      if (newStatus === "CANCELLED") {
+        emitSyncEvent("INVENTORY_UPDATED");
+      }
+
       // Đồng bộ lại dữ liệu thật từ backend sau khi update thành công
       await fetchOrders(true);
     } catch (err: unknown) {

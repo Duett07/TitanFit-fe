@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -8,6 +8,7 @@ import Logo from "@/components/Logo";
 import orderApiRequest from "@/apiRequest/order";
 import productApiRequest from "@/apiRequest/product";
 import { ProductSummaryDto, VariantDto } from "@/types/product.type";
+import { useAutoSync } from "@/lib/sync";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -131,40 +132,52 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   // Sync real counts from backend
-  useEffect(() => {
-    if (!isCheckingRole) {
-      orderApiRequest
-        .getAllOrders()
-        .then((res) => {
-          const raw = res.data?.data || [];
-          const count = raw.filter(
-            (o) =>
-              (o.orderStatus || "").toUpperCase() === "PENDING" ||
-              (o.orderStatus || "").toUpperCase() === "CONFIRMED"
-          ).length;
-          setPendingCount(count);
-        })
-        .catch(() => {});
+  const refreshCounts = useCallback(() => {
+    if (isCheckingRole) return;
 
-      productApiRequest
-        .getProducts({ size: 100 })
-        .then((res) => {
-          const products: ProductSummaryDto[] = res.data?.data?.content || [];
-          let count = 0;
-          products.forEach((p: ProductSummaryDto) => {
-            if (p.variants && Array.isArray(p.variants)) {
-              p.variants.forEach((v: VariantDto) => {
-                if (v.stockQuantity !== undefined && v.stockQuantity < 10) {
-                  count++;
-                }
-              });
-            }
-          });
-          setLowStockCount(count);
-        })
-        .catch(() => {});
-    }
-  }, [isCheckingRole, pathname]);
+    orderApiRequest
+      .getAllOrders()
+      .then((res) => {
+        const raw = res.data?.data || [];
+        const count = raw.filter(
+          (o) =>
+            (o.orderStatus || "").toUpperCase() === "PENDING" ||
+            (o.orderStatus || "").toUpperCase() === "CONFIRMED"
+        ).length;
+        setPendingCount(count);
+      })
+      .catch(() => {});
+
+    productApiRequest
+      .getProducts({ size: 100 })
+      .then((res) => {
+        const products: ProductSummaryDto[] = res.data?.data?.content || [];
+        let count = 0;
+        products.forEach((p: ProductSummaryDto) => {
+          if (p.variants && Array.isArray(p.variants)) {
+            p.variants.forEach((v: VariantDto) => {
+              if (v.stockQuantity !== undefined && v.stockQuantity < 10) {
+                count++;
+              }
+            });
+          }
+        });
+        setLowStockCount(count);
+      })
+      .catch(() => {});
+  }, [isCheckingRole]);
+
+  useEffect(() => {
+    refreshCounts();
+  }, [refreshCounts, pathname]);
+
+  // Real-time synchronization for admin layout badges
+  useAutoSync({
+    eventTypes: ["ORDER_UPDATED", "PRODUCT_UPDATED", "INVENTORY_UPDATED"],
+    onSync: refreshCounts,
+    intervalMs: 8000,
+    enableFocusSync: true,
+  });
 
   // Loading state while checking admin permissions
   if (isCheckingRole) {

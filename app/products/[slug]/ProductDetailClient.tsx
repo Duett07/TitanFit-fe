@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -12,6 +12,7 @@ import {
 import { useCartStore } from "@/stores/useCartStore";
 import productApiRequest from "@/apiRequest/product";
 import { transformBackendProductDetail, SLUG_ALIASES } from "@/lib/backend-adapter";
+import { useAutoSync } from "@/lib/sync";
 
 // Helper to extract initial options
 function getInitialOptions(p: ProductDetail): Record<string, string> {
@@ -46,54 +47,59 @@ export default function ProductDetailClient({
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Fetch product from API with fallback to local curated data
-  useEffect(() => {
-    let isMounted = true;
+  const loadProduct = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
 
-    async function loadProduct() {
-      if (initialProduct) {
-        setProduct(initialProduct);
-        setSelectedImage(initialProduct.images[0] || initialProduct.image);
-        setSelectedOptions(getInitialOptions(initialProduct));
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const targetSlug = SLUG_ALIASES[slug] || slug;
-        const res = await productApiRequest.getProductBySlug(targetSlug);
-        const data = res.data?.data;
-        if (data && isMounted) {
-          const transformed = transformBackendProductDetail(data);
-          setProduct(transformed);
+    try {
+      const targetSlug = SLUG_ALIASES[slug] || slug;
+      const res = await productApiRequest.getProductBySlug(targetSlug);
+      const data = res.data?.data;
+      if (data) {
+        const transformed = transformBackendProductDetail(data);
+        setProduct(transformed);
+        if (!silent) {
           setSelectedImage(transformed.images[0] || transformed.image);
           setSelectedOptions(getInitialOptions(transformed));
           setQuantity(1);
-          setLoading(false);
-          return;
         }
-      } catch (err) {
-        console.warn("API fetch error via productApiRequest, falling back to local data:", err);
+        if (!silent) setLoading(false);
+        return;
       }
-
-      // Fallback
-      const fallback = getProductDetail(slug);
-      if (isMounted) {
-        setProduct(fallback || null);
-        if (fallback) {
-          setSelectedImage(fallback.images[0] || fallback.image);
-          setSelectedOptions(getInitialOptions(fallback));
-          setQuantity(1);
-        }
-        setLoading(false);
-      }
+    } catch (err) {
+      console.warn("API fetch error via productApiRequest, falling back to local data:", err);
     }
 
-    loadProduct();
+    if (!silent) {
+      // Fallback
+      const fallback = getProductDetail(slug);
+      setProduct(fallback || null);
+      if (fallback) {
+        setSelectedImage(fallback.images[0] || fallback.image);
+        setSelectedOptions(getInitialOptions(fallback));
+        setQuantity(1);
+      }
+      setLoading(false);
+    }
+  }, [slug]);
 
-    return () => {
-      isMounted = false;
-    };
-  }, [slug, initialProduct]);
+  useEffect(() => {
+    if (initialProduct) {
+      setProduct(initialProduct);
+      setSelectedImage(initialProduct.images[0] || initialProduct.image);
+      setSelectedOptions(getInitialOptions(initialProduct));
+      setLoading(false);
+    } else {
+      loadProduct(false);
+    }
+  }, [initialProduct, loadProduct]);
+
+  // Real-time synchronization: Auto-refresh product details and stock when modified in admin
+  useAutoSync({
+    eventTypes: ["PRODUCT_UPDATED"],
+    onSync: () => loadProduct(true),
+    intervalMs: 8000,
+    enableFocusSync: true,
+  });
 
   // Find the exact matching variant SKU based on selected options
   const currentVariant: ProductVariantSKU | undefined = useMemo(() => {

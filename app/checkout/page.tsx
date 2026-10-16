@@ -10,6 +10,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { formatVND } from "@/data/products";
 import orderApiRequest from "@/apiRequest/order";
 import { CreateOrderRequest } from "@/types/order.type";
+import { emitSyncEvent } from "@/lib/sync";
 
 // Zod Validation Schema
 const checkoutSchema = z.object({
@@ -180,6 +181,9 @@ export default function CheckoutPage() {
       if (createdOrder?.orderCode) {
         // Clear cart
         cartStore.clearCart();
+        // Thông báo cho tất cả các tab Admin (Overview, Orders, Inventory) cập nhật ngay lập tức
+        emitSyncEvent("ORDER_UPDATED", { orderCode: createdOrder.orderCode });
+        emitSyncEvent("INVENTORY_UPDATED");
         // Redirect to success page
         router.push(`/order-success/${createdOrder.orderCode}`);
       } else {

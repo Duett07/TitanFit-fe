@@ -14,6 +14,7 @@ import {
 } from "@/data/products";
 import productApiRequest from "@/apiRequest/product";
 import { transformBackendProductSummary } from "@/lib/backend-adapter";
+import { useAutoSync } from "@/lib/sync";
 
 // Fallback loader while searchParams resolve
 function ProductsLoading() {
@@ -134,34 +135,35 @@ function ProductsContent() {
   const [productList, setProductList] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  React.useEffect(() => {
-    let isMounted = true;
-    async function loadProducts() {
-      setIsLoading(true);
-      try {
-        const res = await productApiRequest.getProducts({ page: 0, size: 50 });
-        const content = res.data?.data?.content;
-        if (content && Array.isArray(content) && content.length > 0 && isMounted) {
-          setProductList(content.map(transformBackendProductSummary));
-        } else if (isMounted) {
-          setProductList(PRODUCTS);
-        }
-      } catch (err) {
-        console.warn("Error fetching products via productApiRequest:", err);
-        if (isMounted) {
-          setProductList(PRODUCTS);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+  const loadProducts = React.useCallback(async (silent = false) => {
+    if (!silent) setIsLoading(true);
+    try {
+      const res = await productApiRequest.getProducts({ page: 0, size: 50 });
+      const content = res.data?.data?.content;
+      if (content && Array.isArray(content) && content.length > 0) {
+        setProductList(content.map(transformBackendProductSummary));
+      } else {
+        setProductList(PRODUCTS);
       }
+    } catch (err) {
+      console.warn("Error fetching products via productApiRequest:", err);
+      setProductList(PRODUCTS);
+    } finally {
+      if (!silent) setIsLoading(false);
     }
-    loadProducts();
-    return () => {
-      isMounted = false;
-    };
   }, []);
+
+  React.useEffect(() => {
+    loadProducts(false);
+  }, [loadProducts]);
+
+  // Tự động làm mới danh sách sản phẩm khi Admin thêm/sửa/tắt bật hoặc khi quay lại tab
+  useAutoSync({
+    eventTypes: ["PRODUCT_UPDATED"],
+    onSync: () => loadProducts(true),
+    intervalMs: 8000,
+    enableFocusSync: true,
+  });
 
   // Category item counts derived from loaded products
   const categoryCounts = useMemo(() => {

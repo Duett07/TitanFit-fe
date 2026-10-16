@@ -9,6 +9,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { useCartStore } from "@/stores/useCartStore";
 import orderApiRequest from "@/apiRequest/order";
 import { OrderResponse } from "@/types/order.type";
+import { useAutoSync } from "@/lib/sync";
 
 export interface TrackingOrderItem {
   id?: string;
@@ -233,8 +234,10 @@ export default function OrderTrackingClient() {
   };
 
   // 1. Fetch real order data directly from backend API
-  const loadInitialData = useCallback(async () => {
-    setIsLoading(true);
+  const loadInitialData = useCallback(async (silent = false) => {
+    if (!silent) {
+      setIsLoading(true);
+    }
 
     try {
       // 1. Fetch real orders of the authenticated user from Backend API
@@ -251,7 +254,6 @@ export default function OrderTrackingClient() {
           (o) => o.code.toLowerCase() === requestedOrderParam.toLowerCase()
         );
         if (!found) {
-          // If not in user's list (e.g. recently placed or looked up), fetch directly by orderCode from backend
           try {
             const singleRes = await orderApiRequest.getOrderByCode(requestedOrderParam);
             if (singleRes.data?.data) {
@@ -266,21 +268,33 @@ export default function OrderTrackingClient() {
 
       setOrders(apiOrders);
 
-      // Determine active order
-      if (requestedOrderParam) {
-        const found = apiOrders.find(
-          (o) => o.code.toLowerCase() === requestedOrderParam.toLowerCase()
-        );
-        setActiveOrder(found || apiOrders[0] || null);
-      } else {
-        setActiveOrder(apiOrders[0] || null);
-      }
+      // Determine active order preserving current selection
+      setActiveOrder((prev) => {
+        if (prev?.code) {
+          const updatedCurrent = apiOrders.find(
+            (o) => o.code.toLowerCase() === prev.code.toLowerCase()
+          );
+          if (updatedCurrent) return updatedCurrent;
+        }
+
+        if (requestedOrderParam) {
+          const found = apiOrders.find(
+            (o) => o.code.toLowerCase() === requestedOrderParam.toLowerCase()
+          );
+          return found || apiOrders[0] || null;
+        }
+        return apiOrders[0] || null;
+      });
     } catch (err) {
       console.warn("Could not fetch user orders from backend:", err);
-      setOrders([]);
-      setActiveOrder(null);
+      if (!silent) {
+        setOrders([]);
+        setActiveOrder(null);
+      }
     } finally {
-      setIsLoading(false);
+      if (!silent) {
+        setIsLoading(false);
+      }
     }
   }, [requestedOrderParam]);
 
@@ -288,7 +302,7 @@ export default function OrderTrackingClient() {
     let isMounted = true;
 
     async function init() {
-      await loadInitialData();
+      await loadInitialData(false);
     }
 
     if (isAuthenticated || (typeof window !== "undefined" && !!localStorage.getItem("user"))) {
@@ -299,6 +313,15 @@ export default function OrderTrackingClient() {
       isMounted = false;
     };
   }, [isAuthenticated, loadInitialData]);
+
+  // Real-time synchronization: Auto-refresh when admin changes order status,
+  // when switching back to tab (focus/visibility), and periodic heartbeat
+  useAutoSync({
+    eventTypes: ["ORDER_UPDATED"],
+    onSync: () => loadInitialData(true),
+    intervalMs: 4000,
+    enableFocusSync: true,
+  });
 
 
   // Tab Counts
