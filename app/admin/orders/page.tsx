@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import orderApiRequest from "@/apiRequest/order";
-import { OrderResponse } from "@/types/order.type";
 import { formatVND } from "@/data/products";
 
 export interface AdminOrderItem {
@@ -25,124 +24,18 @@ export interface AdminOrder {
   total: number;
   paymentMethod: "VIETQR" | "COD" | string;
   paymentStatus: string;
-  status: "PENDING" | "SHIPPING" | "COMPLETED" | "CANCELLED";
+  status: "PENDING" | "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED";
   time: string;
   createdAt?: string;
   note?: string;
 }
 
-// Danh sách đơn hàng mẫu khởi tạo theo wireframe admin.html
-const INITIAL_ORDERS: AdminOrder[] = [
-  {
-    id: "mock-1",
-    code: "TF-849201",
-    customer: "Nguyễn Văn Hoàng",
-    phone: "0987 654 321",
-    address: "Phòng 502, Chung cư Bcons Plaza, P. Đông Hòa, TP. Dĩ An, Bình Dương",
-    itemsSummary: "Whey Gold Standard 5lbs + Áo Pro-Combat (L)",
-    itemsList: [
-      { name: "Whey Gold Standard 100% Isolate", variant: "Vị Double Rich Chocolate • 5 lbs", qty: 1, price: 1850000 },
-      { name: "Áo Thun Pro-Combat Compression", variant: "Size L • Đen Obsidian", qty: 2, price: 320000 },
-    ],
-    total: 2490000,
-    paymentMethod: "VIETQR",
-    paymentStatus: "Chờ đối soát",
-    status: "PENDING",
-    time: "Hôm nay 22:30",
-    note: "Giao giờ hành chính, gọi trước 15 phút khi đến",
-  },
-  {
-    id: "mock-2",
-    code: "TF-712894",
-    customer: "Lê Minh Đức",
-    phone: "0912 345 678",
-    address: "Tòa Park 3, KĐT Vinhomes Central Park, P. 22, Q. Bình Thạnh, TP. HCM",
-    itemsSummary: "Sữa Tăng Cơ Rule 1 Protein 5 Lbs",
-    itemsList: [
-      { name: "Sữa Tăng Cơ Rule 1 Proteins R1 Protein Isolate", variant: "Vị Vanilla Ice Cream • 5 Lbs", qty: 1, price: 1850000 },
-    ],
-    total: 1850000,
-    paymentMethod: "VIETQR",
-    paymentStatus: "Đã thanh toán (Napas247)",
-    status: "SHIPPING",
-    time: "Hôm nay 18:15",
-    note: "Để tại lễ tân sảnh Park 3 nếu không liên lạc được",
-  },
-  {
-    id: "mock-3",
-    code: "TF-604312",
-    customer: "Phạm Hải Yến",
-    phone: "0978 112 233",
-    address: "Số 45 Ngõ 165 Cầu Giấy, P. Dịch Vọng, Q. Cầu Giấy, Hà Nội",
-    itemsSummary: "Quần Short Tập Gym 2 Lớp Pro Runner",
-    itemsList: [
-      { name: "Quần Short Tập Gym 2 Lớp Pro Runner", variant: "Size M • Xám Tro", qty: 1, price: 520000 },
-    ],
-    total: 520000,
-    paymentMethod: "COD",
-    paymentStatus: "Đã thu tiền mặt",
-    status: "COMPLETED",
-    time: "Hôm qua 15:40",
-    note: "Giao vào buổi chiều tối",
-  },
-  {
-    id: "mock-4",
-    code: "TF-303171",
-    customer: "Lo Van Du",
-    phone: "0932 984 323",
-    address: "Số 16A, Ngách 7, Ngõ 47 Nguyễn Đức Cảnh, Tương Mai, Hoàng Mai, Hà Nội",
-    itemsSummary: "Sữa Tăng Cơ Whey Gold Standard 100% Vanilla (5 Lbs)",
-    itemsList: [
-      { name: "Sữa Tăng Cơ Optimum Nutrition Whey Gold Standard 100%", variant: "Vị Vanilla Ice Cream (5 Lbs / 2.27kg)", qty: 1, price: 1550000 },
-    ],
-    total: 1550000,
-    paymentMethod: "VIETQR",
-    paymentStatus: "Chờ đối soát",
-    status: "PENDING",
-    time: "Hôm nay 14:10",
-    note: "Gọi trước khi giao hàng 5 phút",
-  },
-  {
-    id: "mock-5",
-    code: "TF-964273",
-    customer: "Nguyễn Văn A",
-    phone: "0987 654 321",
-    address: "144 Xuân Thủy, Dịch Vọng Hậu, Cầu Giấy, Hà Nội",
-    itemsSummary: "Sữa Tăng Cơ Optimum Nutrition Whey Gold Standard 100%",
-    itemsList: [
-      { name: "Optimum Nutrition Whey Gold Standard 100%", variant: "Vị Double Rich Chocolate 5 Lbs", qty: 1, price: 1550000 },
-    ],
-    total: 1550000,
-    paymentMethod: "VIETQR",
-    paymentStatus: "Đã thanh toán",
-    status: "SHIPPING",
-    time: "Hôm qua 09:20",
-    note: "Giao tận tay lễ tân tòa nhà HITC",
-  },
-  {
-    id: "mock-6",
-    code: "TF-725398",
-    customer: "Trần Minh Quang",
-    phone: "0912 345 678",
-    address: "Tòa S2.05 VinHomes Grand Park, Long Thạnh Mỹ, TP. Thủ Đức",
-    itemsSummary: "Combo Sữa Tăng Cơ R1 Protein + Mutant Mass (12 Lbs)",
-    itemsList: [
-      { name: "Sữa Tăng Cơ Rule 1 Proteins R1 Protein Isolate", variant: "Vị Chocolate Fudge 5 Lbs", qty: 2, price: 1650000 },
-      { name: "Sữa Tăng Cân Mutant Mass XXXtreme 2500", variant: "Vị Triple Chocolate 12 Lbs", qty: 2, price: 2150000 },
-    ],
-    total: 7850000,
-    paymentMethod: "COD",
-    paymentStatus: "Đã hoàn kho (+4)",
-    status: "CANCELLED",
-    time: "2 ngày trước",
-    note: "Khách đổi ý muốn mua vị khác, đã xác nhận hủy",
-  },
-];
-
-type FilterStatus = "ALL" | "PENDING" | "SHIPPING" | "COMPLETED" | "CANCELLED";
+type FilterStatus = "ALL" | "PENDING" | "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED";
 
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState<AdminOrder[]>(INITIAL_ORDERS);
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<FilterStatus>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
@@ -152,7 +45,7 @@ export default function AdminOrdersPage() {
     text: string;
   } | null>(null);
 
-  // Auto hide toast
+  // Auto dismiss toast
   useEffect(() => {
     if (toastMessage) {
       const timer = setTimeout(() => setToastMessage(null), 4000);
@@ -160,108 +53,103 @@ export default function AdminOrdersPage() {
     }
   }, [toastMessage]);
 
-  // Đồng bộ đơn hàng từ Backend và LocalStorage
-  useEffect(() => {
-    async function fetchBackendOrders() {
-      try {
-        let backendOrders: OrderResponse[] = [];
-        try {
-          const res = await orderApiRequest.getAllOrders();
-          if (res?.data?.data && Array.isArray(res.data.data)) {
-            backendOrders = res.data.data;
-          }
-        } catch {
-          // Fallback to my-orders
-          const myRes = await orderApiRequest.getMyOrders();
-          if (myRes?.data?.data && Array.isArray(myRes.data.data)) {
-            backendOrders = myRes.data.data;
-          }
-        }
+  // Map Backend OrderResponse to AdminOrder
+  const mapOrder = useCallback((o: {
+    id: string;
+    orderCode: string;
+    customerName: string;
+    phone: string;
+    shippingAddress: string;
+    note?: string;
+    totalAmount: number;
+    orderStatus: string;
+    paymentMethod: string;
+    paymentStatus: string;
+    items: Array<{
+      productName: string;
+      variantName: string;
+      price: number;
+      quantity: number;
+    }>;
+    createdAt: string;
+  }): AdminOrder => {
+    const rawStatus = (o.orderStatus || "PENDING").toUpperCase();
+    const status = (["PENDING", "CONFIRMED", "SHIPPING", "COMPLETED", "CANCELLED"].includes(rawStatus)
+      ? rawStatus
+      : "PENDING") as AdminOrder["status"];
 
-        // Lấy đơn mới nhất từ localStorage nếu khách vừa đặt ở Buyer Checkout
-        let localLatest: AdminOrder | null = null;
-        try {
-          const raw = localStorage.getItem("titanfit_latest_order");
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            if (parsed && parsed.code) {
-              localLatest = {
-                id: parsed.id || `local-${parsed.code}`,
-                code: parsed.code,
-                customer: parsed.customer || "Khách Vãng Lai",
-                phone: parsed.phone || "0987 654 321",
-                address: parsed.address || "Hồ Chí Minh",
-                itemsSummary: parsed.itemsSummary || (parsed.items?.map((i: { name: string }) => i.name).join(" + ") || "Đơn hàng mới"),
-                itemsList: (parsed.items || []).map((it: { name: string; variant?: string; quantity?: number; qty?: number; price?: number }) => ({
-                  name: it.name || "Sản phẩm",
-                  variant: it.variant || "Tiêu chuẩn",
-                  qty: it.quantity || it.qty || 1,
-                  price: it.price || 0,
-                })),
-                total: parsed.total || 0,
-                paymentMethod: parsed.paymentMethod || "VIETQR",
-                paymentStatus: parsed.paymentStatus || (parsed.paymentMethod === "VIETQR" ? "Chờ đối soát" : "Chờ thu tiền"),
-                status: (parsed.status as AdminOrder["status"]) || "PENDING",
-                time: parsed.time || "Vừa xong",
-                note: parsed.note || "",
-              };
-            }
-          }
-        } catch (e) {
-          console.warn("Could not parse local order:", e);
-        }
-
-        if (backendOrders.length > 0 || localLatest) {
-          const mappedBackend: AdminOrder[] = backendOrders.map((o) => ({
-            id: o.id,
-            code: o.orderCode,
-            customer: o.customerName || "Khách Hàng",
-            phone: o.phone || "0987 654 321",
-            address: o.shippingAddress || "Địa chỉ nhận hàng",
-            itemsSummary: (o.items && o.items.length > 0)
-              ? o.items.map((it) => it.productName).join(" + ")
-              : "Sản phẩm thể hình TITANFIT",
-            itemsList: (o.items || []).map((it) => ({
-              name: it.productName || "Sản phẩm",
-              variant: it.variantName || "Tiêu chuẩn",
-              qty: it.quantity || 1,
-              price: Number(it.price) || 0,
-            })),
-            total: Number(o.totalAmount) || 0,
-            paymentMethod: o.paymentMethod || "VIETQR",
-            paymentStatus: o.paymentStatus === "PAID" ? "Đã thanh toán (Napas247)" : "Chờ thu tiền",
-            status: (o.orderStatus || "PENDING") as AdminOrder["status"],
-            time: o.createdAt ? new Date(o.createdAt).toLocaleString("vi-VN") : "Vừa xong",
-            note: o.note || "",
-          }));
-
-          const combined: AdminOrder[] = [...mappedBackend];
-
-          if (localLatest && !combined.some((c) => c.code === localLatest?.code)) {
-            combined.unshift(localLatest);
-          }
-
-          // Ghép thêm mock data ban đầu nếu chưa đủ đa dạng trạng thái
-          INITIAL_ORDERS.forEach((initOrd) => {
-            if (!combined.some((c) => c.code === initOrd.code)) {
-              combined.push(initOrd);
-            }
-          });
-
-          setOrders(combined);
-        }
-      } catch (err) {
-        console.warn("Backend orders sync error:", err);
-      }
+    let paymentStatusLabel = o.paymentStatus === "PAID" ? "Đã thanh toán" : "Chưa thanh toán";
+    if (o.paymentMethod === "VIETQR") {
+      paymentStatusLabel = o.paymentStatus === "PAID" ? "Đã thanh toán (Napas247)" : "Chờ đối soát";
+    } else if (o.paymentMethod === "COD") {
+      paymentStatusLabel = status === "COMPLETED" ? "Đã thu tiền mặt" : "Chờ thu tiền mặt";
     }
 
-    fetchBackendOrders();
+    if (status === "CANCELLED") {
+      paymentStatusLabel = "Đã hủy đơn";
+    }
+
+    return {
+      id: o.id,
+      code: o.orderCode,
+      customer: o.customerName || "Khách Hàng",
+      phone: o.phone || "---",
+      address: o.shippingAddress || "---",
+      itemsSummary:
+        o.items && o.items.length > 0
+          ? o.items.map((it) => it.productName).join(" + ")
+          : "Đơn hàng TITANFIT",
+      itemsList: (o.items || []).map((it) => ({
+        name: it.productName || "Sản phẩm",
+        variant: it.variantName || "Tiêu chuẩn",
+        qty: it.quantity || 1,
+        price: Number(it.price) || 0,
+      })),
+      total: Number(o.totalAmount) || 0,
+      paymentMethod: o.paymentMethod || "COD",
+      paymentStatus: paymentStatusLabel,
+      status,
+      time: o.createdAt ? new Date(o.createdAt).toLocaleString("vi-VN") : "---",
+      createdAt: o.createdAt,
+      note: o.note || "",
+    };
   }, []);
 
-  // Xử lý chuyển đổi trạng thái đơn hàng (Duyệt, Giao thành công, Hủy đơn)
+  // Fetch real orders from Spring Boot Backend
+  const fetchOrders = useCallback(async (isSilent = false) => {
+    if (!isSilent) {
+      setIsLoading(true);
+      setFetchError(null);
+    }
+    try {
+      const res = await orderApiRequest.getAllOrders();
+      const rawData = res.data?.data || [];
+      const mapped = rawData.map(mapOrder);
+      setOrders(mapped);
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
+      const message =
+        errorObj.response?.data?.message ||
+        errorObj.message ||
+        "Không thể tải danh sách đơn hàng từ máy chủ. Vui lòng kiểm tra kết nối.";
+      if (!isSilent) {
+        setFetchError(message);
+      }
+    } finally {
+      if (!isSilent) {
+        setIsLoading(false);
+      }
+    }
+  }, [mapOrder]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  // Cập nhật trạng thái đơn hàng (CONFIRMED, SHIPPING, COMPLETED, CANCELLED)
   const handleUpdateStatus = async (
     orderCode: string,
-    newStatus: "PENDING" | "SHIPPING" | "COMPLETED" | "CANCELLED"
+    newStatus: "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED"
   ) => {
     const targetOrder = orders.find((o) => o.code === orderCode);
     if (!targetOrder) return;
@@ -269,113 +157,73 @@ export default function AdminOrdersPage() {
     if (targetOrder.status === newStatus) {
       setToastMessage({
         type: "info",
-        text: `Đơn ${orderCode} đã ở trạng thái ${newStatus} rồi.`,
+        text: `Đơn #${orderCode} đã ở trạng thái ${newStatus} rồi.`,
       });
       return;
     }
 
     setUpdatingCode(orderCode);
+    const previousOrders = [...orders];
 
-    // Cập nhật Optimistic UI ngay lập tức
-    const updatedPaymentStatus =
-      newStatus === "CANCELLED"
-        ? `Đã hoàn kho (+${targetOrder.itemsList.reduce((acc, cur) => acc + cur.qty, 0)})`
-        : newStatus === "COMPLETED"
-        ? (targetOrder.paymentMethod === "COD" ? "Đã thu tiền mặt" : "Đã thanh toán (Napas247)")
-        : targetOrder.paymentStatus;
-
+    // Optimistic UI Update
     setOrders((prev) =>
-      prev.map((ord) =>
-        ord.code === orderCode
-          ? {
-              ...ord,
-              status: newStatus,
-              paymentStatus: updatedPaymentStatus,
-            }
-          : ord
-      )
+      prev.map((ord) => (ord.code === orderCode ? { ...ord, status: newStatus } : ord))
     );
-
     if (selectedOrder && selectedOrder.code === orderCode) {
-      setSelectedOrder((prev) =>
-        prev
-          ? {
-              ...prev,
-              status: newStatus,
-              paymentStatus: updatedPaymentStatus,
-            }
-          : null
-      );
+      setSelectedOrder((prev) => (prev ? { ...prev, status: newStatus } : null));
     }
 
-    // Gửi request cập nhật lên Backend nếu có id backend
     try {
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetOrder.id);
-      if (isUUID && newStatus !== "PENDING") {
-        await orderApiRequest.updateOrderStatus(targetOrder.id, newStatus);
+      await orderApiRequest.updateOrderStatus(targetOrder.id, newStatus);
+
+      let msg = `Đã cập nhật trạng thái đơn #${orderCode} thành công.`;
+      let toastType: "success" | "error" | "info" = "success";
+
+      if (newStatus === "CANCELLED") {
+        msg = `Đã HỦY đơn #${orderCode} • Backend tự động hoàn trả tồn kho cho các sản phẩm!`;
+        toastType = "error";
+      } else if (newStatus === "SHIPPING") {
+        msg = `Đã duyệt đơn #${orderCode} ➔ Chuyển sang ĐANG GIAO HÀNG!`;
+      } else if (newStatus === "COMPLETED") {
+        msg = `Đơn #${orderCode} đã GIAO THÀNH CÔNG & Hoàn tất!`;
+      } else if (newStatus === "CONFIRMED") {
+        msg = `Đã XÁC NHẬN đơn #${orderCode} (Chuẩn bị hàng)!`;
       }
-    } catch (err) {
-      console.warn("Backend status update error:", err);
+
+      setToastMessage({ type: toastType, text: msg });
+      // Đồng bộ lại dữ liệu thật từ backend sau khi update thành công
+      await fetchOrders(true);
+    } catch (err: unknown) {
+      // Revert optimistic update khi backend báo lỗi
+      setOrders(previousOrders);
+      if (selectedOrder && selectedOrder.code === orderCode) {
+        setSelectedOrder(previousOrders.find((o) => o.code === orderCode) || null);
+      }
+
+      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
+      const errorMessage =
+        errorObj.response?.data?.message ||
+        `Lỗi khi cập nhật trạng thái đơn #${orderCode}. Vui lòng thử lại.`;
+
+      setToastMessage({ type: "error", text: errorMessage });
     } finally {
       setUpdatingCode(null);
     }
-
-    // Hiển thị Toast thông báo tương ứng
-    if (newStatus === "CANCELLED") {
-      setToastMessage({
-        type: "error",
-        text: `Đơn #${orderCode} đã HỦY • Backend tự động cộng lại tồn kho cho các SKU!`,
-      });
-    } else if (newStatus === "SHIPPING") {
-      setToastMessage({
-        type: "info",
-        text: `Đã duyệt đơn #${orderCode} ➔ Chuyển sang Đang Giao Hàng!`,
-      });
-    } else if (newStatus === "COMPLETED") {
-      setToastMessage({
-        type: "success",
-        text: `Đơn #${orderCode} đã Giao Hàng Thành Công & Hoàn Tất!`,
-      });
-    } else {
-      setToastMessage({
-        type: "info",
-        text: `Đã cập nhật đơn #${orderCode} sang trạng thái Chờ Duyệt.`,
-      });
-    }
   };
 
-  // Xác nhận đã nhận tiền qua VietQR
-  const handleConfirmVietQRPaid = (orderCode: string) => {
-    setOrders((prev) =>
-      prev.map((ord) =>
-        ord.code === orderCode
-          ? { ...ord, paymentStatus: "Đã nhận tiền (Napas247)" }
-          : ord
-      )
-    );
-    if (selectedOrder && selectedOrder.code === orderCode) {
-      setSelectedOrder((prev) =>
-        prev ? { ...prev, paymentStatus: "Đã nhận tiền (Napas247)" } : null
-      );
-    }
-    setToastMessage({
-      type: "success",
-      text: `Đã xác nhận thanh toán VietQR thành công cho đơn #${orderCode}!`,
-    });
-  };
-
-  // Tính số lượng đơn theo từng bộ lọc
+  // Đếm số lượng đơn theo từng bộ lọc
   const counts = useMemo(() => {
     return {
       ALL: orders.length,
       PENDING: orders.filter((o) => o.status === "PENDING").length,
+      CONFIRMED: orders.filter((o) => o.status === "CONFIRMED").length,
       SHIPPING: orders.filter((o) => o.status === "SHIPPING").length,
       COMPLETED: orders.filter((o) => o.status === "COMPLETED").length,
       CANCELLED: orders.filter((o) => o.status === "CANCELLED").length,
     };
   }, [orders]);
 
-  // Danh sách đơn sau khi lọc và tìm kiếm
+  // Danh sách đơn sau khi áp dụng bộ lọc và tìm kiếm
   const filteredOrders = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return orders.filter((ord) => {
@@ -441,16 +289,44 @@ export default function AdminOrdersPage() {
               Quản Lý Đơn Hàng
             </h1>
             <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/25">
-              {orders.length} đơn
+              {orders.length} đơn thực tế
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Live Backend API
             </span>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Kiểm duyệt đơn hàng, đối soát thanh toán VietQR và tự động hoàn trả kho khi hủy đơn
+            Dữ liệu trực tiếp từ Spring Boot backend & MySQL database • Tự động hoàn kho khi hủy đơn
           </p>
         </div>
 
         {/* Nút hành động đầu trang */}
         <div className="flex items-center gap-2 self-start md:self-auto">
+          <button
+            type="button"
+            onClick={() => fetchOrders(false)}
+            disabled={isLoading}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-card hover:bg-secondary text-foreground border border-border transition-colors cursor-pointer disabled:opacity-50"
+            title="Đồng bộ lại dữ liệu từ Backend"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className={isLoading ? "animate-spin text-primary" : ""}
+            >
+              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+              <path d="M16 21h5v-5" />
+            </svg>
+            <span>{isLoading ? "Đang tải..." : "Làm Mới"}</span>
+          </button>
+
           <Link
             href="/admin"
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-muted/60 hover:bg-muted text-foreground border border-border transition-colors"
@@ -462,6 +338,25 @@ export default function AdminOrdersPage() {
           </Link>
         </div>
       </div>
+
+      {/* Error Alert with Retry */}
+      {fetchError && (
+        <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>{fetchError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => fetchOrders(false)}
+            className="px-3 py-1.5 rounded-lg bg-destructive text-white font-bold text-xs hover:bg-destructive/90 transition-colors cursor-pointer self-start sm:self-auto shrink-0"
+          >
+            Thử Lại
+          </button>
+        </div>
+      )}
 
       {/* Filter Tabs - Bộ lọc trạng thái đơn */}
       <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-card border border-border shadow-xs">
@@ -507,6 +402,27 @@ export default function AdminOrdersPage() {
             }`}
           >
             {counts.PENDING}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setStatusFilter("CONFIRMED")}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            statusFilter === "CONFIRMED"
+              ? "bg-indigo-600 text-white shadow-sm shadow-indigo-600/20"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          }`}
+        >
+          <span>Đã xác nhận</span>
+          <span
+            className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
+              statusFilter === "CONFIRMED"
+                ? "bg-white/25 text-white"
+                : "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400"
+            }`}
+          >
+            {counts.CONFIRMED}
           </span>
         </button>
 
@@ -609,7 +525,7 @@ export default function AdminOrdersPage() {
 
         <div className="text-xs text-muted-foreground self-end sm:self-auto">
           Hiển thị{" "}
-          <strong className="text-foreground font-bold">{filteredOrders.length}</strong> / {orders.length} đơn hàng
+          <strong className="text-foreground font-bold">{filteredOrders.length}</strong> / {orders.length} đơn hàng thực tế
         </div>
       </div>
 
@@ -630,7 +546,40 @@ export default function AdminOrdersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
-              {filteredOrders.length === 0 ? (
+              {isLoading ? (
+                // Loading Skeleton Rows
+                Array.from({ length: 5 }).map((_, idx) => (
+                  <tr key={`skeleton-${idx}`} className="animate-pulse">
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-muted rounded w-20 mb-1" />
+                      <div className="h-3 bg-muted/60 rounded w-28" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-muted rounded w-24 mb-1" />
+                      <div className="h-3 bg-muted/60 rounded w-36" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-muted rounded w-24" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-muted rounded w-16 mb-1" />
+                      <div className="h-3 bg-muted/60 rounded w-20" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-muted rounded w-20" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-6 bg-muted rounded-full w-24" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-muted rounded w-28" />
+                    </td>
+                    <td className="py-4 px-4 text-right">
+                      <div className="h-7 bg-muted rounded w-24 ml-auto" />
+                    </td>
+                  </tr>
+                ))
+              ) : filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-muted-foreground">
                     <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3 text-muted-foreground">
@@ -641,7 +590,9 @@ export default function AdminOrdersPage() {
                     </div>
                     <p className="font-semibold text-sm">Không tìm thấy đơn hàng phù hợp</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Thử điều chỉnh từ khóa tìm kiếm hoặc chọn bộ lọc trạng thái khác
+                      {searchQuery
+                        ? "Thử điều chỉnh từ khóa tìm kiếm hoặc chọn bộ lọc trạng thái khác"
+                        : "Chưa có đơn hàng nào trong hệ thống với trạng thái này"}
                     </p>
                   </td>
                 </tr>
@@ -693,7 +644,7 @@ export default function AdminOrdersPage() {
                           className={`text-[10px] font-medium ${
                             ord.paymentStatus.includes("Đã")
                               ? "text-emerald-600 dark:text-emerald-400"
-                              : ord.paymentStatus.includes("hoàn kho")
+                              : ord.paymentStatus.includes("hủy")
                               ? "text-rose-500"
                               : "text-amber-500"
                           }`}
@@ -719,6 +670,11 @@ export default function AdminOrdersPage() {
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
                               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                               Chờ duyệt
+                            </span>
+                          )}
+                          {ord.status === "CONFIRMED" && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30">
+                              Đã xác nhận
                             </span>
                           )}
                           {ord.status === "SHIPPING" && (
@@ -752,22 +708,25 @@ export default function AdminOrdersPage() {
                         </div>
 
                         {/* Dropdown chuyển nhanh trạng thái */}
-                        <select
-                          value={ord.status}
-                          disabled={updatingCode === ord.code}
-                          onChange={(e) =>
-                            handleUpdateStatus(
-                              ord.code,
-                              e.target.value as "PENDING" | "SHIPPING" | "COMPLETED" | "CANCELLED"
-                            )
-                          }
-                          className="h-7 text-[11px] rounded-lg bg-background border border-border px-2 text-foreground focus:outline-none focus:border-primary cursor-pointer disabled:opacity-50"
-                        >
-                          <option value="PENDING">⏳ Chờ duyệt</option>
-                          <option value="SHIPPING">🚚 Đang giao hàng</option>
-                          <option value="COMPLETED">✅ Giao thành công</option>
-                          <option value="CANCELLED">❌ Hủy đơn (Hoàn kho)</option>
-                        </select>
+                        {ord.status !== "COMPLETED" && ord.status !== "CANCELLED" && (
+                          <select
+                            value={ord.status}
+                            disabled={updatingCode === ord.code}
+                            onChange={(e) =>
+                              handleUpdateStatus(
+                                ord.code,
+                                e.target.value as "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED"
+                              )
+                            }
+                            className="h-7 text-[11px] rounded-lg bg-background border border-border px-2 text-foreground focus:outline-none focus:border-primary cursor-pointer disabled:opacity-50"
+                          >
+                            <option value="PENDING" disabled>⏳ Chờ duyệt</option>
+                            <option value="CONFIRMED">📦 Xác nhận đơn</option>
+                            <option value="SHIPPING">🚚 Đang giao hàng</option>
+                            <option value="COMPLETED">✅ Giao thành công</option>
+                            <option value="CANCELLED">❌ Hủy đơn (Hoàn kho)</option>
+                          </select>
+                        )}
                       </div>
                     </td>
 
@@ -789,7 +748,7 @@ export default function AdminOrdersPage() {
                         </button>
 
                         {/* Dropdown / Nút bấm chuyển nhanh trạng thái */}
-                        {ord.status === "PENDING" && (
+                        {(ord.status === "PENDING" || ord.status === "CONFIRMED") && (
                           <button
                             type="button"
                             disabled={updatingCode === ord.code}
@@ -855,6 +814,11 @@ export default function AdminOrdersPage() {
                   {selectedOrder.status === "PENDING" && (
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
                       Chờ duyệt
+                    </span>
+                  )}
+                  {selectedOrder.status === "CONFIRMED" && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30">
+                      Đã xác nhận
                     </span>
                   )}
                   {selectedOrder.status === "SHIPPING" && (
@@ -923,16 +887,6 @@ export default function AdminOrdersPage() {
                     </span>
                   </div>
 
-                  {selectedOrder.paymentMethod === "VIETQR" && !selectedOrder.paymentStatus.includes("Đã") && (
-                    <button
-                      type="button"
-                      onClick={() => handleConfirmVietQRPaid(selectedOrder.code)}
-                      className="mt-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition-all"
-                    >
-                      ✓ Xác nhận đã nhận tiền (VietQR)
-                    </button>
-                  )}
-
                   <div className="mt-2 text-muted-foreground bg-background/50 p-2 rounded-lg border border-border/60">
                     <span className="font-semibold text-foreground">Ghi chú khách:</span>{" "}
                     {selectedOrder.note || "Không có ghi chú"}
@@ -996,38 +950,38 @@ export default function AdminOrdersPage() {
               </div>
 
               {/* Chuyển nhanh trạng thái trong modal */}
-              <div className="p-3.5 rounded-xl bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <span className="font-bold text-foreground block">
-                    Chuyển Trạng Thái Đơn Hàng Nhanh:
-                  </span>
-                  <span className="text-[11px] text-muted-foreground">
-                    Hủy đơn sẽ tự động hoàn trả số lượng vào kho dữ liệu
-                  </span>
-                </div>
+              {selectedOrder.status !== "COMPLETED" && selectedOrder.status !== "CANCELLED" && (
+                <div className="p-3.5 rounded-xl bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <span className="font-bold text-foreground block">
+                      Chuyển Trạng Thái Đơn Hàng Nhanh:
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                      Hủy đơn sẽ tự động hoàn trả số lượng vào kho dữ liệu
+                    </span>
+                  </div>
 
-                <div className="flex items-center gap-2 flex-wrap">
-                  {selectedOrder.status !== "SHIPPING" && (
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateStatus(selectedOrder.code, "SHIPPING")}
-                      className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all cursor-pointer shadow-xs"
-                    >
-                      Duyệt Đơn (SHIPPING)
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {selectedOrder.status !== "SHIPPING" && (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateStatus(selectedOrder.code, "SHIPPING")}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all cursor-pointer shadow-xs"
+                      >
+                        Duyệt Đơn (SHIPPING)
+                      </button>
+                    )}
 
-                  {selectedOrder.status !== "COMPLETED" && (
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateStatus(selectedOrder.code, "COMPLETED")}
-                      className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs transition-all cursor-pointer shadow-xs"
-                    >
-                      Giao Thành Công (COMPLETED)
-                    </button>
-                  )}
+                    {selectedOrder.status === "SHIPPING" && (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateStatus(selectedOrder.code, "COMPLETED")}
+                        className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs transition-all cursor-pointer shadow-xs"
+                      >
+                        Giao Thành Công (COMPLETED)
+                      </button>
+                    )}
 
-                  {selectedOrder.status !== "CANCELLED" && (
                     <button
                       type="button"
                       onClick={() => {
@@ -1039,9 +993,9 @@ export default function AdminOrdersPage() {
                     >
                       Hủy Đơn (CANCELLED - Hoàn Kho)
                     </button>
-                  )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Modal Footer */}
