@@ -88,8 +88,51 @@ export default function Navbar() {
     }
   };
 
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get("error");
+    const storedErr = sessionStorage.getItem("titanfit_auth_error");
+
+    if (err || storedErr) {
+      setToastMessage(err || storedErr || "Không có quyền truy cập");
+      sessionStorage.removeItem("titanfit_auth_error");
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, "", cleanUrl);
+      setTimeout(() => setToastMessage(null), 4500);
+    }
+  }, [pathname]);
+
+  if (pathname?.startsWith("/admin")) {
+    return (
+      <>
+        {toastMessage && (
+          <div className="fixed top-6 right-6 z-50 px-4 py-3 rounded-xl shadow-xl border bg-rose-950 text-rose-100 border-rose-800 text-sm font-semibold flex items-center gap-2.5 animate-in fade-in slide-in-from-top-4 duration-300">
+            <svg className="w-5 h-5 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>{toastMessage}</span>
+          </div>
+        )}
+      </>
+    );
+  }
+
   return (
     <>
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-6 right-6 z-50 px-4 py-3 rounded-xl shadow-xl border bg-rose-950 text-rose-100 border-rose-800 text-sm font-semibold flex items-center gap-2.5 animate-in fade-in slide-in-from-top-4 duration-300">
+          <svg className="w-5 h-5 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* Top Announcement Bar */}
       <div className="bg-secondary border-b border-border py-2 text-center text-xs text-muted-foreground font-medium transition-colors">
         Miễn phí giao hàng cho đơn từ 500.000₫ &bull;{" "}
