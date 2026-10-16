@@ -27,7 +27,27 @@ export interface ProductSummaryDto {
   categoryName: string;
   categorySlug: string;
   variants: VariantDto[];
+  isActive?: boolean;
   createdAt?: string;
+}
+
+export interface CreateProductVariantDto {
+  id?: string;
+  sku?: string;
+  variantName: string;
+  price: number;
+  stockQuantity: number;
+}
+
+export interface AdminProductFormDto {
+  name: string;
+  slug?: string;
+  categorySlug: string;
+  basePrice: number;
+  description?: string;
+  thumbnailUrl: string;
+  isActive: boolean;
+  variants: CreateProductVariantDto[];
 }
 
 export interface ProductDetailDto {
