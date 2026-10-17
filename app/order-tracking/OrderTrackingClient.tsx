@@ -219,6 +219,9 @@ export default function OrderTrackingClient() {
   // Copy code feedback
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
 
+  // Cancel order support modal state
+  const [cancelModalOrder, setCancelModalOrder] = useState<TrackingOrder | null>(null);
+
   // Toast notification
   const [toastMessage, setToastMessage] = useState<{
     text: string;
@@ -430,48 +433,9 @@ export default function OrderTrackingClient() {
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  // Cancel Order Handler
-  const handleCancelOrder = () => {
-    if (!activeOrder) return;
-    if (
-      !confirm(
-        `Bạn có chắc chắn muốn yêu cầu hủy đơn hàng #${activeOrder.code}? Bộ phận xử lý sẽ dừng xuất kho kiện hàng này.`
-      )
-    ) {
-      return;
-    }
-
-    const updated = {
-      ...activeOrder,
-      status: "CANCELLED",
-      paymentStatus: "Đã hủy đơn hàng",
-      logs: [
-        {
-          time: new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
-          text: `Đã hủy đơn hàng #${activeOrder.code} theo yêu cầu của khách hàng.`,
-        },
-        ...(activeOrder.logs || []),
-      ],
-    };
-
-    setOrders((prev) => prev.map((o) => (o.code === updated.code ? updated : o)));
-    setActiveOrder(updated);
-
-    try {
-      const stored = localStorage.getItem("titanfit_latest_order");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed?.code === updated.code) {
-          parsed.status = "CANCELLED";
-          parsed.paymentStatus = "Đã hủy đơn hàng";
-          localStorage.setItem("titanfit_latest_order", JSON.stringify(parsed));
-        }
-      }
-    } catch (e) {
-      console.warn(e);
-    }
-
-    showToast(`Đã hủy thành công đơn hàng #${updated.code}`, "info");
+  // Cancel Order Support Modal Handler
+  const handleOpenCancelModal = (order: TrackingOrder) => {
+    setCancelModalOrder(order);
   };
 
   // Re-Order items back into cart
@@ -1135,10 +1099,13 @@ export default function OrderTrackingClient() {
                   {activeOrder.status === "PENDING" && (
                     <button
                       type="button"
-                      onClick={handleCancelOrder}
-                      className="w-full h-10 rounded-xl border border-destructive/40 text-destructive hover:bg-destructive/10 text-xs font-bold transition-colors cursor-pointer"
+                      onClick={() => handleOpenCancelModal(activeOrder)}
+                      className="w-full h-10 rounded-xl border border-destructive/40 text-destructive hover:bg-destructive/10 text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                     >
-                      Hủy Đơn Hàng Này
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      <span>Yêu Cầu Hỗ Trợ Hủy Đơn</span>
                     </button>
                   )}
 
@@ -1203,6 +1170,148 @@ export default function OrderTrackingClient() {
           </div>
         )}
       </main>
+
+      {/* Cancel Order Support Modal */}
+      {cancelModalOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div
+            className="relative w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-200"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cancel-modal-title"
+          >
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setCancelModalOrder(null)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-secondary hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Đóng"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Header Icon & Title */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 id="cancel-modal-title" className="text-base font-bold text-foreground">
+                  Yêu Cầu Hỗ Trợ Hủy Đơn Hàng
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Đơn hàng #{cancelModalOrder.code} &bull; {cancelModalOrder.time}
+                </p>
+              </div>
+            </div>
+
+            {/* Notice */}
+            <div className="p-3.5 rounded-xl bg-muted/60 border border-border/80 text-xs text-muted-foreground leading-relaxed mb-4">
+              Đơn hàng đang ở trạng thái <strong className="text-foreground">Chờ xác nhận</strong> và chuẩn bị xuất kho. Để đảm bảo hủy kịp thời và hoàn tiền (nếu đã thanh toán), quý khách vui lòng liên hệ trực tiếp với bộ phận CSKH TitanFit.
+            </div>
+
+            {/* Order Code Quick Copy Box */}
+            <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/80 border border-border mb-4">
+              <div className="text-xs">
+                <span className="text-muted-foreground block text-[11px]">Mã đơn hàng của bạn:</span>
+                <strong className="text-sm font-mono text-primary font-bold">#{cancelModalOrder.code}</strong>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleCopyCode(cancelModalOrder.code)}
+                className="px-3 py-1.5 rounded-lg bg-background hover:bg-muted border border-border text-xs font-semibold text-foreground transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
+                </svg>
+                <span>Sao chép</span>
+              </button>
+            </div>
+
+            {/* Contact Channels */}
+            <div className="space-y-2.5 mb-6">
+              {/* Channel 1: Hotline */}
+              <a
+                href="tel:19008888"
+                className="flex items-center justify-between p-3 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-primary text-white flex items-center justify-center shrink-0">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-foreground block">Hotline Hỗ Trợ 24/7</span>
+                    <span className="text-sm font-extrabold text-primary">1900 8888</span>
+                  </div>
+                </div>
+                <span className="text-xs font-semibold text-primary group-hover:translate-x-0.5 transition-transform">
+                  Gọi ngay &rarr;
+                </span>
+              </a>
+
+              {/* Channel 2: Email */}
+              <a
+                href={`mailto:cskh@titanfit.vn?subject=${encodeURIComponent(
+                  `[Yêu cầu hủy đơn hàng #${cancelModalOrder.code}]`
+                )}&body=${encodeURIComponent(
+                  `Xin chào bộ phận CSKH TitanFit,\n\nTôi muốn yêu cầu hủy đơn hàng #${cancelModalOrder.code}.\nLý do: \n\nXin cảm ơn!`
+                )}`}
+                className="flex items-center justify-between p-3 rounded-xl border border-border hover:bg-secondary/60 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-secondary text-foreground flex items-center justify-center shrink-0">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-foreground block">Gửi Email Yêu Cầu</span>
+                    <span className="text-xs text-muted-foreground">cskh@titanfit.vn</span>
+                  </div>
+                </div>
+                <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
+                  Gửi thư &rarr;
+                </span>
+              </a>
+            </div>
+
+            {/* Close Action */}
+            <button
+              type="button"
+              onClick={() => setCancelModalOrder(null)}
+              className="w-full py-2.5 rounded-xl bg-secondary hover:bg-muted text-xs font-bold text-foreground transition-colors cursor-pointer"
+            >
+              Đóng Cửa Sổ
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
