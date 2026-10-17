@@ -38,11 +38,14 @@ export async function GET(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
+    console.error("Lỗi khi lấy danh sách sản phẩm:", error);
     return NextResponse.json(
       {
         success: false,
-        message: "Lỗi khi lấy danh sách sản phẩm",
-        error: error instanceof Error ? error.message : String(error),
+        message: "Lỗi máy chủ khi lấy danh sách sản phẩm",
+        ...(process.env.NODE_ENV !== "production" && {
+          error: error instanceof Error ? error.message : String(error),
+        }),
       },
       { status: 500 }
     );

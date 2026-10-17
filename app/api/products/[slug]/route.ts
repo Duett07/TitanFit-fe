@@ -53,11 +53,14 @@ export async function GET(
       { status: 404 }
     );
   } catch (error) {
+    console.error("Lỗi khi truy xuất biến thể sản phẩm từ Backend:", error);
     return NextResponse.json(
       {
         success: false,
         message: "Lỗi máy chủ khi truy xuất biến thể sản phẩm từ Backend",
-        error: error instanceof Error ? error.message : String(error),
+        ...(process.env.NODE_ENV !== "production" && {
+          error: error instanceof Error ? error.message : String(error),
+        }),
       },
       { status: 500 }
     );
