@@ -4,6 +4,9 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { UserResponse } from "@/types/auth.type";
 import authApiRequest from "@/apiRequest/auth";
+import { clearSession, registerAuthReset, clearLegacyAuthCookies } from "@/lib/session";
+
+export { clearSession, clearLegacyAuthCookies };
 
 interface AuthState {
   user: UserResponse | null;
@@ -12,14 +15,6 @@ interface AuthState {
   setUser: (user: UserResponse) => void;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
-}
-
-// Clean up legacy non-HttpOnly auth cookies that may linger in user browsers
-function clearLegacyAuthCookies() {
-  if (typeof document === "undefined") return;
-  document.cookie = "is_authenticated=; path=/; max-age=0; SameSite=Lax";
-  document.cookie = "user_role=; path=/; max-age=0; SameSite=Lax";
-  document.cookie = "user_name=; path=/; max-age=0; SameSite=Lax";
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -50,17 +45,7 @@ export const useAuthStore = create<AuthState>()(
         } catch (err) {
           console.warn("Backend logout failed or offline:", err);
         } finally {
-          set({ user: null, isAuthenticated: false, isLoading: false });
-
-          if (typeof window !== "undefined") {
-            try {
-              localStorage.removeItem("user");
-              clearLegacyAuthCookies();
-              window.dispatchEvent(new Event("authchange"));
-            } catch (err) {
-              console.warn("Could not clear auth state:", err);
-            }
-          }
+          clearSession();
         }
       },
 
@@ -84,18 +69,11 @@ export const useAuthStore = create<AuthState>()(
           if (res.data?.data) {
             get().setUser(res.data.data);
           } else {
-            get().logout();
+            clearSession();
           }
         } catch {
           // Not logged in or expired session: wipe client auth state
-          set({ user: null, isAuthenticated: false, isLoading: false });
-          if (typeof window !== "undefined") {
-            try {
-              localStorage.removeItem("user");
-              clearLegacyAuthCookies();
-              window.dispatchEvent(new Event("authchange"));
-            } catch {}
-          }
+          clearSession();
         }
       },
     }),
@@ -109,3 +87,8 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
+
+// Register store reset hook with session manager
+registerAuthReset(() => {
+  useAuthStore.setState({ user: null, isAuthenticated: false, isLoading: false });
+});
