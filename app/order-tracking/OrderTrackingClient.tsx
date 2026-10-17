@@ -182,10 +182,9 @@ export default function OrderTrackingClient() {
   const searchParams = useSearchParams();
   const requestedOrderParam = searchParams.get("order") || "";
 
-  const { user, isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const { addItem, openDrawer } = useCartStore();
 
-  const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
   const [orders, setOrders] = useState<TrackingOrder[]>([]);
   const [activeOrder, setActiveOrder] = useState<TrackingOrder | null>(null);
   const [activeTab, setActiveTab] = useState<string>("ALL");
@@ -206,9 +205,7 @@ export default function OrderTrackingClient() {
           ? window.location.pathname + window.location.search
           : "/order-tracking";
       router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`);
-      return;
     }
-    setIsAuthChecking(false);
   }, [isAuthenticated, router]);
 
   // Order lookup form state
@@ -299,8 +296,6 @@ export default function OrderTrackingClient() {
   }, [requestedOrderParam]);
 
   useEffect(() => {
-    let isMounted = true;
-
     async function init() {
       await loadInitialData(false);
     }
@@ -308,10 +303,6 @@ export default function OrderTrackingClient() {
     if (isAuthenticated || (typeof window !== "undefined" && !!localStorage.getItem("user"))) {
       init();
     }
-
-    return () => {
-      isMounted = false;
-    };
   }, [isAuthenticated, loadInitialData]);
 
   // Real-time synchronization: Auto-refresh when admin changes order status,
@@ -387,51 +378,45 @@ export default function OrderTrackingClient() {
       const localMatch = orders.find((o) => o.code.toLowerCase() === code.toLowerCase());
       if (localMatch) {
         const orderPhoneClean = normalizePhone(localMatch.phone);
-        if (
-          orderPhoneClean === cleanInputPhone ||
-          orderPhoneClean.endsWith(cleanInputPhone.slice(-4)) ||
-          cleanInputPhone.endsWith(orderPhoneClean.slice(-4))
-        ) {
+        if (orderPhoneClean === cleanInputPhone) {
           setActiveOrder(localMatch);
           setSearchSuccess(`Đã tìm thấy đơn hàng #${localMatch.code}!`);
           showToast(`Tìm thấy đơn hàng #${localMatch.code}`, "success");
-          setIsSearching(false);
-          // Scroll to tracking content smoothly
-          document.getElementById("activeOrderSection")?.scrollIntoView({ behavior: "smooth" });
-          return;
-        } else {
-          setSearchError("Số điện thoại không trùng khớp với số điện thoại đặt hàng của mã này.");
-          setIsSearching(false);
-          return;
-        }
-      }
-
-      // 2. Query backend by orderCode
-      const res = await orderApiRequest.getOrderByCode(code);
-      if (res.data?.data) {
-        const backendOrder = mapApiOrderToTracking(res.data.data);
-        const orderPhoneClean = normalizePhone(backendOrder.phone);
-
-        if (
-          orderPhoneClean === cleanInputPhone ||
-          orderPhoneClean.endsWith(cleanInputPhone.slice(-4)) ||
-          cleanInputPhone.endsWith(orderPhoneClean.slice(-4))
-        ) {
-          // Append to orders list and set active
-          setOrders((prev) => [backendOrder, ...prev.filter((o) => o.code !== backendOrder.code)]);
-          setActiveOrder(backendOrder);
-          setSearchSuccess(`Đã tìm thấy đơn hàng #${backendOrder.code}!`);
           setIsLookupFormOpen(false);
           document.getElementById("activeOrderSection")?.scrollIntoView({ behavior: "smooth" });
+          return;
         } else {
-          setSearchError("Số điện thoại không trùng khớp với số điện thoại đặt hàng của mã này.");
+          setSearchError("Không tìm thấy đơn hàng hoặc số điện thoại không trùng khớp.");
+          return;
         }
-      } else {
-        setSearchError(`Không tìm thấy đơn hàng với mã "${code}". Vui lòng kiểm tra lại.`);
       }
-    } catch (err) {
+
+      // 2. Query backend by { orderCode, phone } to verify authorization server-side
+      const res = await orderApiRequest.trackOrder({
+        orderCode: code,
+        phone: cleanInputPhone,
+      });
+
+      if (res.data?.data) {
+        const backendOrder = mapApiOrderToTracking(res.data.data);
+        // Append to orders list and set active
+        setOrders((prev) => [backendOrder, ...prev.filter((o) => o.code !== backendOrder.code)]);
+        setActiveOrder(backendOrder);
+        setSearchSuccess(`Đã tìm thấy đơn hàng #${backendOrder.code}!`);
+        setIsLookupFormOpen(false);
+        document.getElementById("activeOrderSection")?.scrollIntoView({ behavior: "smooth" });
+      } else {
+        setSearchError("Không tìm thấy đơn hàng hoặc số điện thoại không trùng khớp.");
+      }
+    } catch (err: unknown) {
       console.warn("Lookup failed:", err);
-      setSearchError(`Không tìm thấy đơn hàng "${code}". Vui lòng kiểm tra lại mã đơn và số điện thoại.`);
+      const axiosErr = err as {
+        response?: { data?: { message?: string } };
+      };
+      const message =
+        axiosErr.response?.data?.message ||
+        "Không tìm thấy đơn hàng hoặc số điện thoại không trùng khớp. Vui lòng kiểm tra lại.";
+      setSearchError(message);
     } finally {
       setIsSearching(false);
     }
@@ -520,12 +505,12 @@ export default function OrderTrackingClient() {
     showToast("Dữ liệu đơn hàng đã được cập nhật mới nhất!", "success");
   };
 
-  if (isAuthChecking || isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center py-20 px-4">
         <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin mb-4" />
         <p className="text-sm font-medium text-muted-foreground">
-          {isAuthChecking ? "Đang kiểm tra quyền truy cập..." : "Đang tải lịch sử & hành trình đơn hàng..."}
+          Đang tải lịch sử & hành trình đơn hàng...
         </p>
       </div>
     );
