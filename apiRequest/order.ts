@@ -1,6 +1,6 @@
 import http from "@/lib/http";
 import { ApiResponse } from "@/types/api.type";
-import { CreateOrderRequest, OrderResponse } from "@/types/order.type";
+import { CreateOrderRequest, OrderResponse, TrackOrderRequest } from "@/types/order.type";
 
 export const orderApiRequest = {
   createOrder: (body: CreateOrderRequest) =>
@@ -12,6 +12,8 @@ export const orderApiRequest = {
     ),
   getOrderByCode: (orderCode: string) =>
     http.get<ApiResponse<OrderResponse>>(`/api/orders/${orderCode}`),
+  trackOrder: (body: TrackOrderRequest) =>
+    http.post<ApiResponse<OrderResponse>>("/api/orders/track", body),
   getAllOrders: (cookieHeader?: string) =>
     http.get<ApiResponse<OrderResponse[]>>(
       "/api/admin/orders",

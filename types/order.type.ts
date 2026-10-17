@@ -12,6 +12,11 @@ export interface CreateOrderRequest {
   items: OrderItemRequest[];
 }
 
+export interface TrackOrderRequest {
+  orderCode: string;
+  phone: string;
+}
+
 export interface OrderItemResponse {
   id: string;
   variantId?: string;
