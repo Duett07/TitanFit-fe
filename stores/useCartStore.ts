@@ -46,45 +46,10 @@ interface CartState {
   getTotalPrice: () => number;
 }
 
-const initialItems: CartItem[] = [
-  {
-    id: "1-WHEY-CHOC-5LBS",
-    productId: 1,
-    slug: "whey-gold-standard-100-isolate-5lbs",
-    name: "Whey Gold Standard 100% Isolate",
-    image: "/images/products/titan-iso-whey.jpg",
-    price: 1850000,
-    originalPrice: 2100000,
-    selectedVariants: {
-      "Mùi vị": "Double Rich Chocolate",
-      "Khối lượng": "5 lbs (2.27kg)",
-    },
-    variantSummary: "Double Rich Chocolate • 5 lbs (2.27kg)",
-    quantity: 1,
-    stock: 24,
-  },
-  {
-    id: "7-APP-DEN-L",
-    productId: 7,
-    slug: "ao-thun-pro-combat-co-gian-4-chieu",
-    name: "Áo Thun Pro-Combat Co Giãn 4 Chiều",
-    image: "/images/products/ao-pro-combat.jpg",
-    price: 320000,
-    originalPrice: 400000,
-    selectedVariants: {
-      "Kích thước (Size)": "Size L",
-      "Màu sắc": "Đen Obsidian",
-    },
-    variantSummary: "Size L • Đen Obsidian",
-    quantity: 1,
-    stock: 40,
-  },
-];
-
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
-      items: initialItems,
+      items: [],
       isDrawerOpen: false,
 
       addItem: (product, quantity = 1) => {

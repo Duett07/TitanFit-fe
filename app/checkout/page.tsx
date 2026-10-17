@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useSyncExternalStore } from "react";
+import React, { useState, useEffect, useMemo, useSyncExternalStore } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -33,11 +33,12 @@ const checkoutSchema = z.object({
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
-// Known backend fallback UUIDs for demo/mock cart items
-const FALLBACK_VARIANT_UUIDS: Record<string, string> = {
-  "1": "fabd212c-da5b-4c3c-a9ea-897e4ce9fc88",
-  "7": "478c3451-e505-4ed5-b8d6-8960e16d3bb6",
-};
+// Helper to validate real backend variant UUID
+const isValidUUID = (id?: string): boolean =>
+  Boolean(
+    id &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+  );
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -73,9 +74,23 @@ export default function CheckoutPage() {
     () => false
   );
 
-  const items = isHydrated ? cartStore.items : [];
+  const cartItems = cartStore.items;
+  const items = useMemo(() => (isHydrated ? cartItems : []), [isHydrated, cartItems]);
   const totalPrice = isHydrated ? cartStore.getTotalPrice() : 0;
   const totalCount = isHydrated ? cartStore.getTotalCount() : 0;
+
+  // Detect any items that lack a valid backend variant UUID
+  const invalidCartItems = useMemo(
+    () => items.filter((item) => !isValidUUID(item.variantId)),
+    [items]
+  );
+
+  const handleRemoveInvalidItems = () => {
+    invalidCartItems.forEach((item) => {
+      cartStore.removeItem(item.id);
+    });
+    setErrorMessage(null);
+  };
 
   // Form State with lazy initialization to read localStorage without setState in effect
   const [formData, setFormData] = useState<CheckoutFormValues>(() => {
@@ -148,6 +163,15 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Never fallback to mock UUIDs: strictly block checkout if any item lacks valid variantId
+    if (invalidCartItems.length > 0) {
+      const invalidNames = invalidCartItems.map((i) => `"${i.name}"`).join(", ");
+      setErrorMessage(
+        `Sản phẩm sau chưa có thông tin biến thể hợp lệ từ hệ thống: ${invalidNames}. Vui lòng chọn lại hoặc xóa khỏi giỏ hàng trước khi đặt hàng.`
+      );
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -158,21 +182,10 @@ export default function CheckoutPage() {
         shippingAddress: formData.shippingAddress.trim(),
         note: formData.note?.trim() || "",
         paymentMethod: formData.paymentMethod,
-        items: items.map((item) => {
-          const resolvedVariantId: string =
-            item.variantId &&
-              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-                item.variantId
-              )
-              ? item.variantId
-              : FALLBACK_VARIANT_UUIDS[String(item.productId)] ||
-              "fabd212c-da5b-4c3c-a9ea-897e4ce9fc88";
-
-          return {
-            variantId: resolvedVariantId,
-            quantity: item.quantity,
-          };
-        }),
+        items: items.map((item) => ({
+          variantId: item.variantId!,
+          quantity: item.quantity,
+        })),
       };
 
       const res = await orderApiRequest.createOrder(orderPayload);
@@ -544,6 +557,49 @@ export default function CheckoutPage() {
                 </Link>
               </div>
 
+              {/* Invalid Items Alert Banner */}
+              {invalidCartItems.length > 0 && (
+                <div className="mb-4 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive flex flex-col gap-2.5">
+                  <div className="flex items-start gap-2.5">
+                    <svg
+                      className="w-5 h-5 shrink-0 mt-0.5 text-destructive"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                    <div className="flex-1 text-xs">
+                      <p className="font-bold text-sm">
+                        Có {invalidCartItems.length} sản phẩm cần chọn lại
+                      </p>
+                      <p className="text-muted-foreground mt-0.5">
+                        Thông tin biến thể không hợp lệ hoặc là dữ liệu cũ. Vui lòng xóa hoặc chọn lại để tiếp tục:
+                      </p>
+                      <ul className="list-disc list-inside mt-1.5 space-y-1 font-medium text-destructive">
+                        {invalidCartItems.map((item) => (
+                          <li key={item.id} className="truncate">
+                            {item.name} ({item.variantSummary || "Chưa có biến thể"})
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveInvalidItems}
+                    className="self-end px-3 py-1.5 text-xs font-semibold rounded-lg bg-destructive text-white hover:bg-destructive/90 transition-all cursor-pointer shadow-xs"
+                  >
+                    Xóa các sản phẩm không hợp lệ
+                  </button>
+                </div>
+              )}
+
               {/* Items List */}
               <div className="space-y-4 max-h-[360px] overflow-y-auto pr-1 divide-y divide-border/60">
                 {items.map((item) => (
@@ -558,9 +614,16 @@ export default function CheckoutPage() {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-xs font-semibold text-foreground line-clamp-1">
-                        {item.name}
-                      </h4>
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="text-xs font-semibold text-foreground line-clamp-1">
+                          {item.name}
+                        </h4>
+                        {!isValidUUID(item.variantId) && (
+                          <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded bg-destructive/15 text-destructive">
+                            Cần chọn lại
+                          </span>
+                        )}
+                      </div>
                       <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
                         {item.variantSummary}
                       </p>
@@ -607,7 +670,12 @@ export default function CheckoutPage() {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || invalidCartItems.length > 0}
+                title={
+                  invalidCartItems.length > 0
+                    ? "Vui lòng xóa các sản phẩm lỗi hoặc chọn lại trước khi đặt hàng"
+                    : undefined
+                }
                 className="mt-6 w-full py-4 px-6 rounded-xl font-bold text-base text-white bg-[var(--primary)] hover:bg-[var(--primary)]/80 transition-all shadow-md active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
