@@ -14,16 +14,8 @@ interface AuthState {
   checkAuth: () => Promise<void>;
 }
 
-// Cookie helper
-function setClientAuthCookies(user: UserResponse) {
-  if (typeof document === "undefined") return;
-  const maxAge = 60 * 60 * 24 * 30; // 30 days
-  document.cookie = `is_authenticated=true; path=/; max-age=${maxAge}; SameSite=Lax`;
-  document.cookie = `user_role=${user.role}; path=/; max-age=${maxAge}; SameSite=Lax`;
-  document.cookie = `user_name=${encodeURIComponent(user.fullName)}; path=/; max-age=${maxAge}; SameSite=Lax`;
-}
-
-function clearClientAuthCookies() {
+// Clean up legacy non-HttpOnly auth cookies that may linger in user browsers
+function clearLegacyAuthCookies() {
   if (typeof document === "undefined") return;
   document.cookie = "is_authenticated=; path=/; max-age=0; SameSite=Lax";
   document.cookie = "user_role=; path=/; max-age=0; SameSite=Lax";
@@ -43,7 +35,8 @@ export const useAuthStore = create<AuthState>()(
         if (typeof window !== "undefined") {
           try {
             localStorage.setItem("user", JSON.stringify(user));
-            setClientAuthCookies(user);
+            // Remove legacy forgeable cookies
+            clearLegacyAuthCookies();
             window.dispatchEvent(new Event("authchange"));
           } catch (err) {
             console.warn("Could not save user to localStorage:", err);
@@ -62,7 +55,7 @@ export const useAuthStore = create<AuthState>()(
           if (typeof window !== "undefined") {
             try {
               localStorage.removeItem("user");
-              clearClientAuthCookies();
+              clearLegacyAuthCookies();
               window.dispatchEvent(new Event("authchange"));
             } catch (err) {
               console.warn("Could not clear auth state:", err);
@@ -72,28 +65,37 @@ export const useAuthStore = create<AuthState>()(
       },
 
       checkAuth: async () => {
-        // If already logged in, optionally revalidate with /api/auth/me
+        // Fast optimistic hydration from localStorage if available
         if (!get().isAuthenticated && typeof window !== "undefined") {
           try {
             const stored = localStorage.getItem("user");
             if (stored) {
               const parsed = JSON.parse(stored);
               set({ user: parsed, isAuthenticated: true });
-              setClientAuthCookies(parsed);
-              return;
             }
           } catch {
             // Ignore parse error
           }
         }
 
+        // Validate real session with backend
         try {
           const res = await authApiRequest.me();
           if (res.data?.data) {
             get().setUser(res.data.data);
+          } else {
+            get().logout();
           }
         } catch {
-          // Not logged in or expired session
+          // Not logged in or expired session: wipe client auth state
+          set({ user: null, isAuthenticated: false, isLoading: false });
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.removeItem("user");
+              clearLegacyAuthCookies();
+              window.dispatchEvent(new Event("authchange"));
+            } catch {}
+          }
         }
       },
     }),
