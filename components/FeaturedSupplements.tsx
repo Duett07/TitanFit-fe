@@ -65,16 +65,20 @@ export default function FeaturedSupplements({
   });
 
   const handleAddToCart = (product: ProductDetail) => {
+    const defaultVariant = product.variants?.[0];
     addItem({
       productId: product.id,
+      variantId: defaultVariant?.id,
       slug: product.slug,
       name: product.name,
       image: product.image,
-      price: product.price,
-      originalPrice: product.originalPrice,
-      selectedVariants: {},
-      variantSummary: product.categoryLabel,
-      stock: 50,
+      price: defaultVariant?.price ?? product.price,
+      originalPrice: defaultVariant?.originalPrice ?? product.originalPrice,
+      selectedVariants: defaultVariant?.options || {},
+      variantSummary: defaultVariant
+        ? Object.values(defaultVariant.options).join(" • ")
+        : product.categoryLabel,
+      stock: defaultVariant?.stock ?? 50,
     });
     setToastText(`Đã thêm "${product.name}" vào giỏ hàng!`);
     setTimeout(() => setToastText(null), 3000);
