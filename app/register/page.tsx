@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { useAuthStore } from "@/stores/useAuthStore";
 import authApiRequest from "@/apiRequest/auth";
+import { getSafeRedirect } from "@/lib/security";
 
 // Zod Validation Schema
 const registerSchema = z
@@ -47,7 +48,8 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 function RegisterFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectParam = searchParams.get("redirect") || searchParams.get("from");
+  const rawRedirect = searchParams.get("redirect") || searchParams.get("from");
+  const redirectTarget = getSafeRedirect(rawRedirect);
   const setUser = useAuthStore((state) => state.setUser);
 
   const [formValues, setFormValues] = useState<RegisterFormValues>({
@@ -153,11 +155,7 @@ function RegisterFormContent() {
 
       // Navigate after storing session
       setTimeout(() => {
-        if (redirectParam) {
-          router.push(redirectParam);
-        } else {
-          router.push("/");
-        }
+        router.push(redirectTarget);
       }, 500);
     } catch (err: unknown) {
       const axiosErr = err as {
@@ -549,7 +547,7 @@ function RegisterFormContent() {
         <div className="text-center mt-6 pt-4 border-t border-border/60 text-xs text-muted-foreground">
           Đã có tài khoản TITANFIT?{" "}
           <Link
-            href="/login"
+            href={rawRedirect ? `/login?redirect=${encodeURIComponent(redirectTarget)}` : "/login"}
             className="text-primary font-bold hover:underline ml-1"
           >
             Đăng nhập ngay &rarr;
