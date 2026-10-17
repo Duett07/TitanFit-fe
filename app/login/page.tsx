@@ -5,11 +5,13 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import authApiRequest from "@/apiRequest/auth";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { getSafeRedirect } from "@/lib/security";
 
 function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectParam = searchParams.get("redirect") || searchParams.get("from");
+  const rawRedirect = searchParams.get("redirect") || searchParams.get("from");
+  const redirectTarget = getSafeRedirect(rawRedirect);
   const setUser = useAuthStore((state) => state.setUser);
 
   const [identifier, setIdentifier] = useState("");
@@ -55,11 +57,9 @@ function LoginFormContent() {
         // Navigate after storing session
         setTimeout(() => {
           if (userData.role === "ROLE_ADMIN") {
-            router.push("/admin");
-          } else if (redirectParam) {
-            router.push(redirectParam);
+            router.push(redirectTarget.startsWith("/admin") ? redirectTarget : "/admin");
           } else {
-            router.push("/");
+            router.push(redirectTarget);
           }
         }, 350);
       }
@@ -300,7 +300,7 @@ function LoginFormContent() {
         <div className="text-center mt-6 pt-4 border-t border-border/60 text-xs text-muted-foreground">
           Chưa có tài khoản TITANFIT?{" "}
           <Link
-            href="/register"
+            href={rawRedirect ? `/register?redirect=${encodeURIComponent(redirectTarget)}` : "/register"}
             className="text-primary font-bold hover:underline ml-1"
           >
             Đăng ký ngay &rarr;
