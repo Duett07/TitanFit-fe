@@ -4,9 +4,20 @@ import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
+import {
+  AlertCircle,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  Phone,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import authApiRequest from "@/apiRequest/auth";
 import { getSafeRedirect } from "@/lib/security";
+import { Button, Toast } from "@/components/ui";
 
 // Zod Validation Schema
 const registerSchema = z
@@ -58,7 +69,7 @@ function RegisterFormContent() {
     phone: "",
     password: "",
     confirmPassword: "",
-    termsAccepted: true,
+    termsAccepted: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -175,20 +186,11 @@ function RegisterFormContent() {
     <div className="min-h-[calc(100vh-140px)] flex items-center justify-center py-10 px-4 sm:py-14">
       {/* Toast Notification */}
       {toastMessage && (
-        <div
-          className={`fixed top-6 right-6 z-50 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-200 ${
-            toastMessage.type === "success"
-              ? "bg-emerald-950 text-emerald-100 border-emerald-800"
-              : toastMessage.type === "error"
-              ? "bg-rose-950 text-rose-100 border-rose-800"
-              : "bg-zinc-900 text-zinc-100 border-zinc-700"
-          }`}
-        >
-          {toastMessage.type === "success" && (
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          )}
-          <span>{toastMessage.text}</span>
-        </div>
+        <Toast
+          text={toastMessage.text}
+          type={toastMessage.type}
+          onClose={() => setToastMessage(null)}
+        />
       )}
 
       <div className="w-full max-w-[480px] bg-card border border-border rounded-2xl p-7 sm:p-9 shadow-xl backdrop-blur-md">
@@ -211,14 +213,7 @@ function RegisterFormContent() {
             className="mb-5 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium flex items-center gap-2 animate-in fade-in duration-200"
             role="alert"
           >
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
+            <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
@@ -232,10 +227,7 @@ function RegisterFormContent() {
             </label>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
+                <User className="w-4 h-4" />
               </span>
               <input
                 id="regFullName"
@@ -251,11 +243,7 @@ function RegisterFormContent() {
             </div>
             {errors.fullName && (
               <p className="text-[11px] text-destructive font-medium mt-1.5 flex items-center gap-1">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
+                <AlertCircle className="w-3 h-3 shrink-0" />
                 <span>{errors.fullName}</span>
               </p>
             )}
@@ -268,10 +256,7 @@ function RegisterFormContent() {
             </label>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect width="20" height="16" x="2" y="4" rx="2" />
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                </svg>
+                <Mail className="w-4 h-4" />
               </span>
               <input
                 id="regEmail"
@@ -287,11 +272,7 @@ function RegisterFormContent() {
             </div>
             {errors.email && (
               <p className="text-[11px] text-destructive font-medium mt-1.5 flex items-center gap-1">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
+                <AlertCircle className="w-3 h-3 shrink-0" />
                 <span>{errors.email}</span>
               </p>
             )}
@@ -304,9 +285,7 @@ function RegisterFormContent() {
             </label>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                </svg>
+                <Phone className="w-4 h-4" />
               </span>
               <input
                 id="regPhone"
@@ -322,11 +301,7 @@ function RegisterFormContent() {
             </div>
             {errors.phone && (
               <p className="text-[11px] text-destructive font-medium mt-1.5 flex items-center gap-1">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
+                <AlertCircle className="w-3 h-3 shrink-0" />
                 <span>{errors.phone}</span>
               </p>
             )}
@@ -339,10 +314,7 @@ function RegisterFormContent() {
             </label>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
+                <Lock className="w-4 h-4" />
               </span>
               <input
                 id="regPassword"
@@ -363,27 +335,15 @@ function RegisterFormContent() {
                 title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
                 {showPassword ? (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="m2 2 20 20" />
-                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-                  </svg>
+                  <EyeOff className="w-4 h-4" />
                 ) : (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
+                  <Eye className="w-4 h-4" />
                 )}
               </button>
             </div>
             {errors.password && (
               <p className="text-[11px] text-destructive font-medium mt-1.5 flex items-center gap-1">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
+                <AlertCircle className="w-3 h-3 shrink-0" />
                 <span>{errors.password}</span>
               </p>
             )}
@@ -396,10 +356,7 @@ function RegisterFormContent() {
             </label>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-                  <path d="m9 12 2 2 4-4" />
-                </svg>
+                <ShieldCheck className="w-4 h-4" />
               </span>
               <input
                 id="regConfirmPassword"
@@ -422,27 +379,15 @@ function RegisterFormContent() {
                 title={showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
                 {showConfirmPassword ? (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="m2 2 20 20" />
-                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-                  </svg>
+                  <EyeOff className="w-4 h-4" />
                 ) : (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
+                  <Eye className="w-4 h-4" />
                 )}
               </button>
             </div>
             {errors.confirmPassword && (
               <p className="text-[11px] text-destructive font-medium mt-1.5 flex items-center gap-1">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
+                <AlertCircle className="w-3 h-3 shrink-0" />
                 <span>{errors.confirmPassword}</span>
               </p>
             )}
@@ -471,31 +416,22 @@ function RegisterFormContent() {
             </label>
             {errors.termsAccepted && (
               <p className="text-[11px] text-destructive font-medium mt-1.5 flex items-center gap-1">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
+                <AlertCircle className="w-3 h-3 shrink-0" />
                 <span>{errors.termsAccepted}</span>
               </p>
             )}
           </div>
 
           {/* Submit CTA */}
-          <button
+          <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-11 rounded-xl font-bold text-sm text-white bg-primary hover:bg-primary/90 transition-all shadow-md active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+            isLoading={isLoading}
+            variant="primary"
+            className="w-full h-11 text-sm shadow-md"
           >
-            {isLoading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Đang Khởi Tạo Tài Khoản...</span>
-              </>
-            ) : (
-              <span>Hoàn Tất Đăng Ký Tài Khoản</span>
-            )}
-          </button>
+            Hoàn Tất Đăng Ký Tài Khoản
+          </Button>
         </form>
 
         {/* Social Logins */}

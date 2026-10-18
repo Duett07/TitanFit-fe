@@ -2,9 +2,17 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
+import {
+  AlertCircle,
+  ArrowLeft,
+  RefreshCw,
+  Search,
+  X,
+} from "lucide-react";
 import orderApiRequest from "@/apiRequest/order";
 import { formatVND } from "@/lib/format";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
+import { EmptyState, Modal, StatusBadge, Toast } from "@/components/ui";
 
 export interface AdminOrderItem {
   name: string;
@@ -144,8 +152,36 @@ export default function AdminOrdersPage() {
   }, [mapOrder]);
 
   useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+    let ignore = false;
+    const initFetch = async () => {
+      try {
+        const res = await orderApiRequest.getAllOrders();
+        if (!ignore) {
+          const rawData = res.data?.data || [];
+          setOrders(rawData.map(mapOrder));
+        }
+      } catch (err: unknown) {
+        if (!ignore) {
+          const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
+          setFetchError(
+            errorObj.response?.data?.message ||
+              errorObj.message ||
+              "Không thể tải danh sách đơn hàng từ máy chủ. Vui lòng kiểm tra kết nối."
+          );
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    initFetch();
+
+    return () => {
+      ignore = true;
+    };
+  }, [mapOrder]);
 
   // Real-time synchronization: Auto-refresh when new orders arrive or are modified elsewhere
   useAutoSync({
@@ -258,43 +294,11 @@ export default function AdminOrdersPage() {
     <div className="space-y-6">
       {/* Toast Notification Banner */}
       {toastMessage && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-sm font-semibold transition-all transform animate-in fade-in slide-in-from-bottom-4 duration-200 border ${
-            toastMessage.type === "success"
-              ? "bg-emerald-600 text-white border-emerald-500 shadow-emerald-950/20"
-              : toastMessage.type === "error"
-              ? "bg-rose-600 text-white border-rose-500 shadow-rose-950/20"
-              : "bg-zinc-800 text-white border-zinc-700 shadow-zinc-950/20"
-          }`}
-        >
-          {toastMessage.type === "success" && (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M20 6 9 17l-5-5" />
-            </svg>
-          )}
-          {toastMessage.type === "error" && (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="15" y1="9" x2="9" y2="15" />
-              <line x1="9" y1="9" x2="15" y2="15" />
-            </svg>
-          )}
-          {toastMessage.type === "info" && (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="16" x2="12" y2="12" />
-              <line x1="12" y1="8" x2="12.01" y2="8" />
-            </svg>
-          )}
-          <span>{toastMessage.text}</span>
-          <button
-            type="button"
-            onClick={() => setToastMessage(null)}
-            className="ml-2 hover:opacity-75 text-white/80 cursor-pointer"
-          >
-            ✕
-          </button>
-        </div>
+        <Toast
+          text={toastMessage.text}
+          type={toastMessage.type}
+          onClose={() => setToastMessage(null)}
+        />
       )}
 
       {/* Header Quản Lý Đơn Hàng */}
@@ -326,20 +330,7 @@ export default function AdminOrdersPage() {
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-card hover:bg-secondary text-foreground border border-border transition-colors cursor-pointer disabled:opacity-50"
             title="Đồng bộ lại dữ liệu từ Backend"
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className={isLoading ? "animate-spin text-primary" : ""}
-            >
-              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-              <path d="M3 3v5h5" />
-              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
-              <path d="M16 21h5v-5" />
-            </svg>
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-primary" : ""}`} />
             <span>{isLoading ? "Đang tải..." : "Làm Mới"}</span>
           </button>
 
@@ -347,9 +338,7 @@ export default function AdminOrdersPage() {
             href="/admin"
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-muted/60 hover:bg-muted text-foreground border border-border transition-colors"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="m15 18-6-6 6-6" />
-            </svg>
+            <ArrowLeft className="w-3.5 h-3.5" />
             <span>Về Tổng Quan</span>
           </Link>
         </div>
@@ -359,9 +348,7 @@ export default function AdminOrdersPage() {
       {fetchError && (
         <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+            <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{fetchError}</span>
           </div>
           <button
@@ -509,32 +496,22 @@ export default function AdminOrdersPage() {
       {/* Toolbar Tìm Kiếm & Số lượng hiển thị */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-md">
-          <svg
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.3-4.3" />
-          </svg>
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Tìm theo mã đơn (TF-...), tên khách, SĐT..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-card border border-border text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-xs"
+            className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-card border border-border text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-xs"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground cursor-pointer"
+              aria-label="Xóa tìm kiếm"
             >
-              ✕
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
@@ -597,19 +574,15 @@ export default function AdminOrdersPage() {
                 ))
               ) : filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-muted-foreground">
-                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3 text-muted-foreground">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="11" cy="11" r="8" />
-                        <path d="m21 21-4.3-4.3" />
-                      </svg>
-                    </div>
-                    <p className="font-semibold text-sm">Không tìm thấy đơn hàng phù hợp</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {searchQuery
-                        ? "Thử điều chỉnh từ khóa tìm kiếm hoặc chọn bộ lọc trạng thái khác"
-                        : "Chưa có đơn hàng nào trong hệ thống với trạng thái này"}
-                    </p>
+                  <td colSpan={8} className="py-8 px-4">
+                    <EmptyState
+                      title="Không tìm thấy đơn hàng phù hợp"
+                      description={
+                        searchQuery
+                          ? "Thử điều chỉnh từ khóa tìm kiếm hoặc chọn bộ lọc trạng thái khác"
+                          : "Chưa có đơn hàng nào trong hệ thống với trạng thái này"
+                      }
+                    />
                   </td>
                 </tr>
               ) : (
@@ -682,45 +655,11 @@ export default function AdminOrdersPage() {
                       <div className="flex flex-col gap-1.5">
                         {/* Status Badge */}
                         <div>
-                          {ord.status === "PENDING" && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                              Chờ duyệt
-                            </span>
-                          )}
-                          {ord.status === "CONFIRMED" && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30">
-                              Đã xác nhận
-                            </span>
-                          )}
-                          {ord.status === "SHIPPING" && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30">
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <rect width="16" height="13" x="1" y="6" rx="2" />
-                                <circle cx="17.5" cy="18.5" r="2.5" />
-                                <circle cx="5.5" cy="18.5" r="2.5" />
-                              </svg>
-                              Đang giao
-                            </span>
-                          )}
-                          {ord.status === "COMPLETED" && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                <polyline points="20 6 9 17 4 12" />
-                              </svg>
-                              Đã hoàn thành
-                            </span>
-                          )}
-                          {ord.status === "CANCELLED" && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30">
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                <circle cx="12" cy="12" r="10" />
-                                <line x1="15" y1="9" x2="9" y2="15" />
-                                <line x1="9" y1="9" x2="15" y2="15" />
-                              </svg>
-                              Đã hủy (Đã hoàn kho)
-                            </span>
-                          )}
+                          <StatusBadge
+                            status={ord.status}
+                            size="sm"
+                            label={ord.status === "CANCELLED" ? "Đã hủy (Đã hoàn kho)" : undefined}
+                          />
                         </div>
 
                         {/* Dropdown chuyển nhanh trạng thái */}
@@ -815,207 +754,19 @@ export default function AdminOrdersPage() {
 
       {/* MODAL XEM CHI TIẾT ĐƠN HÀNG */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div
-            className="w-full max-w-2xl rounded-2xl bg-card border border-border shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="p-5 border-b border-border flex items-center justify-between bg-muted/20">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base sm:text-lg font-bold text-foreground">
-                    Chi Tiết Đơn Hàng #{selectedOrder.code}
-                  </h3>
-                  {selectedOrder.status === "PENDING" && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                      Chờ duyệt
-                    </span>
-                  )}
-                  {selectedOrder.status === "CONFIRMED" && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30">
-                      Đã xác nhận
-                    </span>
-                  )}
-                  {selectedOrder.status === "SHIPPING" && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30">
-                      Đang giao hàng
-                    </span>
-                  )}
-                  {selectedOrder.status === "COMPLETED" && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                      Đã hoàn thành
-                    </span>
-                  )}
-                  {selectedOrder.status === "CANCELLED" && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30">
-                      Đã hủy (Đã hoàn kho)
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Thời gian đặt: {selectedOrder.time}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setSelectedOrder(null)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
-              >
-                ✕
-              </button>
+        <Modal
+          isOpen={!!selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+          size="lg"
+          title={
+            <div className="flex items-center gap-2">
+              <span>Chi Tiết Đơn Hàng #{selectedOrder.code}</span>
+              <StatusBadge status={selectedOrder.status} size="sm" />
             </div>
-
-            {/* Modal Body */}
-            <div className="p-5 overflow-y-auto space-y-5 text-xs">
-              {/* Thông tin khách hàng & Địa chỉ */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-muted/30 border border-border">
-                <div>
-                  <span className="text-[11px] font-bold text-muted-foreground block uppercase tracking-wider mb-1">
-                    Khách Hàng Nhận Hàng
-                  </span>
-                  <p className="font-bold text-foreground text-sm">{selectedOrder.customer}</p>
-                  <p className="text-muted-foreground font-mono mt-0.5">
-                    Số điện thoại: <strong>{selectedOrder.phone}</strong>
-                  </p>
-                  <p className="text-muted-foreground mt-1">
-                    Địa chỉ: {selectedOrder.address}
-                  </p>
-                </div>
-
-                <div>
-                  <span className="text-[11px] font-bold text-muted-foreground block uppercase tracking-wider mb-1">
-                    Thanh Toán & Ghi Chú
-                  </span>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span
-                      className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
-                        selectedOrder.paymentMethod === "VIETQR"
-                          ? "bg-primary/10 text-primary border border-primary/25"
-                          : "bg-secondary text-foreground border border-border"
-                      }`}
-                    >
-                      {selectedOrder.paymentMethod}
-                    </span>
-                    <span className="text-muted-foreground font-medium">
-                      {selectedOrder.paymentStatus}
-                    </span>
-                  </div>
-
-                  <div className="mt-2 text-muted-foreground bg-background/50 p-2 rounded-lg border border-border/60">
-                    <span className="font-semibold text-foreground">Ghi chú khách:</span>{" "}
-                    {selectedOrder.note || "Không có ghi chú"}
-                  </div>
-                </div>
-              </div>
-
-              {/* Từng món hàng trong đơn */}
-              <div>
-                <h4 className="font-bold text-foreground text-sm mb-2.5 flex items-center justify-between">
-                  <span>Danh Sách Sản Phẩm Đặt Mua</span>
-                  <span className="text-xs font-normal text-muted-foreground">
-                    {selectedOrder.itemsList.reduce((acc, cur) => acc + cur.qty, 0)} sản phẩm
-                  </span>
-                </h4>
-
-                <div className="border border-border rounded-xl overflow-hidden">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="bg-muted/40 border-b border-border text-muted-foreground font-semibold">
-                        <th className="py-2.5 px-3">Tên Sản Phẩm</th>
-                        <th className="py-2.5 px-3">Biến Thể</th>
-                        <th className="py-2.5 px-3">Đơn Giá</th>
-                        <th className="py-2.5 px-3 text-center">SL</th>
-                        <th className="py-2.5 px-3 text-right">Thành Tiền</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/60">
-                      {selectedOrder.itemsList.map((item, idx) => (
-                        <tr key={idx} className="hover:bg-muted/20">
-                          <td className="py-2.5 px-3 font-semibold text-foreground">
-                            {item.name}
-                          </td>
-                          <td className="py-2.5 px-3 text-muted-foreground">
-                            {item.variant}
-                          </td>
-                          <td className="py-2.5 px-3 font-mono">
-                            {formatVND(item.price)}
-                          </td>
-                          <td className="py-2.5 px-3 text-center font-bold text-foreground">
-                            {item.qty}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono font-bold text-foreground">
-                            {formatVND(item.price * item.qty)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot>
-                      <tr className="bg-muted/30 border-t border-border font-bold">
-                        <td colSpan={4} className="py-2.5 px-3 text-right text-muted-foreground">
-                          Tổng cộng tiền hàng:
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono text-sm text-primary">
-                          {formatVND(selectedOrder.total)}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-              </div>
-
-              {/* Chuyển nhanh trạng thái trong modal */}
-              {selectedOrder.status !== "COMPLETED" && selectedOrder.status !== "CANCELLED" && (
-                <div className="p-3.5 rounded-xl bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <span className="font-bold text-foreground block">
-                      Chuyển Trạng Thái Đơn Hàng Nhanh:
-                    </span>
-                    <span className="text-[11px] text-muted-foreground">
-                      Hủy đơn sẽ tự động hoàn trả số lượng vào kho dữ liệu
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {selectedOrder.status !== "SHIPPING" && (
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateStatus(selectedOrder.code, "SHIPPING")}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all cursor-pointer shadow-xs"
-                      >
-                        Duyệt Đơn (SHIPPING)
-                      </button>
-                    )}
-
-                    {selectedOrder.status === "SHIPPING" && (
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateStatus(selectedOrder.code, "COMPLETED")}
-                        className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs transition-all cursor-pointer shadow-xs"
-                      >
-                        Giao Thành Công (COMPLETED)
-                      </button>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (confirm(`Bạn có chắc chắn muốn HỦY đơn #${selectedOrder.code}?\nTồn kho sẽ được cộng lại tự động!`)) {
-                          handleUpdateStatus(selectedOrder.code, "CANCELLED");
-                        }
-                      }}
-                      className="px-3 py-1.5 rounded-lg border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs transition-all cursor-pointer"
-                    >
-                      Hủy Đơn (CANCELLED - Hoàn Kho)
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-4 border-t border-border bg-muted/20 flex items-center justify-between">
+          }
+          description={`Thời gian đặt: ${selectedOrder.time}`}
+          footer={
+            <div className="w-full flex items-center justify-between">
               <span className="text-xs text-muted-foreground font-mono">
                 Mã đơn: #{selectedOrder.code}
               </span>
@@ -1027,8 +778,154 @@ export default function AdminOrdersPage() {
                 Đóng
               </button>
             </div>
+          }
+        >
+          <div className="space-y-5 text-xs">
+            {/* Thông tin khách hàng & Địa chỉ */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-muted/30 border border-border">
+              <div>
+                <span className="text-[11px] font-bold text-muted-foreground block uppercase tracking-wider mb-1">
+                  Khách Hàng Nhận Hàng
+                </span>
+                <p className="font-bold text-foreground text-sm">{selectedOrder.customer}</p>
+                <p className="text-muted-foreground font-mono mt-0.5">
+                  Số điện thoại: <strong>{selectedOrder.phone}</strong>
+                </p>
+                <p className="text-muted-foreground mt-1">
+                  Địa chỉ: {selectedOrder.address}
+                </p>
+              </div>
+
+              <div>
+                <span className="text-[11px] font-bold text-muted-foreground block uppercase tracking-wider mb-1">
+                  Thanh Toán & Ghi Chú
+                </span>
+                <div className="flex items-center gap-2 mb-1">
+                  <span
+                    className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
+                      selectedOrder.paymentMethod === "VIETQR"
+                        ? "bg-primary/10 text-primary border border-primary/25"
+                        : "bg-secondary text-foreground border border-border"
+                    }`}
+                  >
+                    {selectedOrder.paymentMethod}
+                  </span>
+                  <span className="text-muted-foreground font-medium">
+                    {selectedOrder.paymentStatus}
+                  </span>
+                </div>
+
+                <div className="mt-2 text-muted-foreground bg-background/50 p-2 rounded-lg border border-border/60">
+                  <span className="font-semibold text-foreground">Ghi chú khách:</span>{" "}
+                  {selectedOrder.note || "Không có ghi chú"}
+                </div>
+              </div>
+            </div>
+
+            {/* Từng món hàng trong đơn */}
+            <div>
+              <h4 className="font-bold text-foreground text-sm mb-2.5 flex items-center justify-between">
+                <span>Danh Sách Sản Phẩm Đặt Mua</span>
+                <span className="text-xs font-normal text-muted-foreground">
+                  {selectedOrder.itemsList.reduce((acc, cur) => acc + cur.qty, 0)} sản phẩm
+                </span>
+              </h4>
+
+              <div className="border border-border rounded-xl overflow-hidden">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="bg-muted/40 border-b border-border text-muted-foreground font-semibold">
+                      <th className="py-2.5 px-3">Tên Sản Phẩm</th>
+                      <th className="py-2.5 px-3">Biến Thể</th>
+                      <th className="py-2.5 px-3">Đơn Giá</th>
+                      <th className="py-2.5 px-3 text-center">SL</th>
+                      <th className="py-2.5 px-3 text-right">Thành Tiền</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60">
+                    {selectedOrder.itemsList.map((item, idx) => (
+                      <tr key={idx} className="hover:bg-muted/20">
+                        <td className="py-2.5 px-3 font-semibold text-foreground">
+                          {item.name}
+                        </td>
+                        <td className="py-2.5 px-3 text-muted-foreground">
+                          {item.variant}
+                        </td>
+                        <td className="py-2.5 px-3 font-mono">
+                          {formatVND(item.price)}
+                        </td>
+                        <td className="py-2.5 px-3 text-center font-bold text-foreground">
+                          {item.qty}
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-mono font-bold text-foreground">
+                          {formatVND(item.price * item.qty)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="bg-muted/30 border-t border-border font-bold">
+                      <td colSpan={4} className="py-2.5 px-3 text-right text-muted-foreground">
+                        Tổng cộng tiền hàng:
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono text-sm text-primary">
+                        {formatVND(selectedOrder.total)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+
+            {/* Chuyển nhanh trạng thái trong modal */}
+            {selectedOrder.status !== "COMPLETED" && selectedOrder.status !== "CANCELLED" && (
+              <div className="p-3.5 rounded-xl bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="font-bold text-foreground block">
+                    Chuyển Trạng Thái Đơn Hàng Nhanh:
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    Hủy đơn sẽ tự động hoàn trả số lượng vào kho dữ liệu
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  {selectedOrder.status !== "SHIPPING" && (
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateStatus(selectedOrder.code, "SHIPPING")}
+                      className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all cursor-pointer shadow-xs"
+                    >
+                      Duyệt Đơn (SHIPPING)
+                    </button>
+                  )}
+
+                  {selectedOrder.status === "SHIPPING" && (
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateStatus(selectedOrder.code, "COMPLETED")}
+                      className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs transition-all cursor-pointer shadow-xs"
+                    >
+                      Giao Thành Công (COMPLETED)
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm(`Bạn có chắc chắn muốn HỦY đơn #${selectedOrder.code}?\nTồn kho sẽ được cộng lại tự động!`)) {
+                        handleUpdateStatus(selectedOrder.code, "CANCELLED");
+                      }
+                    }}
+                    className="px-3 py-1.5 rounded-lg border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs transition-all cursor-pointer"
+                  >
+                    Hủy Đơn (CANCELLED - Hoàn Kho)
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   );
