@@ -12,11 +12,13 @@ export interface RegisterRequest {
   password?: string;
 }
 
+export type UserRole = "ROLE_ADMIN" | "ROLE_USER";
+
 export interface UserResponse {
   id: string;
   fullName: string;
   email: string;
-  role: string;
+  role: UserRole;
   phone?: string;
   phoneNumber?: string;
   avatarUrl?: string;

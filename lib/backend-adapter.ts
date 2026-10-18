@@ -1,7 +1,5 @@
-import { ProductDetail, ProductVariantOption, ProductVariantSKU } from "@/data/products";
-import { BackendProductDetail, BackendProductSummary, BackendVariant, BackendCategory } from "@/types/product.type";
-
-export type { BackendVariant, BackendCategory, BackendProductDetail, BackendProductSummary };
+import { UIProductDetail, ProductVariantOption, ProductVariantSKU } from "@/data/products";
+import { ProductDetailDto, ProductSummaryDto, VariantDto } from "@/types/product.type";
 
 
 /**
@@ -128,7 +126,7 @@ export function parseVariantName(
 /**
  * Transforms Backend ProductDetailResponse into Frontend ProductDetail structure
  */
-export function transformBackendProductDetail(beProduct: BackendProductDetail): ProductDetail {
+export function transformBackendProductDetail(beProduct: ProductDetailDto): UIProductDetail {
   const catTree = (beProduct.category?.categoryTree || "").toLowerCase();
   const catSlug = (beProduct.category?.slug || "").toLowerCase();
   const isApparel =
@@ -210,7 +208,7 @@ export function transformBackendProductDetail(beProduct: BackendProductDetail): 
 /**
  * Transforms Backend ProductSummaryResponse item into ProductDetail / Card format
  */
-export function transformBackendProductSummary(item: BackendProductSummary): ProductDetail {
+export function transformBackendProductSummary(item: ProductSummaryDto): UIProductDetail {
   const isApparel =
     item.categorySlug.includes("quan-ao") ||
     item.categorySlug.includes("phu-kien") ||
@@ -232,7 +230,7 @@ export function transformBackendProductSummary(item: BackendProductSummary): Pro
     actionText: "Xem chi tiết",
     description: item.name,
     variantOptions: [],
-    variants: (item.variants || []).map((v) => ({
+    variants: (item.variants || []).map((v: VariantDto) => ({
       id: v.id,
       sku: v.sku,
       options: { "Phân loại": v.variantName },

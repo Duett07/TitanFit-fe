@@ -13,6 +13,7 @@ import orderApiRequest from "@/apiRequest/order";
 import { formatVND } from "@/lib/format";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
 import { EmptyState, Modal, StatusBadge, Toast } from "@/components/ui";
+import { PaymentMethod, OrderStatus, PaymentStatus } from "@/types/order.type";
 
 export interface AdminOrderItem {
   name: string;
@@ -31,15 +32,16 @@ export interface AdminOrder {
   itemsSummary: string;
   itemsList: AdminOrderItem[];
   total: number;
-  paymentMethod: "VIETQR" | "COD" | string;
-  paymentStatus: string;
-  status: "PENDING" | "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED";
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  paymentStatusLabel?: string;
+  status: OrderStatus;
   time: string;
   createdAt?: string;
   note?: string;
 }
 
-type FilterStatus = "ALL" | "PENDING" | "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED";
+type FilterStatus = "ALL" | OrderStatus;
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
@@ -115,8 +117,9 @@ export default function AdminOrdersPage() {
         price: Number(it.price) || 0,
       })),
       total: Number(o.totalAmount) || 0,
-      paymentMethod: o.paymentMethod || "COD",
-      paymentStatus: paymentStatusLabel,
+      paymentMethod: (o.paymentMethod === "VIETQR" ? "VIETQR" : "COD") as PaymentMethod,
+      paymentStatus: (o.paymentStatus === "PAID" ? "PAID" : "UNPAID") as PaymentStatus,
+      paymentStatusLabel,
       status,
       time: o.createdAt ? new Date(o.createdAt).toLocaleString("vi-VN") : "---",
       createdAt: o.createdAt,
@@ -631,14 +634,14 @@ export default function AdminOrdersPage() {
                         </span>
                         <span
                           className={`text-[10px] font-medium ${
-                            ord.paymentStatus.includes("Đã")
+                            ord.paymentStatus === "PAID"
                               ? "text-emerald-600 dark:text-emerald-400"
-                              : ord.paymentStatus.includes("hủy")
+                              : ord.status === "CANCELLED"
                               ? "text-rose-500"
                               : "text-amber-500"
                           }`}
                         >
-                          {ord.paymentStatus}
+                          {ord.paymentStatusLabel || (ord.paymentStatus === "PAID" ? "Đã thanh toán" : "Chưa thanh toán")}
                         </span>
                       </div>
                     </td>
@@ -811,7 +814,7 @@ export default function AdminOrdersPage() {
                     {selectedOrder.paymentMethod}
                   </span>
                   <span className="text-muted-foreground font-medium">
-                    {selectedOrder.paymentStatus}
+                    {selectedOrder.paymentStatusLabel || (selectedOrder.paymentStatus === "PAID" ? "Đã thanh toán" : "Chưa thanh toán")}
                   </span>
                 </div>
 

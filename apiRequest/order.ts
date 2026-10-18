@@ -1,6 +1,6 @@
 import http from "@/lib/http";
 import { ApiResponse } from "@/types/api.type";
-import { CreateOrderRequest, OrderResponse, TrackOrderRequest } from "@/types/order.type";
+import { CreateOrderRequest, OrderResponse, TrackOrderRequest, UpdatableOrderStatus } from "@/types/order.type";
 
 export const orderApiRequest = {
   createOrder: (body: CreateOrderRequest) =>
@@ -21,7 +21,7 @@ export const orderApiRequest = {
     ),
   updateOrderStatus: (
     orderId: string,
-    newStatus: "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED"
+    newStatus: UpdatableOrderStatus
   ) =>
     http.patch<ApiResponse<OrderResponse>>(
       `/api/admin/orders/${orderId}/status?newStatus=${newStatus}`,
