@@ -14,10 +14,9 @@ function LoginFormContent() {
   const redirectTarget = getSafeRedirect(rawRedirect);
   const setUser = useAuthStore((state) => state.setUser);
 
-  const [identifier, setIdentifier] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<{
@@ -31,10 +30,18 @@ function LoginFormContent() {
   };
 
   const handleLoginSubmit = async () => {
-    if (!identifier.trim()) {
-      setErrorMessage("Vui lòng nhập email hoặc số điện thoại.");
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setErrorMessage("Vui lòng nhập địa chỉ email.");
       return;
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setErrorMessage("Địa chỉ email không đúng định dạng (ví dụ: name@example.com).");
+      return;
+    }
+
     if (!password) {
       setErrorMessage("Vui lòng nhập mật khẩu.");
       return;
@@ -45,7 +52,7 @@ function LoginFormContent() {
 
     try {
       const res = await authApiRequest.login({
-        email: identifier.trim(),
+        email: trimmedEmail,
         password: password,
       });
 
@@ -135,34 +142,34 @@ function LoginFormContent() {
 
         {/* Standard Login Form */}
         <form onSubmit={handleFormSubmit}>
-          {/* Email / Identifier */}
+          {/* Email */}
           <div className="mb-4">
-            <label className="block text-xs font-semibold text-foreground mb-1.5" htmlFor="loginIdentifier">
+            <label className="block text-xs font-semibold text-foreground mb-1.5" htmlFor="loginEmail">
               Email
             </label>
             <div className="relative flex items-center">
               <span className="absolute left-3.5 text-muted-foreground flex items-center pointer-events-none">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
+                  <rect width="20" height="16" x="2" y="4" rx="2" />
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                 </svg>
               </span>
               <input
-                type="text"
-                id="loginIdentifier"
-                name="identifier"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="name@example.com hoặc 0987..."
+                type="email"
+                id="loginEmail"
+                name="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.com"
                 className="w-full h-11 pl-10 pr-3 rounded-lg bg-secondary border border-border text-foreground text-sm font-sans focus:outline-none focus:border-primary focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
                 required
-                autoComplete="username"
+                autoComplete="email"
               />
             </div>
           </div>
 
           {/* Password */}
-          <div className="mb-4">
+          <div className="mb-6">
             <div className="flex justify-between items-center mb-1.5">
               <label className="block text-xs font-semibold text-foreground mb-0" htmlFor="loginPassword">
                 Mật khẩu
@@ -217,20 +224,6 @@ function LoginFormContent() {
                 )}
               </button>
             </div>
-          </div>
-
-          {/* Remember Me Checkbox */}
-          <div className="flex items-center gap-2.5 mt-2 mb-6">
-            <input
-              type="checkbox"
-              id="rememberMe"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="w-4 h-4 rounded text-primary accent-primary cursor-pointer shrink-0"
-            />
-            <label htmlFor="rememberMe" className="text-xs text-foreground cursor-pointer select-none">
-              Ghi nhớ đăng nhập trên trình duyệt này
-            </label>
           </div>
 
           {/* Submit CTA */}
