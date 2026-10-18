@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { useCartStore } from "@/stores/useCartStore";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { formatVND } from "@/data/products";
+import { formatVND } from "@/lib/format";
 import orderApiRequest from "@/apiRequest/order";
 import { CreateOrderRequest } from "@/types/order.type";
 import { emitSyncEvent } from "@/lib/sync";

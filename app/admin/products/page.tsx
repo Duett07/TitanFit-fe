@@ -11,7 +11,7 @@ import {
   CreateProductVariantDto,
 } from "@/types/product.type";
 import { CategoryDto } from "@/types/category.type";
-import { formatVND } from "@/data/products";
+import { formatVND } from "@/lib/format";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
 
 // Mẫu ảnh sẵn cho tiện chọn nhanh khi thêm sản phẩm mới

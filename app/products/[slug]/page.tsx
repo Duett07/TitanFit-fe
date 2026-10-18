@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { getProductDetail } from "@/data/products";
+import productApiRequest from "@/apiRequest/product";
+import { transformBackendProductDetail } from "@/lib/backend-adapter";
 import ProductDetailClient from "./ProductDetailClient";
 
 export async function generateMetadata({
@@ -9,17 +10,27 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProductDetail(slug);
 
-  if (!product) {
-    return {
-      title: "Chi Tiết Sản Phẩm — TITANFIT",
-    };
+  try {
+    const res = await productApiRequest.getProductBySlug(slug);
+    const data = res.data?.data;
+    if (data) {
+      return {
+        title: `${data.name} — TITANFIT Chính Hãng`,
+        description: data.description || `Sản phẩm ${data.name} chính hãng tại TITANFIT`,
+        openGraph: {
+          title: `${data.name} — TITANFIT`,
+          description: data.description,
+          images: data.thumbnailUrl ? [data.thumbnailUrl] : [],
+        },
+      };
+    }
+  } catch {
+    // Backend fetch failed or not found
   }
 
   return {
-    title: `${product.name} — TITANFIT Chính Hãng`,
-    description: product.description,
+    title: "Chi Tiết Sản Phẩm — TITANFIT",
   };
 }
 
@@ -29,7 +40,18 @@ async function ProductDetailLoader({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  return <ProductDetailClient slug={slug} />;
+  let initialProduct = null;
+
+  try {
+    const res = await productApiRequest.getProductBySlug(slug);
+    if (res.data?.data) {
+      initialProduct = transformBackendProductDetail(res.data.data);
+    }
+  } catch {
+    // Client component will handle 404 / retry state
+  }
+
+  return <ProductDetailClient slug={slug} initialProduct={initialProduct} />;
 }
 
 export default function ProductDetailPage({
@@ -52,3 +74,4 @@ export default function ProductDetailPage({
     </Suspense>
   );
 }
+

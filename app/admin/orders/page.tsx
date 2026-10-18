@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import orderApiRequest from "@/apiRequest/order";
-import { formatVND } from "@/data/products";
+import { formatVND } from "@/lib/format";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
 
 export interface AdminOrderItem {

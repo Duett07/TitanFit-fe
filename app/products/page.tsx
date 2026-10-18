@@ -5,13 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  PRODUCTS,
   Product,
   ProductCategory,
   PriceFilterKey,
   SortOptionKey,
-  formatVND,
 } from "@/data/products";
+import { formatVND } from "@/lib/format";
 import productApiRequest from "@/apiRequest/product";
 import { transformBackendProductSummary } from "@/lib/backend-adapter";
 import { useAutoSync } from "@/lib/sync";
@@ -134,20 +133,23 @@ function ProductsContent() {
   // Dynamic product list fetched from backend
   const [productList, setProductList] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const loadProducts = React.useCallback(async (silent = false) => {
     if (!silent) setIsLoading(true);
     try {
       const res = await productApiRequest.getProducts({ page: 0, size: 50 });
       const content = res.data?.data?.content;
-      if (content && Array.isArray(content) && content.length > 0) {
+      if (content && Array.isArray(content)) {
         setProductList(content.map(transformBackendProductSummary));
+        setFetchError(null);
       } else {
-        setProductList(PRODUCTS);
+        setProductList([]);
       }
     } catch (err) {
-      console.warn("Error fetching products via productApiRequest:", err);
-      setProductList(PRODUCTS);
+      console.error("Error fetching products via productApiRequest:", err);
+      setProductList([]);
+      setFetchError("Không thể tải danh sách sản phẩm từ máy chủ.");
     } finally {
       if (!silent) setIsLoading(false);
     }
@@ -167,11 +169,10 @@ function ProductsContent() {
 
   // Category item counts derived from loaded products
   const categoryCounts = useMemo(() => {
-    const list = productList.length > 0 ? productList : PRODUCTS;
-    const apparel = list.filter((p) => p.category === "apparel").length;
-    const supplements = list.filter((p) => p.category === "supplements").length;
+    const apparel = productList.filter((p) => p.category === "apparel").length;
+    const supplements = productList.filter((p) => p.category === "supplements").length;
     return {
-      total: list.length,
+      total: productList.length,
       apparel,
       supplements,
     };
@@ -546,6 +547,37 @@ function ProductsContent() {
                     </div>
                   </div>
                 ))}
+              </div>
+            ) : fetchError ? (
+              /* Trạng thái lỗi tải dữ liệu từ máy chủ */
+              <div className="p-12 text-center flex flex-col items-center justify-center bg-card border border-dashed border-destructive/40 rounded-2xl">
+                <div className="w-16 h-16 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mb-4">
+                  <svg
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                </div>
+                <h3 className="font-heading text-lg font-bold text-foreground mb-2">
+                  Lỗi kết nối máy chủ
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-md leading-relaxed mb-6">
+                  {fetchError}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => loadProducts(false)}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors shadow-sm text-sm"
+                >
+                  Thử lại
+                </button>
               </div>
             ) : filteredProducts.length === 0 ? (
               /* Trạng thái rỗng (Empty state) */

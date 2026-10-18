@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { formatVND, ProductDetail } from "@/data/products";
+import { ProductDetail } from "@/data/products";
+import { formatVND } from "@/lib/format";
 import productApiRequest from "@/apiRequest/product";
 import { transformBackendProductSummary } from "@/lib/backend-adapter";
 import { useCartStore } from "@/stores/useCartStore";

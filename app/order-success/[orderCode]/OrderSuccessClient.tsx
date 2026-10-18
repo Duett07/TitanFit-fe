@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { formatVND } from "@/data/products";
+import { formatVND } from "@/lib/format";
 import orderApiRequest from "@/apiRequest/order";
 import { OrderResponse } from "@/types/order.type";
 import { useAuthStore } from "@/stores/useAuthStore";

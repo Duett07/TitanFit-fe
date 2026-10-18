@@ -1,18 +1,8 @@
 import { ProductDetail, ProductVariantOption, ProductVariantSKU } from "@/data/products";
-import productApiRequest from "@/apiRequest/product";
 import { BackendProductDetail, BackendProductSummary, BackendVariant, BackendCategory } from "@/types/product.type";
 
 export type { BackendVariant, BackendCategory, BackendProductDetail, BackendProductSummary };
 
-// Slug alias dictionary to support demo URLs & wireframe slugs
-export const SLUG_ALIASES: Record<string, string> = {
-  "whey-gold-standard-100-isolate-5lbs": "whey-gold-standard-100",
-  "ao-thun-pro-combat-co-gian-4-chieu": "ao-thun-the-thao-titanfit-dry-fit-athletics",
-  "creatine-monohydrate-pure-300g": "creatine-ostrovit-monohydrate-500g",
-  "pre-workout-c4-original-30-servings": "cellucor-c4-original-pre-workout",
-  "bcaa-xtend-30-servings": "scivation-xtend-bcaa-30-servings",
-  "titan-platinum-hydro-whey-1-6kg": "rule-1-protein-isolate",
-};
 
 /**
  * Smart parser that parses variantName into option dimensions
@@ -204,36 +194,3 @@ export function transformBackendProductSummary(item: BackendProductSummary): Pro
   };
 }
 
-/**
- * Fetch product detail using productApiRequest (Axios HTTP client)
- */
-export async function fetchBackendProductDetail(slug: string): Promise<ProductDetail | null> {
-  const targetSlug = SLUG_ALIASES[slug] || slug;
-
-  try {
-    const res = await productApiRequest.getProductBySlug(targetSlug);
-    if (res.data && res.data.data) {
-      return transformBackendProductDetail(res.data.data);
-    }
-  } catch (err) {
-    console.warn(`[BackendAdapter] Failed to fetch product "${targetSlug}" via productApiRequest:`, err);
-  }
-
-  return null;
-}
-
-/**
- * Fetch list of all products using productApiRequest (Axios HTTP client)
- */
-export async function fetchBackendProducts(): Promise<ProductDetail[] | null> {
-  try {
-    const res = await productApiRequest.getProducts({ page: 0, size: 50 });
-    const content = res.data?.data?.content;
-    if (Array.isArray(content) && content.length > 0) {
-      return content.map(transformBackendProductSummary);
-    }
-  } catch (err) {
-    console.warn(`[BackendAdapter] Failed to fetch products list via productApiRequest:`, err);
-  }
-  return null;
-}
