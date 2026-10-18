@@ -14,12 +14,11 @@ interface AuthState {
   isLoading: boolean;
   setUser: (user: UserResponse) => void;
   logout: () => Promise<void>;
-  checkAuth: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       isAuthenticated: false,
       isLoading: false,
@@ -45,34 +44,6 @@ export const useAuthStore = create<AuthState>()(
         } catch (err) {
           console.warn("Backend logout failed or offline:", err);
         } finally {
-          clearSession();
-        }
-      },
-
-      checkAuth: async () => {
-        // Fast optimistic hydration from localStorage if available
-        if (!get().isAuthenticated && typeof window !== "undefined") {
-          try {
-            const stored = localStorage.getItem("user");
-            if (stored) {
-              const parsed = JSON.parse(stored);
-              set({ user: parsed, isAuthenticated: true });
-            }
-          } catch {
-            // Ignore parse error
-          }
-        }
-
-        // Validate real session with backend
-        try {
-          const res = await authApiRequest.me();
-          if (res.data?.data) {
-            get().setUser(res.data.data);
-          } else {
-            clearSession();
-          }
-        } catch {
-          // Not logged in or expired session: wipe client auth state
           clearSession();
         }
       },

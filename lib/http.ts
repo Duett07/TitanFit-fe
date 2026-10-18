@@ -2,53 +2,11 @@ import axios from "axios";
 import envConfig from "@/config";
 import { clearSession } from "@/lib/session";
 
-export type EntityErrorPayload = {
-  message: string;
-  errors: { field: string; message: string }[];
-};
-
-export class HttpError extends Error {
-  status: number;
-  payload: {
-    message: string;
-    [key: string]: unknown;
-  };
-
-  constructor({ status, payload }: { status: number; payload: unknown }) {
-    super("HTTP Error");
-    this.status = status;
-    this.payload = payload as { message: string; [key: string]: unknown };
-  }
-}
-
-export class EntityError extends HttpError {
-  status: 422;
-  override payload: EntityErrorPayload;
-
-  constructor({
-    status,
-    payload,
-  }: {
-    status: 422;
-    payload: EntityErrorPayload;
-  }) {
-    super({ status, payload });
-    this.status = status;
-    this.payload = payload;
-  }
-}
-
 const http = axios.create({
   baseURL: envConfig.NEXT_PUBLIC_API_ENDPOINT,
   timeout: 20000,
   withCredentials: true,
 });
-
-// ===== REQUEST INTERCEPTOR =====
-http.interceptors.request.use(
-  (config) => config,
-  (error) => Promise.reject(error),
-);
 
 // ===== RESPONSE INTERCEPTOR =====
 http.interceptors.response.use(
@@ -102,20 +60,9 @@ http.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Throw out EntityError if it's 422
-    if (error.response?.status === 422) {
-      return Promise.reject(
-        new EntityError({
-          status: 422,
-          payload: error.response.data as EntityErrorPayload,
-        }),
-      );
-    }
-
     return Promise.reject(error);
   },
 );
 
 export default http;
 
-export const isClient = () => typeof window !== "undefined";

@@ -61,7 +61,7 @@ export default function Navbar() {
 
   const cartCount = isHydrated
     ? items.reduce((total, item) => total + item.quantity, 0)
-    : 2;
+    : 0;
 
   const theme = React.useSyncExternalStore(
     subscribeTheme,

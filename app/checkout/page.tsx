@@ -149,12 +149,6 @@ export default function CheckoutPage() {
     setFormData((prev) => ({ ...prev, paymentMethod: method }));
   };
 
-  // Demo order bypass if offline or testing
-  const handleDemoOrder = () => {
-    const demoCode = `TF-${Math.floor(100000 + Math.random() * 900000)}`;
-    cartStore.clearCart();
-    router.push(`/order-success/${demoCode}`);
-  };
 
   const handleSubmitOrder = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
