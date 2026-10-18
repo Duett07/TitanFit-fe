@@ -90,7 +90,7 @@ async function ProductDetailLoader({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       )}
-      <ProductDetailClient slug={slug} initialProduct={initialProduct} />
+      <ProductDetailClient key={slug} slug={slug} initialProduct={initialProduct} />
     </>
   );
 }

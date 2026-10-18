@@ -1,15 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import orderApiRequest from "@/apiRequest/order";
-import { CreateOrderRequest, TrackOrderRequest } from "@/types/order.type";
+import { CreateOrderRequest, TrackOrderRequest, UpdatableOrderStatus } from "@/types/order.type";
 import { queryKeys } from "./queryKeys";
 import { emitSyncEvent } from "@/lib/sync";
+import { validateOrderListResponse, validateOrderResponse } from "@/lib/schemas";
 
 export function useAdminOrders() {
   return useQuery({
     queryKey: queryKeys.orders.adminList(),
     queryFn: async () => {
       const res = await orderApiRequest.getAllOrders();
-      return res.data?.data || [];
+      const data = res.data?.data || [];
+      if (process.env.NODE_ENV !== "production") {
+        const validation = validateOrderListResponse(data);
+        if (!validation.success) {
+          console.warn("Admin orders response schema mismatch:", validation.error.format());
+        }
+      }
+      return data;
     },
   });
 }
@@ -29,7 +37,14 @@ export function useOrderByCode(code: string) {
     queryKey: queryKeys.orders.detail(code),
     queryFn: async () => {
       const res = await orderApiRequest.getOrderByCode(code);
-      return res.data?.data;
+      const data = res.data?.data;
+      if (data && process.env.NODE_ENV !== "production") {
+        const validation = validateOrderResponse(data);
+        if (!validation.success) {
+          console.warn("Order detail response schema mismatch:", validation.error.format());
+        }
+      }
+      return data;
     },
     enabled: Boolean(code),
   });
@@ -59,7 +74,7 @@ export function useUpdateOrderStatus() {
       status,
     }: {
       orderId: string;
-      status: "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED";
+      status: UpdatableOrderStatus;
     }) => {
       const res = await orderApiRequest.updateOrderStatus(orderId, status);
       return res.data?.data;

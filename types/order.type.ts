@@ -1,3 +1,21 @@
+export type PaymentMethod = "COD" | "VIETQR";
+
+export type OrderStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "SHIPPING"
+  | "DELIVERED"
+  | "COMPLETED"
+  | "CANCELLED";
+
+export type UpdatableOrderStatus =
+  | "CONFIRMED"
+  | "SHIPPING"
+  | "COMPLETED"
+  | "CANCELLED";
+
+export type PaymentStatus = "UNPAID" | "PAID";
+
 export interface OrderItemRequest {
   variantId: string;
   quantity: number;
@@ -7,7 +25,7 @@ export interface CreateOrderRequest {
   customerName: string;
   phone: string;
   shippingAddress: string;
-  paymentMethod: "COD" | "VIETQR" | string;
+  paymentMethod: PaymentMethod;
   note?: string;
   items: OrderItemRequest[];
 }
@@ -36,9 +54,9 @@ export interface OrderResponse {
   shippingAddress: string;
   note?: string;
   totalAmount: number;
-  orderStatus: string;
-  paymentMethod: "COD" | "VIETQR" | string;
-  paymentStatus: string;
+  orderStatus: OrderStatus;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
   items: OrderItemResponse[];
   createdAt: string;
 }

@@ -8,6 +8,8 @@ import { clearSession } from "@/lib/session";
 import { queryKeys } from "./queryKeys";
 import { UserResponse } from "@/types/auth.type";
 
+import { validateUserResponse } from "@/lib/schemas";
+
 interface UseSessionOptions {
   enabled?: boolean;
 }
@@ -29,7 +31,14 @@ export function useSession(options?: UseSessionOptions) {
     queryFn: async (): Promise<UserResponse | null> => {
       try {
         const res = await authApiRequest.me();
-        return res.data?.data || null;
+        const user = res.data?.data || null;
+        if (user && process.env.NODE_ENV !== "production") {
+          const validation = validateUserResponse(user);
+          if (!validation.success) {
+            console.warn("User response schema mismatch:", validation.error.format());
+          }
+        }
+        return user;
       } catch (err: unknown) {
         const axiosErr = err as { response?: { status?: number } };
         // If 401 Unauthorized, token has expired or is invalid on backend

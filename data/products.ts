@@ -201,7 +201,7 @@ export interface ProductVariantSKU {
   image?: string;
 }
 
-export interface ProductDetail extends Product {
+export interface UIProductDetail extends Product {
   description: string;
   images: string[];
   variantOptions: ProductVariantOption[];
@@ -210,7 +210,12 @@ export interface ProductDetail extends Product {
   features?: string[];
 }
 
-export const PRODUCT_DETAILS: Record<string, ProductDetail> = {
+/**
+ * @deprecated Use UIProductDetail for adapted client UI state, or ProductDetailDto for backend DTOs.
+ */
+export type ProductDetail = UIProductDetail;
+
+export const PRODUCT_DETAILS: Record<string, UIProductDetail> = {
   // 1. Mẫu Thực phẩm bổ sung: Whey Gold Standard 100% Isolate
   "whey-gold-standard-100-isolate-5lbs": {
     id: 1,
@@ -443,7 +448,7 @@ export const PRODUCT_DETAILS: Record<string, ProductDetail> = {
 };
 
 // Fallback generator for other products in catalog
-export function getProductDetail(slugOrId: string | number): ProductDetail | undefined {
+export function getProductDetail(slugOrId: string | number): UIProductDetail | undefined {
   const slugStr = String(slugOrId);
   // Match curated detail
   if (PRODUCT_DETAILS[slugStr]) {

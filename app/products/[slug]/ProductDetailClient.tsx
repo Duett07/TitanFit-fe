@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  ProductDetail,
+  UIProductDetail,
   ProductVariantSKU,
 } from "@/data/products";
 import { formatVND } from "@/lib/format";
@@ -14,7 +14,7 @@ import { transformBackendProductDetail } from "@/lib/backend-adapter";
 import { useAutoSync } from "@/lib/sync";
 
 // Helper to extract initial options
-function getInitialOptions(p: ProductDetail): Record<string, string> {
+function getInitialOptions(p: UIProductDetail): Record<string, string> {
   const initial: Record<string, string> = {};
   p.variantOptions.forEach((group) => {
     if (group.values.length > 0) {
@@ -29,12 +29,12 @@ export default function ProductDetailClient({
   initialProduct,
 }: {
   slug: string;
-  initialProduct?: ProductDetail | null;
+  initialProduct?: UIProductDetail | null;
 }) {
   const router = useRouter();
   const { addItem, closeDrawer, openDrawer } = useCartStore();
 
-  const [product, setProduct] = useState<ProductDetail | null>(initialProduct || null);
+  const [product, setProduct] = useState<UIProductDetail | null>(initialProduct || null);
   const [loading, setLoading] = useState(!initialProduct);
   const [selectedImage, setSelectedImage] = useState<string>(
     initialProduct ? initialProduct.images[0] || initialProduct.image : ""
@@ -78,14 +78,17 @@ export default function ProductDetailClient({
   }, [slug]);
 
   useEffect(() => {
-    if (initialProduct) {
-      setProduct(initialProduct);
-      setSelectedImage(initialProduct.images[0] || initialProduct.image);
-      setSelectedOptions(getInitialOptions(initialProduct));
-      setLoading(false);
-    } else {
-      loadProduct(false);
+    let isMounted = true;
+    if (!initialProduct) {
+      Promise.resolve().then(() => {
+        if (isMounted) {
+          void loadProduct(false);
+        }
+      });
     }
+    return () => {
+      isMounted = false;
+    };
   }, [initialProduct, loadProduct]);
 
   // Real-time synchronization: Auto-refresh product details and stock when modified in admin

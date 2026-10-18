@@ -5,6 +5,7 @@ import Link from "next/link";
 import orderApiRequest from "@/apiRequest/order";
 import productApiRequest from "@/apiRequest/product";
 import { ProductSummaryDto, VariantDto } from "@/types/product.type";
+import { PaymentMethod, OrderStatus, PaymentStatus } from "@/types/order.type";
 import { formatVND } from "@/lib/format";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
 
@@ -17,9 +18,10 @@ interface UrgentOrder {
   itemsSummary: string;
   itemsList: { name: string; variant: string; qty: number; price: number }[];
   total: number;
-  paymentMethod: "VIETQR" | "COD" | string;
-  paymentStatus: string;
-  status: "PENDING" | "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED";
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  paymentStatusLabel?: string;
+  status: OrderStatus;
   time: string;
   createdAt: string;
   note?: string;
@@ -34,7 +36,7 @@ interface LowStockAlert {
 export default function AdminDashboardPage() {
   const [orders, setOrders] = useState<UrgentOrder[]>([]);
   const [lowStockList, setLowStockList] = useState<LowStockAlert[]>([]);
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDING" | "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED">("ALL");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | OrderStatus>("ALL");
   const [selectedOrder, setSelectedOrder] = useState<UrgentOrder | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "info" | "error" } | null>(null);
@@ -49,8 +51,9 @@ export default function AdminDashboardPage() {
 
   // Fetch real orders and real low stock products from Spring Boot Backend
   const loadDashboardData = useCallback(async (isSilent = false) => {
-    if (!isSilent) setIsLoading(true);
-    else setIsRefreshing(true);
+    if (isSilent) {
+      setIsRefreshing(true);
+    }
 
     try {
       // 1. Fetch Real Orders
@@ -90,8 +93,9 @@ export default function AdminDashboardPage() {
             price: Number(it.price) || 0,
           })),
           total: Number(o.totalAmount) || 0,
-          paymentMethod: o.paymentMethod || "COD",
-          paymentStatus: paymentStatusLabel,
+          paymentMethod: (o.paymentMethod === "VIETQR" ? "VIETQR" : "COD") as PaymentMethod,
+          paymentStatus: (o.paymentStatus === "PAID" ? "PAID" : "UNPAID") as PaymentStatus,
+          paymentStatusLabel,
           status,
           time: o.createdAt ? new Date(o.createdAt).toLocaleString("vi-VN") : "---",
           createdAt: o.createdAt || "",
@@ -144,7 +148,15 @@ export default function AdminDashboardPage() {
   }, []);
 
   useEffect(() => {
-    loadDashboardData();
+    let isMounted = true;
+    Promise.resolve().then(() => {
+      if (isMounted) {
+        void loadDashboardData();
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
   }, [loadDashboardData]);
 
   // Real-time synchronization: Auto-refresh dashboard KPIs and urgent orders
@@ -726,7 +738,7 @@ export default function AdminDashboardPage() {
                           {ord.paymentMethod}
                         </span>
                         <div className="text-[10px] text-muted-foreground mt-0.5">
-                          {ord.paymentStatus}
+                          {ord.paymentStatusLabel || (ord.paymentStatus === "PAID" ? "Đã thanh toán" : "Chờ thanh toán")}
                         </div>
                       </td>
 
@@ -894,7 +906,7 @@ export default function AdminDashboardPage() {
                     Thanh Toán & Ghi Chú
                   </span>
                   <p className="font-bold text-foreground">
-                    {selectedOrder.paymentMethod} - {selectedOrder.paymentStatus}
+                    {selectedOrder.paymentMethod} - {selectedOrder.paymentStatusLabel || (selectedOrder.paymentStatus === "PAID" ? "Đã thanh toán" : "Chờ thanh toán")}
                   </p>
                   <p className="text-muted-foreground mt-1">
                     Ghi chú: {selectedOrder.note || "Không có"}

@@ -3,6 +3,7 @@ import productApiRequest from "@/apiRequest/product";
 import { ProductQueryParams, AdminProductFormDto } from "@/types/product.type";
 import { queryKeys } from "./queryKeys";
 import { emitSyncEvent } from "@/lib/sync";
+import { validateProductDetail, validateProductSummaryList } from "@/lib/schemas";
 
 export function useProducts(params?: ProductQueryParams) {
   return useQuery({
@@ -19,7 +20,14 @@ export function useProductBySlug(slug: string) {
     queryKey: queryKeys.products.detail(slug),
     queryFn: async () => {
       const res = await productApiRequest.getProductBySlug(slug);
-      return res.data?.data;
+      const data = res.data?.data;
+      if (data && process.env.NODE_ENV !== "production") {
+        const validation = validateProductDetail(data);
+        if (!validation.success) {
+          console.warn("Product detail response schema mismatch:", validation.error.format());
+        }
+      }
+      return data;
     },
     enabled: Boolean(slug),
   });
@@ -30,7 +38,14 @@ export function useAdminProducts() {
     queryKey: queryKeys.products.adminList(),
     queryFn: async () => {
       const res = await productApiRequest.adminGetAllProducts();
-      return res.data?.data || [];
+      const data = res.data?.data || [];
+      if (process.env.NODE_ENV !== "production") {
+        const validation = validateProductSummaryList(data);
+        if (!validation.success) {
+          console.warn("Admin products response schema mismatch:", validation.error.format());
+        }
+      }
+      return data;
     },
   });
 }

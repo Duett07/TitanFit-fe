@@ -1,6 +1,9 @@
 export type { ApiResponse, PageResponse, PaginatedResponse } from "./api.type";
 import type { ApiResponse, PageResponse } from "./api.type";
-import { CategoryDto } from "./category.type";
+export type { CategoryDto } from "./category.type";
+import type { CategoryDto } from "./category.type";
+
+export type ProductSortOption = "newest" | "price_asc" | "price_desc";
 
 export interface VariantDto {
   id: string;
@@ -70,14 +73,8 @@ export interface ProductQueryParams {
   categorySlug?: string;
   minPrice?: number;
   maxPrice?: number;
-  sortBy?: "newest" | "price_asc" | "price_desc" | string;
+  sortBy?: ProductSortOption;
 }
 
 export type ProductListResponse = ApiResponse<PageResponse<ProductSummaryDto>>;
 export type ProductDetailResponse = ApiResponse<ProductDetailDto>;
-
-// Aliases matching backend DTO naming
-export type BackendVariant = VariantDto;
-export type BackendCategory = CategoryDto;
-export type BackendProductDetail = ProductDetailDto;
-export type BackendProductSummary = ProductSummaryDto;
