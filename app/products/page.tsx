@@ -163,7 +163,7 @@ function ProductsContent() {
   useAutoSync({
     eventTypes: ["PRODUCT_UPDATED"],
     onSync: () => loadProducts(true),
-    intervalMs: 8000,
+    intervalMs: 60000,
     enableFocusSync: true,
   });
 

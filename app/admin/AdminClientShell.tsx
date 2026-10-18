@@ -119,34 +119,48 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
       })
       .catch(() => {});
 
+    const countLowStock = (products: ProductSummaryDto[]) => {
+      let count = 0;
+      products.forEach((p: ProductSummaryDto) => {
+        if (p.variants && Array.isArray(p.variants)) {
+          p.variants.forEach((v: VariantDto) => {
+            if (v.stockQuantity !== undefined && v.stockQuantity < 10) {
+              count++;
+            }
+          });
+        }
+      });
+      setLowStockCount(count);
+    };
+
+    // Use admin API for accurate catalog count across active and inactive products without 100-item limit
     productApiRequest
-      .getProducts({ size: 100 })
+      .adminGetAllProducts()
       .then((res) => {
-        const products: ProductSummaryDto[] = res.data?.data?.content || [];
-        let count = 0;
-        products.forEach((p: ProductSummaryDto) => {
-          if (p.variants && Array.isArray(p.variants)) {
-            p.variants.forEach((v: VariantDto) => {
-              if (v.stockQuantity !== undefined && v.stockQuantity < 10) {
-                count++;
-              }
-            });
-          }
-        });
-        setLowStockCount(count);
+        const products = res.data?.data || [];
+        countLowStock(products);
       })
-      .catch(() => {});
+      .catch(() => {
+        // Fallback to public products if admin endpoint fails
+        productApiRequest
+          .getProducts({ size: 100 })
+          .then((res) => {
+            const products = res.data?.data?.content || [];
+            countLowStock(products);
+          })
+          .catch(() => {});
+      });
   }, []);
 
   useEffect(() => {
     refreshCounts();
   }, [refreshCounts, pathname]);
 
-  // Real-time synchronization for admin layout badges
+  // Real-time synchronization for admin layout badges: event-driven + focus sync + 60s background heartbeat
   useAutoSync({
     eventTypes: ["ORDER_UPDATED", "PRODUCT_UPDATED", "INVENTORY_UPDATED"],
     onSync: refreshCounts,
-    intervalMs: 8000,
+    intervalMs: 60000,
     enableFocusSync: true,
   });
 

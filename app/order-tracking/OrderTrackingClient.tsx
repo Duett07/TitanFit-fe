@@ -313,7 +313,7 @@ export default function OrderTrackingClient() {
   useAutoSync({
     eventTypes: ["ORDER_UPDATED"],
     onSync: () => loadInitialData(true),
-    intervalMs: 4000,
+    intervalMs: 30000,
     enableFocusSync: true,
   });
 

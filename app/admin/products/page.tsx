@@ -113,7 +113,7 @@ export default function AdminProductsPage() {
   useAutoSync({
     eventTypes: ["PRODUCT_UPDATED", "INVENTORY_UPDATED"],
     onSync: () => fetchProducts(true),
-    intervalMs: 6000,
+    intervalMs: 60000,
     enableFocusSync: true,
   });
 

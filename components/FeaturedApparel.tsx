@@ -61,7 +61,7 @@ export default function FeaturedApparel({
   useAutoSync({
     eventTypes: ["PRODUCT_UPDATED"],
     onSync: loadApparel,
-    intervalMs: 8000,
+    intervalMs: 60000,
     enableFocusSync: true,
   });
 

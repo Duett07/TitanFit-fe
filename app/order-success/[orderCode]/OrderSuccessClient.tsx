@@ -84,7 +84,7 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
   useAutoSync({
     eventTypes: ["ORDER_UPDATED"],
     onSync: () => fetchOrder(true),
-    intervalMs: 5000,
+    intervalMs: 15000,
     enableFocusSync: true,
   });
 

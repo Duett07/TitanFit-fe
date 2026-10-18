@@ -151,7 +151,7 @@ export default function AdminOrdersPage() {
   useAutoSync({
     eventTypes: ["ORDER_UPDATED"],
     onSync: () => fetchOrders(true),
-    intervalMs: 5000,
+    intervalMs: 60000,
     enableFocusSync: true,
   });
 

@@ -61,7 +61,7 @@ export default function FeaturedSupplements({
   useAutoSync({
     eventTypes: ["PRODUCT_UPDATED"],
     onSync: loadSupplements,
-    intervalMs: 8000,
+    intervalMs: 60000,
     enableFocusSync: true,
   });
 
