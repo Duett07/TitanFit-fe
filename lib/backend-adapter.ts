@@ -12,67 +12,116 @@ export type { BackendVariant, BackendCategory, BackendProductDetail, BackendProd
  * - "Vị Delicious Strawberry (5 Lbs / 2.27kg)" -> { "Hương Vị": "Delicious Strawberry", "Khối lượng": "5 Lbs (2.27kg)" }
  */
 export function parseVariantName(
-  variantName: string,
-  isApparel: boolean
+  variantName?: string | null,
+  isApparel: boolean = false
 ): { option1Name: string; option1Val: string; option2Name?: string; option2Val?: string } {
-  // Pattern 1: Hyphen separated (e.g. "Màu Xám - Size M" or "Size S - Đen")
-  if (variantName.includes(" - ")) {
-    const [partA, partB] = variantName.split(" - ").map((s) => s.trim());
-    const isPartASize = /size/i.test(partA);
-    const isPartBSize = /size/i.test(partB);
+  const safeName = (variantName || "").trim();
+  if (!safeName) {
+    return {
+      option1Name: isApparel ? "Kích thước (Size)" : "Phân loại",
+      option1Val: "Tiêu chuẩn",
+    };
+  }
 
-    if (isPartBSize) {
+  // Helper matchers
+  const isSize = (str: string) =>
+    /^(size\s*)?([x|2|3|4|5]*[s|m|l]|free\s*size|\d{2,3})$/i.test(str.trim()) ||
+    /\bsize\b/i.test(str);
+
+  const isWeight = (str: string) =>
+    /\b(\d+(?:\.\d+)?\s*(?:g|kg|lbs?|ml|l|oz|servings?|viên|gói))\b/i.test(str) ||
+    /^(hộp|gói|túi|chai|lọ|bình)/i.test(str);
+
+  const isColor = (str: string) =>
+    /\b(màu|màu sắc|color|đen|trắng|xám|xanh|đỏ|vàng|cam|tím|hồng|black|white|grey|gray|blue|red|navy|beige)\b/i.test(str);
+
+  // Pattern 1: Delimiter separated (" - ", " / ", " | ", or " ; ")
+  const delimiterRegex = /\s*(?: - | \/ | \| | ; )\s*/;
+  if (delimiterRegex.test(safeName)) {
+    const parts = safeName.split(delimiterRegex).filter(Boolean);
+    if (parts.length >= 2) {
+      const partA = parts[0].trim();
+      const partB = parts[1].trim();
+
+      // Case: Size and Color
+      if (isSize(partA) && (isColor(partB) || isApparel)) {
+        return {
+          option1Name: "Kích thước (Size)",
+          option1Val: partA,
+          option2Name: "Màu sắc",
+          option2Val: partB,
+        };
+      }
+      if (isSize(partB)) {
+        return {
+          option1Name: "Kích thước (Size)",
+          option1Val: partB,
+          option2Name: isColor(partA) ? "Màu sắc" : "Phân loại",
+          option2Val: partA,
+        };
+      }
+      if (isWeight(partB)) {
+        return {
+          option1Name: "Hương Vị",
+          option1Val: partA.replace(/^vị\s+/i, ""),
+          option2Name: "Khối lượng / Quy cách",
+          option2Val: partB,
+        };
+      }
+      if (isWeight(partA)) {
+        return {
+          option1Name: "Khối lượng / Quy cách",
+          option1Val: partA,
+          option2Name: "Hương Vị",
+          option2Val: partB.replace(/^vị\s+/i, ""),
+        };
+      }
+
       return {
-        option1Name: "Kích thước (Size)",
-        option1Val: partB,
-        option2Name: "Màu sắc",
-        option2Val: partA,
-      };
-    } else if (isPartASize) {
-      return {
-        option1Name: "Kích thước (Size)",
+        option1Name: isApparel ? "Kích thước (Size)" : "Phân loại 1",
         option1Val: partA,
-        option2Name: "Màu sắc",
-        option2Val: partB,
-      };
-    } else {
-      return {
-        option1Name: "Phân loại 1",
-        option1Val: partA,
-        option2Name: "Phân loại 2",
+        option2Name: isApparel ? "Màu sắc" : "Phân loại 2",
         option2Val: partB,
       };
     }
   }
 
   // Pattern 2: Parentheses separated (e.g. "Vị Delicious Strawberry (5 Lbs / 2.27kg)")
-  const parenMatch = variantName.match(/^(?:Vị\s+)?(.*?)\s*\((.*?)\)$/i);
+  const parenMatch = safeName.match(/^(.*?)\s*\((.*?)\)$/);
   if (parenMatch) {
-    const flavor = parenMatch[1].trim();
-    const spec = parenMatch[2].trim();
+    const mainPart = parenMatch[1].trim().replace(/^vị\s+/i, "");
+    const subPart = parenMatch[2].trim();
     return {
-      option1Name: "Hương Vị",
-      option1Val: flavor,
-      option2Name: spec.includes("lb") || spec.includes("kg") || spec.includes("g") ? "Khối lượng" : "Quy cách",
-      option2Val: spec,
+      option1Name: isApparel ? "Phân loại" : "Hương Vị",
+      option1Val: mainPart,
+      option2Name: isWeight(subPart) ? "Khối lượng / Quy cách" : "Quy cách",
+      option2Val: subPart,
     };
   }
 
-  // Pattern 3: Single dimension or trailing weight
-  const weightMatch = variantName.match(/^(.*?)\s+(\d+(?:\.\d+)?\s*(?:g|kg|lbs?|ml))$/i);
+  // Pattern 3: Trailing weight/volume specification
+  const weightMatch = safeName.match(/^(.*?)\s+(\d+(?:\.\d+)?\s*(?:g|kg|lbs?|ml|l|oz|servings?|viên|gói))$/i);
   if (weightMatch) {
     return {
       option1Name: isApparel ? "Phân loại" : "Hương Vị",
-      option1Val: weightMatch[1].trim(),
-      option2Name: "Khối lượng / Dung tích",
+      option1Val: weightMatch[1].trim().replace(/^vị\s+/i, ""),
+      option2Name: "Khối lượng / Quy cách",
       option2Val: weightMatch[2].trim(),
     };
   }
 
-  // Fallback: single option
+  // Pattern 4: Single recognized size
+  if (isSize(safeName)) {
+    return {
+      option1Name: "Kích thước (Size)",
+      option1Val: safeName,
+    };
+  }
+
+  // General safe fallback
   return {
-    option1Name: isApparel ? "Phân loại" : "Hương Vị",
-    option1Val: variantName.trim(),
+    option1Name: isApparel ? "Kích thước (Size)" : "Phân loại",
+    option1Val: safeName,
   };
 }
 

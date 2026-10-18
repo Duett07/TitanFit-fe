@@ -23,6 +23,9 @@ export default function CartDrawer() {
     removeItem,
     getTotalPrice,
     getTotalCount,
+    isSyncing,
+    syncNotice,
+    dismissSyncNotice,
   } = useCartStore();
 
   // Close drawer on ESC key
@@ -96,6 +99,12 @@ export default function CartDrawer() {
               <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
             </svg>
             <span>Giỏ Hàng Của Bạn ({isMounted ? getTotalCount() : 0})</span>
+            {isMounted && isSyncing && (
+              <span className="text-[11px] text-muted-foreground font-normal flex items-center gap-1 ml-1">
+                <span className="w-2.5 h-2.5 border-2 border-primary border-t-transparent rounded-full animate-spin inline-block" />
+                Cập nhật...
+              </span>
+            )}
           </div>
           <button
             type="button"
@@ -116,6 +125,24 @@ export default function CartDrawer() {
             </svg>
           </button>
         </div>
+
+        {/* Sync Alert Notice */}
+        {isMounted && syncNotice && (
+          <div className="mx-4 mt-3 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs flex items-start justify-between gap-2">
+            <div className="flex items-start gap-1.5">
+              <span className="shrink-0 text-sm leading-none mt-0.5">⚠️</span>
+              <span className="leading-tight">{syncNotice}</span>
+            </div>
+            <button
+              type="button"
+              onClick={dismissSyncNotice}
+              className="text-muted-foreground hover:text-foreground text-xs p-0.5 shrink-0"
+              aria-label="Đóng thông báo"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-4 divide-y divide-border/60">
@@ -143,62 +170,72 @@ export default function CartDrawer() {
               </div>
             </div>
           ) : (
-            items.map((item) => (
-              <div key={item.id} className="py-3.5 first:pt-0 last:pb-0 flex gap-3">
-                <div className="relative w-[60px] h-[60px] shrink-0 rounded-lg overflow-hidden bg-secondary border border-border/50">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    sizes="60px"
-                    className="object-cover"
-                  />
-                </div>
-                <div className="flex-1 min-w-0 flex flex-col justify-between">
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="text-xs font-semibold text-foreground truncate" title={item.name}>
-                      {item.name}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeItem(item.id)}
-                      className="text-muted-foreground hover:text-destructive cursor-pointer text-xs p-0.5 transition-colors"
-                      title="Xóa"
-                      aria-label={`Xóa ${item.name}`}
-                    >
-                      ✕
-                    </button>
+            items.map((item) => {
+              const isOutOfStock = typeof item.stock === "number" && item.stock <= 0;
+              return (
+                <div key={item.id} className="py-3.5 first:pt-0 last:pb-0 flex gap-3">
+                  <div className="relative w-[60px] h-[60px] shrink-0 rounded-lg overflow-hidden bg-secondary border border-border/50">
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      fill
+                      sizes="60px"
+                      className="object-cover"
+                    />
                   </div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5">{item.variantSummary}</div>
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="text-xs font-bold text-primary">{formatVND(item.price)}</div>
-                    <div className="inline-flex items-center rounded-md border border-border bg-secondary overflow-hidden">
+                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="text-xs font-semibold text-foreground truncate" title={item.name}>
+                        {item.name}
+                      </div>
                       <button
                         type="button"
-                        className="w-6 h-6 flex items-center justify-center text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-card disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        disabled={item.quantity <= 1}
-                        aria-label="Giảm"
+                        onClick={() => removeItem(item.id)}
+                        className="text-muted-foreground hover:text-destructive cursor-pointer text-xs p-0.5 transition-colors"
+                        title="Xóa"
+                        aria-label={`Xóa ${item.name}`}
                       >
-                        −
+                        ✕
                       </button>
-                      <span className="px-2 text-xs font-semibold text-foreground text-center min-w-[24px]">
-                        {item.quantity}
-                      </span>
-                      <button
-                        type="button"
-                        className="w-6 h-6 flex items-center justify-center text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-card disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        disabled={item.quantity >= item.stock}
-                        aria-label="Tăng"
-                      >
-                        +
-                      </button>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">{item.variantSummary}</div>
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-primary">{formatVND(item.price)}</span>
+                        {isOutOfStock && (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-destructive/15 text-destructive border border-destructive/25">
+                            Hết hàng
+                          </span>
+                        )}
+                      </div>
+                      <div className="inline-flex items-center rounded-md border border-border bg-secondary overflow-hidden">
+                        <button
+                          type="button"
+                          className="w-6 h-6 flex items-center justify-center text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-card disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          disabled={item.quantity <= 1 || isOutOfStock}
+                          aria-label="Giảm"
+                        >
+                          −
+                        </button>
+                        <span className="px-2 text-xs font-semibold text-foreground text-center min-w-[24px]">
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          className="w-6 h-6 flex items-center justify-center text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-card disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          disabled={isOutOfStock || item.quantity >= item.stock}
+                          aria-label="Tăng"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
@@ -211,13 +248,28 @@ export default function CartDrawer() {
                 {isMounted ? formatVND(getTotalPrice()) : "0 ₫"}
               </span>
             </div>
-            <button
-              type="button"
-              onClick={handleCheckout}
-              className="w-full h-11 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm flex items-center justify-center shadow-md active:scale-98 transition-all cursor-pointer"
-            >
-              Tiến Hành Đặt Hàng
-            </button>
+            {isMounted && items.some((i) => typeof i.stock === "number" && i.stock <= 0) ? (
+              <div className="space-y-2">
+                <div className="text-xs text-destructive text-center font-medium">
+                  Có sản phẩm đã hết hàng trong giỏ. Vui lòng xóa trước khi thanh toán.
+                </div>
+                <button
+                  type="button"
+                  disabled
+                  className="w-full h-11 rounded-xl bg-muted text-muted-foreground font-bold text-sm flex items-center justify-center cursor-not-allowed opacity-70"
+                >
+                  Không Thể Đặt Hàng
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleCheckout}
+                className="w-full h-11 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm flex items-center justify-center shadow-md active:scale-98 transition-all cursor-pointer"
+              >
+                Tiến Hành Đặt Hàng
+              </button>
+            )}
           </div>
         )}
       </div>

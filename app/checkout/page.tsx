@@ -46,9 +46,10 @@ export default function CheckoutPage() {
   const { isAuthenticated } = useAuthStore();
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
-  // Close drawer once when arriving at checkout page
+  // Close drawer and sync cart with backend once when arriving at checkout page
   useEffect(() => {
     useCartStore.getState().closeDrawer();
+    cartStore.syncCart();
   }, []);
 
   // Enforce authentication: Redirect to login immediately if not logged in
@@ -87,6 +88,19 @@ export default function CheckoutPage() {
 
   const handleRemoveInvalidItems = () => {
     invalidCartItems.forEach((item) => {
+      cartStore.removeItem(item.id);
+    });
+    setErrorMessage(null);
+  };
+
+  // Detect any items that are out of stock or stock is 0
+  const outOfStockItems = useMemo(
+    () => items.filter((item) => typeof item.stock === "number" && item.stock <= 0),
+    [items]
+  );
+
+  const handleRemoveOutOfStockItems = () => {
+    outOfStockItems.forEach((item) => {
       cartStore.removeItem(item.id);
     });
     setErrorMessage(null);
@@ -168,6 +182,15 @@ export default function CheckoutPage() {
       const invalidNames = invalidCartItems.map((i) => `"${i.name}"`).join(", ");
       setErrorMessage(
         `Sản phẩm sau chưa có thông tin biến thể hợp lệ từ hệ thống: ${invalidNames}. Vui lòng chọn lại hoặc xóa khỏi giỏ hàng trước khi đặt hàng.`
+      );
+      return;
+    }
+
+    // Block checkout if any item is out of stock
+    if (outOfStockItems.length > 0) {
+      const oosNames = outOfStockItems.map((i) => `"${i.name}"`).join(", ");
+      setErrorMessage(
+        `Sản phẩm sau hiện đã hết hàng: ${oosNames}. Vui lòng xóa khỏi giỏ hàng trước khi đặt hàng.`
       );
       return;
     }
@@ -600,47 +623,98 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* Items List */}
-              <div className="space-y-4 max-h-[360px] overflow-y-auto pr-1 divide-y divide-border/60">
-                {items.map((item) => (
-                  <div key={item.id} className="pt-3 first:pt-0 flex gap-3 items-center">
-                    <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-muted shrink-0 border border-border">
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className="object-cover"
-                        sizes="56px"
+              {/* Out of Stock Alert Banner */}
+              {outOfStockItems.length > 0 && (
+                <div className="mb-4 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive flex flex-col gap-2.5">
+                  <div className="flex items-start gap-2.5">
+                    <svg
+                      className="w-5 h-5 shrink-0 mt-0.5 text-destructive"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                       />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <h4 className="text-xs font-semibold text-foreground line-clamp-1">
-                          {item.name}
-                        </h4>
-                        {!isValidUUID(item.variantId) && (
-                          <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded bg-destructive/15 text-destructive">
-                            Cần chọn lại
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
-                        {item.variantSummary}
+                    </svg>
+                    <div className="flex-1 text-xs">
+                      <p className="font-bold text-sm">
+                        Có {outOfStockItems.length} sản phẩm đã hết hàng
                       </p>
-                      <div className="flex items-center justify-between mt-1">
-                        <span className="text-xs font-bold text-primary">
-                          {formatVND(item.price)}
-                        </span>
-                        <span className="text-xs text-muted-foreground font-medium">
-                          x{item.quantity}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0 text-xs font-semibold text-foreground">
-                      {formatVND(item.price * item.quantity)}
+                      <p className="text-muted-foreground mt-0.5">
+                        Tồn kho đã thay đổi kể từ lúc thêm vào giỏ. Vui lòng xóa sản phẩm hết hàng để tiếp tục:
+                      </p>
+                      <ul className="list-disc list-inside mt-1.5 space-y-1 font-medium text-destructive">
+                        {outOfStockItems.map((item) => (
+                          <li key={item.id} className="truncate">
+                            {item.name} ({item.variantSummary || "Mặc định"})
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
-                ))}
+                  <button
+                    type="button"
+                    onClick={handleRemoveOutOfStockItems}
+                    className="self-end px-3 py-1.5 text-xs font-semibold rounded-lg bg-destructive text-white hover:bg-destructive/90 transition-all cursor-pointer shadow-xs"
+                  >
+                    Xóa các sản phẩm hết hàng
+                  </button>
+                </div>
+              )}
+
+              {/* Items List */}
+              <div className="space-y-4 max-h-[360px] overflow-y-auto pr-1 divide-y divide-border/60">
+                {items.map((item) => {
+                  const isOutOfStock = typeof item.stock === "number" && item.stock <= 0;
+                  return (
+                    <div key={item.id} className="pt-3 first:pt-0 flex gap-3 items-center">
+                      <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-muted shrink-0 border border-border">
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          fill
+                          className="object-cover"
+                          sizes="56px"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="text-xs font-semibold text-foreground line-clamp-1">
+                            {item.name}
+                          </h4>
+                          {!isValidUUID(item.variantId) && (
+                            <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded bg-destructive/15 text-destructive">
+                              Cần chọn lại
+                            </span>
+                          )}
+                          {isOutOfStock && (
+                            <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded bg-destructive/15 text-destructive">
+                              Hết hàng
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                          {item.variantSummary}
+                        </p>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-xs font-bold text-primary">
+                            {formatVND(item.price)}
+                          </span>
+                          <span className="text-xs text-muted-foreground font-medium">
+                            x{item.quantity}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0 text-xs font-semibold text-foreground">
+                        {formatVND(item.price * item.quantity)}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Pricing Breakdown */}
@@ -670,10 +744,12 @@ export default function CheckoutPage() {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isSubmitting || invalidCartItems.length > 0}
+                disabled={isSubmitting || invalidCartItems.length > 0 || outOfStockItems.length > 0}
                 title={
                   invalidCartItems.length > 0
                     ? "Vui lòng xóa các sản phẩm lỗi hoặc chọn lại trước khi đặt hàng"
+                    : outOfStockItems.length > 0
+                    ? "Vui lòng xóa các sản phẩm đã hết hàng trước khi đặt hàng"
                     : undefined
                 }
                 className="mt-6 w-full py-4 px-6 rounded-xl font-bold text-base text-white bg-[var(--primary)] hover:bg-[var(--primary)]/80 transition-all shadow-md active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
