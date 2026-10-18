@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import productApiRequest from "@/apiRequest/product";
 import { ProductSummaryDto, VariantDto } from "@/types/product.type";
-import { formatVND } from "@/data/products";
+import { formatVND } from "@/lib/format";
 import { useAutoSync } from "@/lib/sync";
 
 interface LowStockItem {

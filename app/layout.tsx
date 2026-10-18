@@ -53,8 +53,12 @@ export default function RootLayout({
           <Navbar />
         </Suspense>
         <main className="flex-1">{children}</main>
-        <Footer />
-        <CartDrawer />
+        <Suspense fallback={null}>
+          <Footer />
+        </Suspense>
+        <Suspense fallback={null}>
+          <CartDrawer />
+        </Suspense>
       </body>
     </html>
   );

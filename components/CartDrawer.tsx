@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useCartStore } from "@/stores/useCartStore";
-import { formatVND } from "@/data/products";
+import { formatVND } from "@/lib/format";
 
 export default function CartDrawer() {
   const router = useRouter();

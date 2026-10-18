@@ -4,14 +4,13 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  getProductDetail,
-  formatVND,
   ProductDetail,
   ProductVariantSKU,
 } from "@/data/products";
+import { formatVND } from "@/lib/format";
 import { useCartStore } from "@/stores/useCartStore";
 import productApiRequest from "@/apiRequest/product";
-import { transformBackendProductDetail, SLUG_ALIASES } from "@/lib/backend-adapter";
+import { transformBackendProductDetail } from "@/lib/backend-adapter";
 import { useAutoSync } from "@/lib/sync";
 
 // Helper to extract initial options
@@ -46,13 +45,12 @@ export default function ProductDetailClient({
   const [quantity, setQuantity] = useState<number>(1);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Fetch product from API with fallback to local curated data
+  // Fetch product from API
   const loadProduct = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
 
     try {
-      const targetSlug = SLUG_ALIASES[slug] || slug;
-      const res = await productApiRequest.getProductBySlug(targetSlug);
+      const res = await productApiRequest.getProductBySlug(slug);
       const data = res.data?.data;
       if (data) {
         const transformed = transformBackendProductDetail(data);
@@ -65,20 +63,17 @@ export default function ProductDetailClient({
         if (!silent) setLoading(false);
         return;
       }
-    } catch (err) {
-      console.warn("API fetch error via productApiRequest, falling back to local data:", err);
-    }
 
-    if (!silent) {
-      // Fallback
-      const fallback = getProductDetail(slug);
-      setProduct(fallback || null);
-      if (fallback) {
-        setSelectedImage(fallback.images[0] || fallback.image);
-        setSelectedOptions(getInitialOptions(fallback));
-        setQuantity(1);
+      if (!silent) {
+        setProduct(null);
+        setLoading(false);
       }
-      setLoading(false);
+    } catch (err) {
+      console.error("API fetch error via productApiRequest:", err);
+      if (!silent) {
+        setProduct(null);
+        setLoading(false);
+      }
     }
   }, [slug]);
 
@@ -239,38 +234,6 @@ export default function ProductDetailClient({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Segmented Control Demo Switcher */}
-      <div className="bg-card/50 border-b border-border py-2.5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-3">
-          <div className="text-xs text-muted-foreground">
-            Kiểm thử logic biến thể nghiệp vụ:
-          </div>
-
-          <div className="inline-flex items-center bg-muted/60 p-1 rounded-xl border border-border gap-1">
-            <Link
-              href="/products/whey-gold-standard-100"
-              className={`px-3 py-1 rounded-lg text-xs transition-colors ${
-                product.slug === "whey-gold-standard-100" || product.slug === "whey-gold-standard-100-isolate-5lbs"
-                  ? "bg-background text-foreground font-semibold shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Mẫu 1: Whey Protein (BE data)
-            </Link>
-            <Link
-              href="/products/ao-thun-the-thao-titanfit-dry-fit-athletics"
-              className={`px-3 py-1 rounded-lg text-xs transition-colors ${
-                product.slug === "ao-thun-the-thao-titanfit-dry-fit-athletics" || product.slug === "ao-thun-pro-combat-co-gian-4-chieu"
-                  ? "bg-background text-foreground font-semibold shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Mẫu 2: Áo Tập Gym (BE data)
-            </Link>
-          </div>
-        </div>
-      </div>
-
       {/* Main PDP Grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">

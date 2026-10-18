@@ -183,9 +183,8 @@ export const PRODUCTS: Product[] = [
   },
 ];
 
-export function formatVND(amount: number): string {
-  return new Intl.NumberFormat("vi-VN").format(amount) + " ₫";
-}
+export { formatVND } from "@/lib/format";
+
 
 export interface ProductVariantOption {
   name: string; // e.g. "Kích thước (Size)" or "Hương Vị"
