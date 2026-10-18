@@ -1,8 +1,18 @@
-import { Suspense } from "react";
+import { Suspense, cache } from "react";
 import type { Metadata } from "next";
 import productApiRequest from "@/apiRequest/product";
 import { transformBackendProductDetail } from "@/lib/backend-adapter";
 import ProductDetailClient from "./ProductDetailClient";
+
+// Deduplicate request per render cycle between generateMetadata and ProductDetailLoader
+const getProduct = cache(async (slug: string) => {
+  try {
+    const res = await productApiRequest.getProductBySlug(slug);
+    return res.data?.data || null;
+  } catch {
+    return null;
+  }
+});
 
 export async function generateMetadata({
   params,
@@ -10,23 +20,32 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const data = await getProduct(slug);
 
-  try {
-    const res = await productApiRequest.getProductBySlug(slug);
-    const data = res.data?.data;
-    if (data) {
-      return {
-        title: `${data.name} — TITANFIT Chính Hãng`,
-        description: data.description || `Sản phẩm ${data.name} chính hãng tại TITANFIT`,
-        openGraph: {
-          title: `${data.name} — TITANFIT`,
-          description: data.description,
-          images: data.thumbnailUrl ? [data.thumbnailUrl] : [],
-        },
-      };
-    }
-  } catch {
-    // Backend fetch failed or not found
+  if (data) {
+    const title = `${data.name} — TITANFIT Chính Hãng`;
+    const description = data.description || `Sản phẩm ${data.name} chính hãng tại TITANFIT`;
+    const images = data.thumbnailUrl ? [data.thumbnailUrl] : [];
+
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: `/products/${slug}`,
+      },
+      openGraph: {
+        title,
+        description,
+        images,
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images,
+      },
+    };
   }
 
   return {
@@ -40,18 +59,40 @@ async function ProductDetailLoader({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  let initialProduct = null;
+  const data = await getProduct(slug);
+  const initialProduct = data ? transformBackendProductDetail(data) : null;
 
-  try {
-    const res = await productApiRequest.getProductBySlug(slug);
-    if (res.data?.data) {
-      initialProduct = transformBackendProductDetail(res.data.data);
-    }
-  } catch {
-    // Client component will handle 404 / retry state
-  }
+  // JSON-LD structured data for search engine snippets
+  const jsonLd = initialProduct
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: initialProduct.name,
+        description: initialProduct.description,
+        image: initialProduct.images,
+        offers: {
+          "@type": "Offer",
+          priceCurrency: "VND",
+          price: initialProduct.price,
+          availability: initialProduct.variants.some((v) => v.stock > 0)
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock",
+          url: `/products/${slug}`,
+        },
+      }
+    : null;
 
-  return <ProductDetailClient slug={slug} initialProduct={initialProduct} />;
+  return (
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <ProductDetailClient slug={slug} initialProduct={initialProduct} />
+    </>
+  );
 }
 
 export default function ProductDetailPage({
