@@ -134,13 +134,14 @@ export default function FeaturedApparel({
                 </div>
               ))
             : products.map((product) => {
-                const discountPercent = product.originalPrice
-                  ? Math.round(
-                      ((product.originalPrice - product.price) /
-                        product.originalPrice) *
-                        100
-                    )
-                  : null;
+                const discountPercent =
+                  product.originalPrice && product.originalPrice > product.price
+                    ? Math.round(
+                        ((product.originalPrice - product.price) /
+                          product.originalPrice) *
+                          100
+                      )
+                    : null;
 
                 return (
                   <div
@@ -185,7 +186,7 @@ export default function FeaturedApparel({
                         <span className="text-base font-bold text-primary">
                           {formatVND(product.price)}
                         </span>
-                        {product.originalPrice && (
+                        {product.originalPrice && product.originalPrice > product.price && (
                           <span className="text-xs text-muted-foreground line-through">
                             {formatVND(product.originalPrice)}
                           </span>
