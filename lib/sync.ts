@@ -10,6 +10,7 @@ export type SyncEventType =
 
 const CHANNEL_NAME = "titanfit_realtime_sync";
 const STORAGE_KEY = "titanfit_last_sync_event";
+const INTERNAL_EVENT_NAME = "titanfit_sync";
 
 export interface SyncMessage {
   id: string;
@@ -18,34 +19,83 @@ export interface SyncMessage {
   timestamp: number;
 }
 
-// Bounded LRU-style set of seen event IDs to prevent duplicate execution across BroadcastChannel and Storage
-const seenEventIds = new Set<string>();
-function markAndCheckEventId(id: string): boolean {
-  if (seenEventIds.has(id)) {
-    return true; // Already processed
+// Bounded LRU-style set of seen event IDs to prevent duplicate delivery across BroadcastChannel and StorageEvent transports
+const seenTransportEventIds = new Set<string>();
+function markAndCheckTransportEvent(id: string): boolean {
+  if (seenTransportEventIds.has(id)) {
+    return true; // Already processed by transport
   }
-  seenEventIds.add(id);
-  // Keep size under 100 entries to prevent memory growth
-  if (seenEventIds.size > 100) {
-    const first = seenEventIds.values().next().value;
-    if (first) seenEventIds.delete(first);
+  seenTransportEventIds.add(id);
+  // Keep size bounded to prevent memory growth
+  if (seenTransportEventIds.size > 100) {
+    const first = seenTransportEventIds.values().next().value;
+    if (first) seenTransportEventIds.delete(first);
   }
   return false;
 }
 
-// Shared singleton BroadcastChannel instance for efficient message dispatch
+// Singleton hub state for cross-tab transport bridging
 let sharedChannel: BroadcastChannel | null = null;
-function getSharedBroadcastChannel(): BroadcastChannel | null {
-  if (typeof window === "undefined" || !("BroadcastChannel" in window)) {
+let isHubInitialized = false;
+
+function dispatchInternalSync(message: SyncMessage) {
+  if (typeof window === "undefined") return;
+  try {
+    window.dispatchEvent(
+      new CustomEvent(INTERNAL_EVENT_NAME, { detail: message })
+    );
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * Initializes the single tab-level cross-tab transport hub.
+ * Ensures only ONE BroadcastChannel and ONE storage listener exist per browser tab,
+ * forwarding valid cross-tab events into the local window event bus.
+ */
+function ensureSyncHubInitialized(): BroadcastChannel | null {
+  if (typeof window === "undefined") {
     return null;
   }
-  if (!sharedChannel) {
+
+  const hasBroadcastChannel = "BroadcastChannel" in window;
+
+  if (hasBroadcastChannel && !sharedChannel) {
     try {
       sharedChannel = new BroadcastChannel(CHANNEL_NAME);
+      sharedChannel.onmessage = (event: MessageEvent<SyncMessage>) => {
+        const msg = event.data;
+        if (!msg || !msg.id) return;
+        // Transport deduplication (prevents double dispatch if storage or reflection also fires)
+        if (markAndCheckTransportEvent(msg.id)) return;
+        dispatchInternalSync(msg);
+      };
     } catch {
       sharedChannel = null;
     }
   }
+
+  if (!isHubInitialized) {
+    isHubInitialized = true;
+
+    // Listen to StorageEvent as fallback for browsers without BroadcastChannel
+    // or when cross-tab communication occurs across isolated window contexts
+    window.addEventListener("storage", (event: StorageEvent) => {
+      if (event.key === STORAGE_KEY && event.newValue) {
+        try {
+          const parsed = JSON.parse(event.newValue) as SyncMessage;
+          if (!parsed || !parsed.id) return;
+          // Deduplicate at transport layer: if BroadcastChannel already delivered this ID, skip it
+          if (markAndCheckTransportEvent(parsed.id)) return;
+          dispatchInternalSync(parsed);
+        } catch {
+          // ignore parsing error
+        }
+      }
+    });
+  }
+
   return sharedChannel;
 }
 
@@ -63,11 +113,12 @@ export function emitSyncEvent(type: SyncEventType, payload?: unknown) {
     timestamp: Date.now(),
   };
 
-  // Mark our own emitted event ID as seen locally
-  markAndCheckEventId(eventId);
+  // Mark our own emitted event ID so incoming echo or storage events in this tab are ignored by transport
+  markAndCheckTransportEvent(eventId);
+
+  const channel = ensureSyncHubInitialized();
 
   // 1. BroadcastChannel (native, instant cross-tab communication)
-  const channel = getSharedBroadcastChannel();
   if (channel) {
     try {
       channel.postMessage(message);
@@ -83,14 +134,8 @@ export function emitSyncEvent(type: SyncEventType, payload?: unknown) {
     // ignore
   }
 
-  // 3. Local custom event (notifies components in the CURRENT window/tab)
-  try {
-    window.dispatchEvent(
-      new CustomEvent("titanfit_sync", { detail: message })
-    );
-  } catch {
-    // ignore
-  }
+  // 3. Local internal event (notifies all mounted useAutoSync hooks in the CURRENT window/tab)
+  dispatchInternalSync(message);
 }
 
 interface UseAutoSyncOptions {
@@ -117,7 +162,8 @@ interface UseAutoSyncOptions {
 
 /**
  * React hook to auto-sync data:
- * - Across multiple tabs (via BroadcastChannel & Storage events with deduplication)
+ * - Across multiple tabs (via Single Hub BroadcastChannel & Storage events with transport deduplication)
+ * - Across all mounted components in the current tab without event starvation
  * - On window focus / tab visibility change (instant refresh when switching tabs)
  * - On periodic heartbeat interval (background polling while tab is active)
  */
@@ -130,7 +176,7 @@ export function useAutoSync({
   const onSyncRef = useRef(onSync);
   const eventTypesRef = useRef(eventTypes);
 
-  // Synchronize refs safely in effect rather than during render phase
+  // Synchronize refs safely in effect rather than during render phase (React 19 compliant)
   useEffect(() => {
     onSyncRef.current = onSync;
     eventTypesRef.current = eventTypes;
@@ -139,58 +185,27 @@ export function useAutoSync({
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    // Ensure the single tab-level cross-tab transport hub is listening
+    ensureSyncHubInitialized();
+
     // Helper to check if event type matches filter
     const shouldHandle = (msg: SyncMessage) => {
-      if (!msg || !msg.id) return false;
-      if (markAndCheckEventId(msg.id)) return false; // Deduplicate duplicate events
-
+      if (!msg || !msg.type) return false;
       const types = eventTypesRef.current;
       return !types || types.length === 0 || types.includes(msg.type);
     };
 
-    // 1. Listen via BroadcastChannel (other tabs)
-    let channel: BroadcastChannel | null = null;
-    const hasBroadcastChannel = "BroadcastChannel" in window;
-    if (hasBroadcastChannel) {
-      try {
-        channel = new BroadcastChannel(CHANNEL_NAME);
-        channel.onmessage = (event: MessageEvent<SyncMessage>) => {
-          if (event.data && shouldHandle(event.data)) {
-            onSyncRef.current();
-          }
-        };
-      } catch {
-        // ignore
-      }
-    }
-
-    // 2. Listen via LocalStorage event (cross-tab fallback ONLY when BroadcastChannel is unavailable)
-    const handleStorage = (event: StorageEvent) => {
-      if (!hasBroadcastChannel && event.key === STORAGE_KEY && event.newValue) {
-        try {
-          const parsed = JSON.parse(event.newValue) as SyncMessage;
-          if (parsed && shouldHandle(parsed)) {
-            onSyncRef.current();
-          }
-        } catch {
-          // ignore
-        }
-      }
-    };
-    if (!hasBroadcastChannel) {
-      window.addEventListener("storage", handleStorage);
-    }
-
-    // 3. Listen via CustomEvent (same tab)
+    // 1. Listen via local internal custom event bus
+    // Every mounted hook receives this event without being starved by other hooks
     const handleLocalSync = (event: Event) => {
       const customEvent = event as CustomEvent<SyncMessage>;
       if (customEvent.detail && shouldHandle(customEvent.detail)) {
         onSyncRef.current();
       }
     };
-    window.addEventListener("titanfit_sync", handleLocalSync);
+    window.addEventListener(INTERNAL_EVENT_NAME, handleLocalSync);
 
-    // 4. Listen to Window Focus & Visibility Change (triggers when user switches back to this tab)
+    // 2. Listen to Window Focus & Visibility Change (triggers when user switches back to this tab)
     let lastFocusTime = Date.now();
     const handleVisibilityOrFocus = () => {
       if (document.visibilityState === "visible") {
@@ -208,7 +223,7 @@ export function useAutoSync({
       document.addEventListener("visibilitychange", handleVisibilityOrFocus);
     }
 
-    // 5. Periodic polling (only when tab is visible)
+    // 3. Periodic polling (only when tab is visible)
     let timerId: NodeJS.Timeout | null = null;
     if (intervalMs > 0) {
       timerId = setInterval(() => {
@@ -220,17 +235,7 @@ export function useAutoSync({
 
     // Cleanup
     return () => {
-      if (channel) {
-        try {
-          channel.close();
-        } catch {
-          // ignore
-        }
-      }
-      if (!hasBroadcastChannel) {
-        window.removeEventListener("storage", handleStorage);
-      }
-      window.removeEventListener("titanfit_sync", handleLocalSync);
+      window.removeEventListener(INTERNAL_EVENT_NAME, handleLocalSync);
       if (enableFocusSync) {
         window.removeEventListener("focus", handleVisibilityOrFocus);
         document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
