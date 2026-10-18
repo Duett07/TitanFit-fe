@@ -5,6 +5,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import { UserResponse } from "@/types/auth.type";
 import authApiRequest from "@/apiRequest/auth";
 import { clearSession, registerAuthReset, clearLegacyAuthCookies } from "@/lib/session";
+import { emitSyncEvent } from "@/lib/sync";
 
 export { clearSession, clearLegacyAuthCookies };
 
@@ -28,12 +29,12 @@ export const useAuthStore = create<AuthState>()(
 
         if (typeof window !== "undefined") {
           try {
-            localStorage.setItem("user", JSON.stringify(user));
             // Remove legacy forgeable cookies
             clearLegacyAuthCookies();
             window.dispatchEvent(new Event("authchange"));
+            emitSyncEvent("AUTH_CHANGED", { userId: user.id });
           } catch (err) {
-            console.warn("Could not save user to localStorage:", err);
+            console.warn("Could not dispatch auth change event:", err);
           }
         }
       },

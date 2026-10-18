@@ -43,30 +43,13 @@ const isValidUUID = (id?: string): boolean =>
 export default function CheckoutPage() {
   const router = useRouter();
   const cartStore = useCartStore();
-  const { isAuthenticated } = useAuthStore();
-  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const { isAuthenticated, user } = useAuthStore();
 
   // Close drawer and sync cart with backend once when arriving at checkout page
   useEffect(() => {
     useCartStore.getState().closeDrawer();
-    cartStore.syncCart();
+    useCartStore.getState().syncCart();
   }, []);
-
-  // Enforce authentication: Redirect to login immediately if not logged in
-  useEffect(() => {
-    let hasUser = false;
-    if (typeof window !== "undefined") {
-      try {
-        hasUser = !!localStorage.getItem("user");
-      } catch {}
-    }
-
-    if (!isAuthenticated && !hasUser) {
-      router.replace("/login?redirect=/checkout");
-      return;
-    }
-    setIsAuthChecking(false);
-  }, [isAuthenticated, router]);
 
   // Hydration-safe store subscription
   const isHydrated = useSyncExternalStore(
@@ -74,6 +57,16 @@ export default function CheckoutPage() {
     () => true,
     () => false
   );
+
+  const isAuthChecking = !isHydrated || !isAuthenticated;
+
+  // Enforce authentication: Redirect to login immediately if not logged in once hydrated
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (!isAuthenticated) {
+      router.replace("/login?redirect=/checkout");
+    }
+  }, [isHydrated, isAuthenticated, router]);
 
   const cartItems = cartStore.items;
   const items = useMemo(() => (isHydrated ? cartItems : []), [isHydrated, cartItems]);
@@ -106,30 +99,14 @@ export default function CheckoutPage() {
     setErrorMessage(null);
   };
 
-  // Form State with lazy initialization to read localStorage without setState in effect
-  const [formData, setFormData] = useState<CheckoutFormValues>(() => {
-    let initialName = "";
-    let initialPhone = "";
-    if (typeof window !== "undefined") {
-      try {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-          const user = JSON.parse(storedUser);
-          initialName = user.fullName || "";
-          initialPhone = user.phone || "";
-        }
-      } catch {
-        // Ignore JSON error
-      }
-    }
-    return {
-      fullName: initialName,
-      phone: initialPhone,
-      shippingAddress: "",
-      note: "",
-      paymentMethod: "COD",
-    };
-  });
+  // Form State with initial values from authenticated user
+  const [formData, setFormData] = useState<CheckoutFormValues>(() => ({
+    fullName: user?.fullName || "",
+    phone: user?.phone || "",
+    shippingAddress: "",
+    note: "",
+    paymentMethod: "COD",
+  }));
 
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormValues, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);

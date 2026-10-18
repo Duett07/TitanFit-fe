@@ -17,4 +17,8 @@ export const queryKeys = {
   inventory: {
     all: ["inventory"] as const,
   },
+  auth: {
+    all: ["auth"] as const,
+    session: () => [...queryKeys.auth.all, "session"] as const,
+  },
 };

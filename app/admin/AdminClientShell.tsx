@@ -9,6 +9,8 @@ import orderApiRequest from "@/apiRequest/order";
 import productApiRequest from "@/apiRequest/product";
 import { ProductSummaryDto, VariantDto } from "@/types/product.type";
 import { UserResponse } from "@/types/auth.type";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/hooks/queries/queryKeys";
 import { useAutoSync } from "@/lib/sync";
 
 interface AdminClientShellProps {
@@ -41,6 +43,7 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
 export default function AdminClientShell({ children, initialUser }: AdminClientShellProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const queryClient = useQueryClient();
   const { user: storeUser, logout } = useAuthStore();
   const user = storeUser || initialUser;
 
@@ -64,12 +67,15 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
 
   const notifRef = useRef<HTMLDivElement>(null);
 
-  // Sync initial user with auth store on mount if needed
+  // Sync initial user with auth store and query cache on mount if needed
   useEffect(() => {
-    if (initialUser && (!storeUser || storeUser.id !== initialUser.id)) {
-      useAuthStore.getState().setUser(initialUser);
+    if (initialUser) {
+      queryClient.setQueryData(queryKeys.auth.session(), initialUser);
+      if (!storeUser || storeUser.id !== initialUser.id) {
+        useAuthStore.getState().setUser(initialUser);
+      }
     }
-  }, [initialUser, storeUser]);
+  }, [initialUser, storeUser, queryClient]);
 
   const toggleTheme = () => {
     const nextTheme = theme === "dark" ? "light" : "dark";

@@ -14,7 +14,9 @@ import {
   ShieldCheck,
   User,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { queryKeys } from "@/hooks/queries/queryKeys";
 import authApiRequest from "@/apiRequest/auth";
 import { getSafeRedirect } from "@/lib/security";
 import { Button, Toast } from "@/components/ui";
@@ -58,6 +60,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 function RegisterFormContent() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const rawRedirect = searchParams.get("redirect") || searchParams.get("from");
   const redirectTarget = getSafeRedirect(rawRedirect);
@@ -157,8 +160,9 @@ function RegisterFormContent() {
         }
       }
 
-      // Store in auth store
+      // Store in auth store and prime query cache
       if (userData) {
+        queryClient.setQueryData(queryKeys.auth.session(), userData);
         setUser(userData);
       }
 
