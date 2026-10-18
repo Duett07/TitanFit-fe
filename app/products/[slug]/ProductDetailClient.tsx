@@ -92,7 +92,7 @@ export default function ProductDetailClient({
   useAutoSync({
     eventTypes: ["PRODUCT_UPDATED"],
     onSync: () => loadProduct(true),
-    intervalMs: 8000,
+    intervalMs: 60000,
     enableFocusSync: true,
   });
 

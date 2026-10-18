@@ -101,10 +101,17 @@ export default function AdminDashboardPage() {
 
       setOrders(mappedOrders);
 
-      // 2. Fetch Real Products to analyze inventory
+      // 2. Fetch Real Products to analyze inventory across full catalog
       try {
-        const prodRes = await productApiRequest.getProducts({ size: 100 });
-        const products: ProductSummaryDto[] = prodRes.data?.data?.content || [];
+        let products: ProductSummaryDto[] = [];
+        try {
+          const adminProdRes = await productApiRequest.adminGetAllProducts();
+          products = adminProdRes.data?.data || [];
+        } catch {
+          const prodRes = await productApiRequest.getProducts({ size: 100 });
+          products = prodRes.data?.data?.content || [];
+        }
+
         const alerts: LowStockAlert[] = [];
 
         products.forEach((p: ProductSummaryDto) => {
@@ -144,7 +151,7 @@ export default function AdminDashboardPage() {
   useAutoSync({
     eventTypes: ["ORDER_UPDATED", "PRODUCT_UPDATED", "INVENTORY_UPDATED"],
     onSync: () => loadDashboardData(true),
-    intervalMs: 5000,
+    intervalMs: 60000,
     enableFocusSync: true,
   });
 

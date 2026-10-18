@@ -29,8 +29,15 @@ export default function AdminInventoryPage() {
       setErrorMessage(null);
     }
     try {
-      const res = await productApiRequest.getProducts({ size: 100 });
-      const products: ProductSummaryDto[] = res.data?.data?.content || [];
+      let products: ProductSummaryDto[] = [];
+      try {
+        const adminRes = await productApiRequest.adminGetAllProducts();
+        products = adminRes.data?.data || [];
+      } catch {
+        const publicRes = await productApiRequest.getProducts({ size: 100 });
+        products = publicRes.data?.data?.content || [];
+      }
+
       const items: LowStockItem[] = [];
 
       products.forEach((p: ProductSummaryDto) => {
@@ -76,7 +83,7 @@ export default function AdminInventoryPage() {
   useAutoSync({
     eventTypes: ["INVENTORY_UPDATED", "PRODUCT_UPDATED", "ORDER_UPDATED"],
     onSync: () => fetchInventory(true),
-    intervalMs: 6000,
+    intervalMs: 60000,
     enableFocusSync: true,
   });
 
