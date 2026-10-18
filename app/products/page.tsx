@@ -595,11 +595,14 @@ function ProductsContent() {
               /* Lưới sản phẩm (Product Grid) */
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filteredProducts.map((product) => {
-                  const discountPercent = product.originalPrice
-                    ? Math.round(
-                      ((product.originalPrice - product.price) / product.originalPrice) * 100
-                    )
-                    : null;
+                  const discountPercent =
+                    product.originalPrice && product.originalPrice > product.price
+                      ? Math.round(
+                          ((product.originalPrice - product.price) /
+                            product.originalPrice) *
+                            100
+                        )
+                      : null;
 
                   return (
                     <div
@@ -646,7 +649,7 @@ function ProductsContent() {
                         {/* Hàng giá bán dạng xxx.xxx ₫ */}
                         <div className="flex items-baseline gap-2 mt-auto mb-3">
                           <span className="text-base font-bold text-primary">{formatVND(product.price)}</span>
-                          {product.originalPrice && (
+                          {product.originalPrice && product.originalPrice > product.price && (
                             <span className="text-xs text-muted-foreground line-through">{formatVND(product.originalPrice)}</span>
                           )}
                         </div>

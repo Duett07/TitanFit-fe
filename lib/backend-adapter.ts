@@ -126,7 +126,6 @@ export function transformBackendProductDetail(beProduct: BackendProductDetail): 
       sku: v.sku,
       options: optionsMap,
       price: v.price,
-      originalPrice: Math.round(v.price * 1.15),
       stock: v.stockQuantity,
     });
   });
@@ -138,13 +137,18 @@ export function transformBackendProductDetail(beProduct: BackendProductDetail): 
     })
   );
 
-  // Supplemental image gallery
-  const galleryImages = [
+  // Real product images from thumbnail and variant images only
+  const allImages = [
     beProduct.thumbnailUrl,
-    "https://images.unsplash.com/photo-1579722821273-0f6c7d44362f?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80",
-  ];
+    ...beProduct.variants.map((v) => v.imageUrl),
+  ].filter((img): img is string => Boolean(img && img.trim()));
+  const uniqueImages = Array.from(new Set(allImages));
+  const galleryImages =
+    uniqueImages.length > 0
+      ? uniqueImages
+      : beProduct.thumbnailUrl
+      ? [beProduct.thumbnailUrl]
+      : [];
 
   return {
     id: beProduct.id,
@@ -153,33 +157,14 @@ export function transformBackendProductDetail(beProduct: BackendProductDetail): 
     category: isApparel ? "apparel" : "supplements",
     categoryLabel: beProduct.category?.name || (isApparel ? "Đồ Thể Thao" : "Thực Phẩm Bổ Sung"),
     price: beProduct.basePrice || (mappedVariants[0]?.price ?? 0),
-    originalPrice: Math.round((beProduct.basePrice || mappedVariants[0]?.price || 0) * 1.15),
-    badge: isApparel ? "Chính Hãng" : "Top 1 Bán Chạy",
     image: beProduct.thumbnailUrl,
     images: galleryImages,
     actionText: "Xem chi tiết",
-    rating: 4.9,
-    reviewCount: 128,
-    salesCount: 450,
     description: beProduct.description,
     variantOptions,
     variants: mappedVariants,
-    specs: isApparel
-      ? [
-          { label: "Chất liệu", value: "88% Polyester, 12% Spandex co giãn 4 chiều" },
-          { label: "Công nghệ", value: "Dri-FIT thoáng khí, kháng khuẩn" },
-          { label: "Bảo hành", value: "Đổi size miễn phí trong 7 ngày" },
-        ]
-      : [
-          { label: "Tiêu chuẩn", value: "100% Chính hãng nhập khẩu Hoa Kỳ" },
-          { label: "Hàm lượng", value: "Đầy đủ dưỡng chất tinh khiết" },
-          { label: "Bảo quản", value: "Nơi khô ráo, tránh ánh nắng trực tiếp" },
-        ],
-    features: [
-      "100% Nhập khẩu chính hãng có tem phụ kiểm định",
-      "Giao hàng hỏa tốc trong 24 giờ",
-      "Đổi trả miễn phí trong 7 ngày",
-    ],
+    specs: [],
+    features: [],
   };
 }
 
@@ -203,14 +188,9 @@ export function transformBackendProductSummary(item: BackendProductSummary): Pro
     category: isApparel ? "apparel" : "supplements",
     categoryLabel: item.categoryName,
     price: minPrice,
-    originalPrice: Math.round(minPrice * 1.15),
-    badge: isApparel ? "Mới Nhất" : "Bán Chạy",
     image: item.thumbnailUrl,
     images: [item.thumbnailUrl],
     actionText: "Xem chi tiết",
-    rating: 4.8,
-    reviewCount: 95,
-    salesCount: 300,
     description: item.name,
     variantOptions: [],
     variants: (item.variants || []).map((v) => ({
@@ -218,7 +198,6 @@ export function transformBackendProductSummary(item: BackendProductSummary): Pro
       sku: v.sku,
       options: { "Phân loại": v.variantName },
       price: v.price,
-      originalPrice: Math.round(v.price * 1.15),
       stock: v.stockQuantity,
     })),
     specs: [],

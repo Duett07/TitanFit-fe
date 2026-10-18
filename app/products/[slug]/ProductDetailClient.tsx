@@ -293,29 +293,31 @@ export default function ProductDetailClient({
             </div>
 
             {/* Thumbnails row */}
-            <div className="flex items-center gap-3 overflow-x-auto pb-2">
-              {product.images.map((img, idx) => {
-                const isActive = selectedImage === img;
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
-                      isActive ? "border-primary shadow-sm" : "border-border hover:border-primary/50"
-                    }`}
-                    onClick={() => setSelectedImage(img)}
-                    aria-label={`Xem ảnh ${idx + 1}`}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={img}
-                      alt={`${product.name} thumbnail ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                );
-              })}
-            </div>
+            {product.images && product.images.length > 1 && (
+              <div className="flex items-center gap-3 overflow-x-auto pb-2">
+                {product.images.map((img, idx) => {
+                  const isActive = selectedImage === img;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
+                        isActive ? "border-primary shadow-sm" : "border-border hover:border-primary/50"
+                      }`}
+                      onClick={() => setSelectedImage(img)}
+                      aria-label={`Xem ảnh ${idx + 1}`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={img}
+                        alt={`${product.name} thumbnail ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Right: Product Info & Variants */}

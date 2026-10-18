@@ -15,10 +15,10 @@ export interface Product {
   badge?: string;
   image: string;
   actionText: string;
-  rating: number;
-  reviewCount: number;
+  rating?: number;
+  reviewCount?: number;
   isNew?: boolean;
-  salesCount: number;
+  salesCount?: number;
 }
 
 export const PRODUCTS: Product[] = [
