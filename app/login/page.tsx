@@ -3,9 +3,11 @@
 import React, { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { AlertCircle, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import authApiRequest from "@/apiRequest/auth";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { getSafeRedirect } from "@/lib/security";
+import { Button, Toast } from "@/components/ui";
 
 function LoginFormContent() {
   const router = useRouter();
@@ -93,19 +95,11 @@ function LoginFormContent() {
     <div className="min-h-[calc(100vh-140px)] flex items-center justify-center py-10 px-4 sm:py-16">
       {/* Toast Notification */}
       {toastMessage && (
-        <div
-          className={`fixed top-6 right-6 z-50 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-200 ${toastMessage.type === "success"
-            ? "bg-emerald-950 text-emerald-100 border-emerald-800"
-            : toastMessage.type === "error"
-              ? "bg-rose-950 text-rose-100 border-rose-800"
-              : "bg-zinc-900 text-zinc-100 border-zinc-700"
-            }`}
-        >
-          {toastMessage.type === "success" && (
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          )}
-          <span>{toastMessage.text}</span>
-        </div>
+        <Toast
+          text={toastMessage.text}
+          type={toastMessage.type}
+          onClose={() => setToastMessage(null)}
+        />
       )}
 
       <div className="w-full max-w-[440px] bg-card border border-border rounded-2xl p-7 sm:p-9 shadow-xl backdrop-blur-md">
@@ -128,14 +122,7 @@ function LoginFormContent() {
             className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium flex items-center gap-2 animate-in fade-in duration-200"
             role="alert"
           >
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
+            <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
@@ -149,10 +136,7 @@ function LoginFormContent() {
             </label>
             <div className="relative flex items-center">
               <span className="absolute left-3.5 text-muted-foreground flex items-center pointer-events-none">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect width="20" height="16" x="2" y="4" rx="2" />
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                </svg>
+                <Mail className="w-4 h-4" />
               </span>
               <input
                 type="email"
@@ -161,7 +145,7 @@ function LoginFormContent() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="w-full h-11 pl-10 pr-3 rounded-lg bg-secondary border border-border text-foreground text-sm font-sans focus:outline-none focus:border-primary focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full h-11 pl-10 pr-3 rounded-xl bg-secondary border border-border text-foreground text-sm font-sans focus:outline-none focus:border-primary focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
                 required
                 autoComplete="email"
               />
@@ -186,10 +170,7 @@ function LoginFormContent() {
             </div>
             <div className="relative flex items-center">
               <span className="absolute left-3.5 text-muted-foreground flex items-center pointer-events-none">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
+                <Lock className="w-4 h-4" />
               </span>
               <input
                 type={showPassword ? "text" : "password"}
@@ -198,7 +179,7 @@ function LoginFormContent() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Nhập mật khẩu..."
-                className="w-full h-11 pl-10 pr-10 rounded-lg bg-secondary border border-border text-foreground text-sm font-sans focus:outline-none focus:border-primary focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full h-11 pl-10 pr-10 rounded-xl bg-secondary border border-border text-foreground text-sm font-sans focus:outline-none focus:border-primary focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all"
                 required
                 autoComplete="current-password"
               />
@@ -210,38 +191,24 @@ function LoginFormContent() {
                 aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
                 {showPassword ? (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-                    <line x1="2" x2="22" y1="2" y2="22" />
-                  </svg>
+                  <EyeOff className="w-4 h-4" />
                 ) : (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
+                  <Eye className="w-4 h-4" />
                 )}
               </button>
             </div>
           </div>
 
           {/* Submit CTA */}
-          <button
+          <Button
             type="submit"
             id="btnLoginSubmit"
-            disabled={isLoading}
-            className="w-full h-11 rounded-xl font-bold text-sm text-white bg-primary hover:bg-primary/90 transition-all shadow-md active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+            isLoading={isLoading}
+            variant="primary"
+            className="w-full h-11 text-sm shadow-md"
           >
-            {isLoading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Đang Xác Thực...</span>
-              </>
-            ) : (
-              <span>Đăng Nhập Vào TITANFIT</span>
-            )}
-          </button>
+            Đăng Nhập Vào TITANFIT
+          </Button>
         </form>
 
         {/* Social Logins */}
