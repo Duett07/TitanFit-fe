@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { useAutoSync, SyncMessage } from "@/lib/sync";
 import { queryKeys } from "@/hooks/queries/queryKeys";
+import { useSession } from "@/hooks/queries/useSession";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -61,6 +62,9 @@ function SyncQueryBridge() {
           queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
           queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
           break;
+        case "AUTH_CHANGED":
+          queryClient.invalidateQueries({ queryKey: queryKeys.auth.all });
+          break;
         default:
           queryClient.invalidateQueries();
           break;
@@ -73,12 +77,22 @@ function SyncQueryBridge() {
   return null;
 }
 
+/**
+ * SessionBridge: Runs useSession globally to revalidate session on focus,
+ * sync roles/info from BE into Zustand, and clear session on 401.
+ */
+function SessionBridge() {
+  useSession();
+  return null;
+}
+
 export function QueryProvider({ children }: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
 
   return (
     <QueryClientProvider client={queryClient}>
       <SyncQueryBridge />
+      <SessionBridge />
       {children}
     </QueryClientProvider>
   );

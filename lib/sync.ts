@@ -6,7 +6,8 @@ export type SyncEventType =
   | "ORDER_UPDATED"
   | "PRODUCT_UPDATED"
   | "INVENTORY_UPDATED"
-  | "CART_UPDATED";
+  | "CART_UPDATED"
+  | "AUTH_CHANGED";
 
 const CHANNEL_NAME = "titanfit_realtime_sync";
 const STORAGE_KEY = "titanfit_last_sync_event";

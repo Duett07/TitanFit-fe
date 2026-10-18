@@ -2,6 +2,8 @@
  * Centralized session manager for clearing client auth state, storage, and cookies.
  */
 
+import { emitSyncEvent } from "@/lib/sync";
+
 type ResetHandler = () => void;
 let resetHandler: ResetHandler | null = null;
 
@@ -38,6 +40,7 @@ export function clearSession() {
       localStorage.removeItem("titanfit_auth");
       clearLegacyAuthCookies();
       window.dispatchEvent(new Event("authchange"));
+      emitSyncEvent("AUTH_CHANGED");
     } catch (err) {
       console.warn("Could not clear session storage:", err);
     }

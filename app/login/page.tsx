@@ -4,13 +4,16 @@ import React, { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import authApiRequest from "@/apiRequest/auth";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { queryKeys } from "@/hooks/queries/queryKeys";
 import { getSafeRedirect } from "@/lib/security";
 import { Button, Toast } from "@/components/ui";
 
 function LoginFormContent() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const rawRedirect = searchParams.get("redirect") || searchParams.get("from");
   const redirectTarget = getSafeRedirect(rawRedirect);
@@ -60,6 +63,7 @@ function LoginFormContent() {
 
       if (res.data?.data) {
         const userData = res.data.data;
+        queryClient.setQueryData(queryKeys.auth.session(), userData);
         setUser(userData);
         showToast(`Đăng nhập thành công! Xin chào ${userData.fullName}`, "success");
 

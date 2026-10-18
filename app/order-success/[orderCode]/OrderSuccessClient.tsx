@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatVND } from "@/lib/format";
@@ -24,66 +24,78 @@ const BANK_CONFIG = {
 export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProps) {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
-  const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [order, setOrder] = useState<OrderResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  // Enforce authentication: Redirect to login immediately if not logged in
+  const isHydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+
+  const isAuthChecking = !isHydrated || !isAuthenticated;
+
+  // Enforce authentication: Redirect to login immediately if not logged in once hydrated
   useEffect(() => {
-    let hasUser = false;
-    if (typeof window !== "undefined") {
-      try {
-        hasUser = !!localStorage.getItem("user");
-      } catch {}
-    }
-
-    if (!isAuthenticated && !hasUser) {
+    if (!isHydrated) return;
+    if (!isAuthenticated) {
       router.replace(`/login?redirect=/order-success/${orderCode}`);
-      return;
     }
-    setIsAuthChecking(false);
-  }, [isAuthenticated, orderCode, router]);
+  }, [isHydrated, isAuthenticated, orderCode, router]);
 
-  const fetchOrder = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true);
+  const fetchOrder = useCallback(async () => {
     try {
       const res = await orderApiRequest.getOrderByCode(orderCode);
       if (res.data?.data) {
         setOrder(res.data.data);
-        if (!silent) setLoading(false);
-        return;
       }
     } catch (err) {
       console.warn("Could not fetch order from backend via orderCode:", err);
     }
-
-    if (!silent) {
-      setOrder({
-        id: "temp-id",
-        orderCode: orderCode,
-        customerName: "Quý Khách Hàng",
-        phone: "0987654321",
-        shippingAddress: "Địa chỉ giao hàng đã đăng ký",
-        totalAmount: 1550000,
-        paymentMethod: "VIETQR",
-        paymentStatus: "UNPAID",
-        orderStatus: "PENDING",
-        createdAt: new Date().toISOString(),
-        items: [],
-      });
-      setLoading(false);
-    }
   }, [orderCode]);
 
   useEffect(() => {
-    fetchOrder(false);
-  }, [fetchOrder]);
+    let ignore = false;
+    async function load() {
+      try {
+        const res = await orderApiRequest.getOrderByCode(orderCode);
+        if (!ignore && res.data?.data) {
+          setOrder(res.data.data);
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.warn("Could not fetch order from backend via orderCode:", err);
+      }
+
+      if (!ignore) {
+        setOrder({
+          id: "temp-id",
+          orderCode: orderCode,
+          customerName: "Quý Khách Hàng",
+          phone: "0987654321",
+          shippingAddress: "Địa chỉ giao hàng đã đăng ký",
+          totalAmount: 1550000,
+          paymentMethod: "VIETQR",
+          paymentStatus: "UNPAID",
+          orderStatus: "PENDING",
+          createdAt: new Date().toISOString(),
+          items: [],
+        });
+        setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      ignore = true;
+    };
+  }, [orderCode]);
 
   // Real-time synchronization: Auto-refresh order status when updated by admin or on tab focus
   useAutoSync({
     eventTypes: ["ORDER_UPDATED"],
-    onSync: () => fetchOrder(true),
+    onSync: () => fetchOrder(),
     intervalMs: 15000,
     enableFocusSync: true,
   });

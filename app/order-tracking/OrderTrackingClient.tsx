@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useSyncExternalStore } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -190,23 +190,23 @@ export default function OrderTrackingClient() {
   const [activeTab, setActiveTab] = useState<string>("ALL");
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Enforce authentication: Redirect to login immediately if not logged in
-  useEffect(() => {
-    let hasUser = false;
-    if (typeof window !== "undefined") {
-      try {
-        hasUser = !!localStorage.getItem("user");
-      } catch {}
-    }
+  const isHydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
-    if (!isAuthenticated && !hasUser) {
+  // Enforce authentication: Redirect to login immediately if not logged in once hydrated
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (!isAuthenticated) {
       const currentUrl =
         typeof window !== "undefined"
           ? window.location.pathname + window.location.search
           : "/order-tracking";
       router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`);
     }
-  }, [isAuthenticated, router]);
+  }, [isHydrated, isAuthenticated, router]);
 
   // Order lookup form state
   const [searchCode, setSearchCode] = useState<string>(requestedOrderParam);
@@ -303,7 +303,7 @@ export default function OrderTrackingClient() {
       await loadInitialData(false);
     }
 
-    if (isAuthenticated || (typeof window !== "undefined" && !!localStorage.getItem("user"))) {
+    if (isAuthenticated) {
       init();
     }
   }, [isAuthenticated, loadInitialData]);
