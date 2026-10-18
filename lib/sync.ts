@@ -147,7 +147,7 @@ interface UseAutoSyncOptions {
   /**
    * Callback function to reload data from backend
    */
-  onSync: () => void | Promise<void>;
+  onSync: (message?: SyncMessage) => void | Promise<void>;
   /**
    * Optional periodic heartbeat interval in ms (e.g. 60000 = 60s).
    * Set to 0 or leave undefined to disable polling.
@@ -200,7 +200,11 @@ export function useAutoSync({
     const handleLocalSync = (event: Event) => {
       const customEvent = event as CustomEvent<SyncMessage>;
       if (customEvent.detail && shouldHandle(customEvent.detail)) {
-        onSyncRef.current();
+        try {
+          onSyncRef.current(customEvent.detail);
+        } catch (error) {
+          console.error("AutoSync callback error:", error);
+        }
       }
     };
     window.addEventListener(INTERNAL_EVENT_NAME, handleLocalSync);

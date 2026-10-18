@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
+import { QueryProvider } from "@/providers/QueryProvider";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -49,16 +50,18 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground selection:bg-primary/20 selection:text-primary">
-        <Suspense fallback={<header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur h-[72px]" />}>
-          <Navbar />
-        </Suspense>
-        <main className="flex-1">{children}</main>
-        <Suspense fallback={null}>
-          <Footer />
-        </Suspense>
-        <Suspense fallback={null}>
-          <CartDrawer />
-        </Suspense>
+        <QueryProvider>
+          <Suspense fallback={<header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur h-[72px]" />}>
+            <Navbar />
+          </Suspense>
+          <main className="flex-1">{children}</main>
+          <Suspense fallback={null}>
+            <Footer />
+          </Suspense>
+          <Suspense fallback={null}>
+            <CartDrawer />
+          </Suspense>
+        </QueryProvider>
       </body>
     </html>
   );
