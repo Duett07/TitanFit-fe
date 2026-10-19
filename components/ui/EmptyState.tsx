@@ -23,9 +23,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-3">
         {icon || <PackageOpen className="w-6 h-6 stroke-[1.5]" />}
       </div>
-      <h4 className="text-sm sm:text-base font-bold text-foreground font-heading">
-        {title}
-      </h4>
+      <h4 className="text-sm sm:text-base font-bold text-foreground font-heading">{title}</h4>
       {description && (
         <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mt-1.5 leading-relaxed">
           {description}

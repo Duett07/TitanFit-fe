@@ -39,7 +39,10 @@ export default function AdminDashboardPage() {
   const [statusFilter, setStatusFilter] = useState<"ALL" | OrderStatus>("ALL");
   const [selectedOrder, setSelectedOrder] = useState<UrgentOrder | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "info" | "error" } | null>(null);
+  const [toastMessage, setToastMessage] = useState<{
+    text: string;
+    type: "success" | "info" | "error";
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [updatingCode, setUpdatingCode] = useState<string | null>(null);
@@ -62,13 +65,16 @@ export default function AdminDashboardPage() {
 
       const mappedOrders: UrgentOrder[] = rawOrders.map((o) => {
         const rawStatus = (o.orderStatus || "PENDING").toUpperCase();
-        const status = (["PENDING", "CONFIRMED", "SHIPPING", "COMPLETED", "CANCELLED"].includes(rawStatus)
-          ? rawStatus
-          : "PENDING") as UrgentOrder["status"];
+        const status = (
+          ["PENDING", "CONFIRMED", "SHIPPING", "COMPLETED", "CANCELLED"].includes(rawStatus)
+            ? rawStatus
+            : "PENDING"
+        ) as UrgentOrder["status"];
 
         let paymentStatusLabel = o.paymentStatus === "PAID" ? "Đã thanh toán" : "Chưa thanh toán";
         if (o.paymentMethod === "VIETQR") {
-          paymentStatusLabel = o.paymentStatus === "PAID" ? "Đã thanh toán (Napas247)" : "Chờ đối soát";
+          paymentStatusLabel =
+            o.paymentStatus === "PAID" ? "Đã thanh toán (Napas247)" : "Chờ đối soát";
         } else if (o.paymentMethod === "COD") {
           paymentStatusLabel = status === "COMPLETED" ? "Đã thu tiền mặt" : "Chờ thu tiền mặt";
         }
@@ -169,9 +175,7 @@ export default function AdminDashboardPage() {
 
   // KPI Calculations from REAL database data
   const totalRevenue = useMemo(() => {
-    return orders
-      .filter((o) => o.status !== "CANCELLED")
-      .reduce((acc, cur) => acc + cur.total, 0);
+    return orders.filter((o) => o.status !== "CANCELLED").reduce((acc, cur) => acc + cur.total, 0);
   }, [orders]);
 
   const totalOrdersCount = orders.length;
@@ -236,14 +240,17 @@ export default function AdminDashboardPage() {
     return orders.filter((o) => o.status === statusFilter);
   }, [orders, statusFilter]);
 
-  const filterCounts = useMemo(() => ({
-    ALL: orders.length,
-    PENDING: orders.filter((o) => o.status === "PENDING").length,
-    CONFIRMED: orders.filter((o) => o.status === "CONFIRMED").length,
-    SHIPPING: orders.filter((o) => o.status === "SHIPPING").length,
-    COMPLETED: orders.filter((o) => o.status === "COMPLETED").length,
-    CANCELLED: orders.filter((o) => o.status === "CANCELLED").length,
-  }), [orders]);
+  const filterCounts = useMemo(
+    () => ({
+      ALL: orders.length,
+      PENDING: orders.filter((o) => o.status === "PENDING").length,
+      CONFIRMED: orders.filter((o) => o.status === "CONFIRMED").length,
+      SHIPPING: orders.filter((o) => o.status === "SHIPPING").length,
+      COMPLETED: orders.filter((o) => o.status === "COMPLETED").length,
+      CANCELLED: orders.filter((o) => o.status === "CANCELLED").length,
+    }),
+    [orders]
+  );
 
   // Handle status update
   const handleUpdateStatus = async (
@@ -276,7 +283,10 @@ export default function AdminDashboardPage() {
       } else if (newStatus === "COMPLETED") {
         showToast(`Đơn #${orderCode} ➔ Chuyển sang COMPLETED (Giao thành công)!`, "success");
       } else if (newStatus === "CANCELLED") {
-        showToast(`Đơn #${orderCode} ➔ Chuyển sang CANCELLED (backend tự động cộng lại tồn kho!)`, "error");
+        showToast(
+          `Đơn #${orderCode} ➔ Chuyển sang CANCELLED (backend tự động cộng lại tồn kho!)`,
+          "error"
+        );
       } else {
         showToast(`Đã xác nhận đơn #${orderCode}.`, "info");
       }
@@ -310,8 +320,8 @@ export default function AdminDashboardPage() {
             toastMessage.type === "success"
               ? "bg-emerald-950 text-emerald-100 border-emerald-800"
               : toastMessage.type === "error"
-              ? "bg-rose-950 text-rose-100 border-rose-800"
-              : "bg-zinc-900 text-zinc-100 border-zinc-700"
+                ? "bg-rose-950 text-rose-100 border-rose-800"
+                : "bg-zinc-900 text-zinc-100 border-zinc-700"
           }`}
         >
           {toastMessage.type === "success" && (
@@ -338,7 +348,8 @@ export default function AdminDashboardPage() {
             Tổng Quan Cửa Hàng
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Dữ liệu thực tế từ cơ sở dữ liệu MySQL titanfit • Theo dõi doanh thu & trạng thái đơn hàng
+            Dữ liệu thực tế từ cơ sở dữ liệu MySQL titanfit • Theo dõi doanh thu & trạng thái đơn
+            hàng
           </p>
         </div>
 
@@ -375,7 +386,14 @@ export default function AdminDashboardPage() {
               Tổng Doanh Thu
             </span>
             <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <line x1="12" x2="12" y1="2" y2="22" />
                 <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
               </svg>
@@ -399,7 +417,14 @@ export default function AdminDashboardPage() {
               Tổng Đơn Hàng
             </span>
             <div className="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
                 <path d="M3 6h18" />
                 <path d="M16 10a4 4 0 0 1-8 0" />
@@ -414,7 +439,11 @@ export default function AdminDashboardPage() {
               {completedOrdersCount} đơn hoàn thành
             </span>
             <span className="text-[11px] text-muted-foreground">
-              ({totalOrdersCount > 0 ? Math.round((completedOrdersCount / totalOrdersCount) * 100) : 0}%)
+              (
+              {totalOrdersCount > 0
+                ? Math.round((completedOrdersCount / totalOrdersCount) * 100)
+                : 0}
+              %)
             </span>
           </div>
         </div>
@@ -426,7 +455,14 @@ export default function AdminDashboardPage() {
               Đơn Chờ Xử Lý
             </span>
             <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
               </svg>
@@ -451,7 +487,14 @@ export default function AdminDashboardPage() {
               Cảnh Báo Tồn Kho
             </span>
             <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
                 <line x1="12" y1="9" x2="12" y2="13" />
                 <line x1="12" y1="17" x2="12.01" y2="17" />
@@ -481,7 +524,9 @@ export default function AdminDashboardPage() {
           <div className="flex items-center justify-between pb-3 border-b border-border">
             <div>
               <h2 className="text-sm font-bold text-foreground">Doanh Thu 7 Ngày Qua</h2>
-              <p className="text-[11px] text-muted-foreground">Dựa trên thời gian tạo đơn thực tế</p>
+              <p className="text-[11px] text-muted-foreground">
+                Dựa trên thời gian tạo đơn thực tế
+              </p>
             </div>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary uppercase">
               Thực tế
@@ -491,7 +536,10 @@ export default function AdminDashboardPage() {
           {/* Dynamic Bar Chart */}
           <div className="flex items-end justify-between gap-2 h-44 pt-4 pb-2 px-1">
             {chartData.map((item, index) => (
-              <div key={index} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group cursor-pointer relative">
+              <div
+                key={index}
+                className="flex-1 flex flex-col items-center gap-2 h-full justify-end group cursor-pointer relative"
+              >
                 {/* Tooltip on hover */}
                 <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-900 text-white text-[10px] font-bold py-1 px-2 rounded-md pointer-events-none whitespace-nowrap shadow-lg z-20">
                   {formatVND(item.revenue)} ({item.orders} đơn)
@@ -537,7 +585,14 @@ export default function AdminDashboardPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
                     <path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1Z" />
                   </svg>
@@ -678,13 +733,27 @@ export default function AdminDashboardPage() {
                 {isLoading ? (
                   Array.from({ length: 4 }).map((_, i) => (
                     <tr key={`loading-${i}`} className="animate-pulse">
-                      <td className="py-3.5 px-4"><div className="h-4 bg-muted rounded w-20" /></td>
-                      <td className="py-3.5 px-4"><div className="h-4 bg-muted rounded w-28" /></td>
-                      <td className="py-3.5 px-4"><div className="h-4 bg-muted rounded w-24" /></td>
-                      <td className="py-3.5 px-4"><div className="h-4 bg-muted rounded w-16" /></td>
-                      <td className="py-3.5 px-4"><div className="h-4 bg-muted rounded w-20" /></td>
-                      <td className="py-3.5 px-4"><div className="h-6 bg-muted rounded-full w-24" /></td>
-                      <td className="py-3.5 px-4 text-right"><div className="h-7 bg-muted rounded w-20 ml-auto" /></td>
+                      <td className="py-3.5 px-4">
+                        <div className="h-4 bg-muted rounded w-20" />
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="h-4 bg-muted rounded w-28" />
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="h-4 bg-muted rounded w-24" />
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="h-4 bg-muted rounded w-16" />
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="h-4 bg-muted rounded w-20" />
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="h-6 bg-muted rounded-full w-24" />
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="h-7 bg-muted rounded w-20 ml-auto" />
+                      </td>
                     </tr>
                   ))
                 ) : filteredOrders.length === 0 ? (
@@ -738,13 +807,16 @@ export default function AdminDashboardPage() {
                           {ord.paymentMethod}
                         </span>
                         <div className="text-[10px] text-muted-foreground mt-0.5">
-                          {ord.paymentStatusLabel || (ord.paymentStatus === "PAID" ? "Đã thanh toán" : "Chờ thanh toán")}
+                          {ord.paymentStatusLabel ||
+                            (ord.paymentStatus === "PAID" ? "Đã thanh toán" : "Chờ thanh toán")}
                         </div>
                       </td>
 
                       {/* Tổng Tiền */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <strong className="text-foreground font-bold">{formatVND(ord.total)}</strong>
+                        <strong className="text-foreground font-bold">
+                          {formatVND(ord.total)}
+                        </strong>
                       </td>
 
                       {/* Trạng Thái Đơn + Dropdown Chuyển Nhanh */}
@@ -786,12 +858,15 @@ export default function AdminDashboardPage() {
                               onChange={(e) =>
                                 handleUpdateStatus(
                                   ord.code,
-                                  e.target.value as "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED"
+                                  e.target.value as
+                                    "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED"
                                 )
                               }
                               className="h-6 text-[11px] rounded bg-background border border-border px-1.5 text-foreground focus:outline-none focus:border-primary cursor-pointer disabled:opacity-50"
                             >
-                              <option value="PENDING" disabled>⏳ Chờ duyệt</option>
+                              <option value="PENDING" disabled>
+                                ⏳ Chờ duyệt
+                              </option>
                               <option value="CONFIRMED">📦 Xác nhận đơn</option>
                               <option value="SHIPPING">🚚 Đang giao hàng</option>
                               <option value="COMPLETED">✅ Giao thành công</option>
@@ -844,7 +919,11 @@ export default function AdminDashboardPage() {
                               type="button"
                               disabled={updatingCode === ord.code}
                               onClick={() => {
-                                if (confirm(`Bạn có chắc chắn muốn HỦY đơn #${ord.code}?\nHệ thống sẽ tự động hoàn trả số lượng tồn kho!`)) {
+                                if (
+                                  confirm(
+                                    `Bạn có chắc chắn muốn HỦY đơn #${ord.code}?\nHệ thống sẽ tự động hoàn trả số lượng tồn kho!`
+                                  )
+                                ) {
                                   handleUpdateStatus(ord.code, "CANCELLED");
                                 }
                               }}
@@ -906,7 +985,9 @@ export default function AdminDashboardPage() {
                     Thanh Toán & Ghi Chú
                   </span>
                   <p className="font-bold text-foreground">
-                    {selectedOrder.paymentMethod} - {selectedOrder.paymentStatusLabel || (selectedOrder.paymentStatus === "PAID" ? "Đã thanh toán" : "Chờ thanh toán")}
+                    {selectedOrder.paymentMethod} -{" "}
+                    {selectedOrder.paymentStatusLabel ||
+                      (selectedOrder.paymentStatus === "PAID" ? "Đã thanh toán" : "Chờ thanh toán")}
                   </p>
                   <p className="text-muted-foreground mt-1">
                     Ghi chú: {selectedOrder.note || "Không có"}
@@ -932,7 +1013,9 @@ export default function AdminDashboardPage() {
                         <td className="py-2.5 px-3 font-semibold text-foreground">{item.name}</td>
                         <td className="py-2.5 px-3 text-muted-foreground">{item.variant}</td>
                         <td className="py-2.5 px-3 font-mono">{formatVND(item.price)}</td>
-                        <td className="py-2.5 px-3 text-center font-bold text-foreground">{item.qty}</td>
+                        <td className="py-2.5 px-3 text-center font-bold text-foreground">
+                          {item.qty}
+                        </td>
                         <td className="py-2.5 px-3 text-right font-mono font-bold text-foreground">
                           {formatVND(item.price * item.qty)}
                         </td>

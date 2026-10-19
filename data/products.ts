@@ -185,7 +185,6 @@ export const PRODUCTS: Product[] = [
 
 export { formatVND } from "@/lib/format";
 
-
 export interface ProductVariantOption {
   name: string; // e.g. "Kích thước (Size)" or "Hương Vị"
   values: string[];
@@ -456,9 +455,7 @@ export function getProductDetail(slugOrId: string | number): UIProductDetail | u
   }
 
   // Find base product by slug or id
-  const base = PRODUCTS.find(
-    (p) => p.slug === slugStr || String(p.id) === slugStr
-  );
+  const base = PRODUCTS.find((p) => p.slug === slugStr || String(p.id) === slugStr);
   if (!base) return undefined;
 
   // Build standard dynamic variants based on category
@@ -499,7 +496,7 @@ export function getProductDetail(slugOrId: string | number): UIProductDetail | u
         },
         price: base.price + priceOffset,
         originalPrice: base.originalPrice ? base.originalPrice + priceOffset : undefined,
-        stock: isOut ? 0 : 15 + ((i1 + i2) * 5),
+        stock: isOut ? 0 : 15 + (i1 + i2) * 5,
       });
     });
   });
@@ -533,4 +530,3 @@ export function getProductDetail(slugOrId: string | number): UIProductDetail | u
     ],
   };
 }
-

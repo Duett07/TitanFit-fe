@@ -1,6 +1,11 @@
 import http from "@/lib/http";
 import { ApiResponse } from "@/types/api.type";
-import { CreateOrderRequest, OrderResponse, TrackOrderRequest, UpdatableOrderStatus } from "@/types/order.type";
+import {
+  CreateOrderRequest,
+  OrderResponse,
+  TrackOrderRequest,
+  UpdatableOrderStatus,
+} from "@/types/order.type";
 
 export const orderApiRequest = {
   createOrder: (body: CreateOrderRequest) =>
@@ -19,10 +24,7 @@ export const orderApiRequest = {
       "/api/admin/orders",
       cookieHeader ? { headers: { Cookie: cookieHeader } } : {}
     ),
-  updateOrderStatus: (
-    orderId: string,
-    newStatus: UpdatableOrderStatus
-  ) =>
+  updateOrderStatus: (orderId: string, newStatus: UpdatableOrderStatus) =>
     http.patch<ApiResponse<OrderResponse>>(
       `/api/admin/orders/${orderId}/status?newStatus=${newStatus}`,
       { newStatus }

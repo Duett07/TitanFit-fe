@@ -14,16 +14,10 @@ import { emitSyncEvent } from "@/lib/sync";
 
 // Zod Validation Schema
 const checkoutSchema = z.object({
-  fullName: z
-    .string()
-    .min(2, "Họ và tên phải có ít nhất 2 ký tự")
-    .max(100, "Họ và tên quá dài"),
+  fullName: z.string().min(2, "Họ và tên phải có ít nhất 2 ký tự").max(100, "Họ và tên quá dài"),
   phone: z
     .string()
-    .regex(
-      /^(0|\+84)[0-9]{9,10}$/,
-      "Số điện thoại không hợp lệ (ví dụ: 0912345678)"
-    ),
+    .regex(/^(0|\+84)[0-9]{9,10}$/, "Số điện thoại không hợp lệ (ví dụ: 0912345678)"),
   shippingAddress: z
     .string()
     .min(6, "Vui lòng nhập địa chỉ nhận hàng chi tiết (số nhà, tên đường, phường/xã)"),
@@ -35,10 +29,7 @@ type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
 // Helper to validate real backend variant UUID
 const isValidUUID = (id?: string): boolean =>
-  Boolean(
-    id &&
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
-  );
+  Boolean(id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id));
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -53,7 +44,7 @@ export default function CheckoutPage() {
 
   // Hydration-safe store subscription
   const isHydrated = useSyncExternalStore(
-    () => () => { },
+    () => () => {},
     () => true,
     () => false
   );
@@ -112,9 +103,7 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name as keyof CheckoutFormValues]) {
@@ -125,7 +114,6 @@ export default function CheckoutPage() {
   const handlePaymentSelect = (method: PaymentMethod) => {
     setFormData((prev) => ({ ...prev, paymentMethod: method }));
   };
-
 
   const handleSubmitOrder = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -206,7 +194,7 @@ export default function CheckoutPage() {
       } else {
         setErrorMessage(
           anyErr?.response?.data?.message ||
-          "Có lỗi xảy ra khi tạo đơn hàng. Vui lòng kiểm tra lại thông tin!"
+            "Có lỗi xảy ra khi tạo đơn hàng. Vui lòng kiểm tra lại thông tin!"
         );
       }
     } finally {
@@ -219,9 +207,7 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center py-20 px-4">
         <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm font-medium text-muted-foreground">
-          Đang kiểm tra quyền truy cập...
-        </p>
+        <p className="text-sm font-medium text-muted-foreground">Đang kiểm tra quyền truy cập...</p>
       </div>
     );
   }
@@ -232,12 +218,7 @@ export default function CheckoutPage() {
       <div className="min-h-[70vh] flex items-center justify-center py-16 px-4">
         <div className="max-w-md w-full text-center bg-card border border-border rounded-2xl p-8 shadow-sm">
           <div className="w-20 h-20 bg-primary/10 text-primary mx-auto rounded-full flex items-center justify-center mb-6">
-            <svg
-              className="w-10 h-10"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -250,19 +231,15 @@ export default function CheckoutPage() {
             Giỏ Hàng Của Bạn Đang Trống
           </h1>
           <p className="text-sm text-muted-foreground mb-6">
-            Bạn chưa chọn sản phẩm nào để tiến hành thanh toán. Hãy khám phá các dòng thực phẩm bổ sung và phụ kiện tập gym đỉnh cao từ TitanFit ngay nhé!
+            Bạn chưa chọn sản phẩm nào để tiến hành thanh toán. Hãy khám phá các dòng thực phẩm bổ
+            sung và phụ kiện tập gym đỉnh cao từ TitanFit ngay nhé!
           </p>
           <Link
             href="/products"
             className="inline-flex items-center justify-center gap-2 w-full py-3.5 px-6 rounded-xl font-semibold text-white bg-[var(--primary)] hover:bg-[var(--primary-dark)] transition-all shadow-md active:scale-95"
           >
             <span>Khám Phá Sản Phẩm Ngay</span>
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -341,9 +318,7 @@ export default function CheckoutPage() {
                 <span className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center">
                   1
                 </span>
-                <h2 className="text-lg font-bold text-foreground">
-                  Thông Tin Người Nhận
-                </h2>
+                <h2 className="text-lg font-bold text-foreground">Thông Tin Người Nhận</h2>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -358,10 +333,11 @@ export default function CheckoutPage() {
                     value={formData.fullName}
                     onChange={handleChange}
                     placeholder="Ví dụ: Nguyễn Văn An"
-                    className={`w-full px-4 py-2.5 rounded-xl border text-sm bg-background text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${errors.fullName
-                      ? "border-destructive focus:border-destructive"
-                      : "border-border focus:border-primary"
-                      }`}
+                    className={`w-full px-4 py-2.5 rounded-xl border text-sm bg-background text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${
+                      errors.fullName
+                        ? "border-destructive focus:border-destructive"
+                        : "border-border focus:border-primary"
+                    }`}
                   />
                   {errors.fullName && (
                     <p className="mt-1 text-xs text-destructive">{errors.fullName}</p>
@@ -379,14 +355,13 @@ export default function CheckoutPage() {
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="Ví dụ: 0912345678"
-                    className={`w-full px-4 py-2.5 rounded-xl border text-sm bg-background text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${errors.phone
-                      ? "border-destructive focus:border-destructive"
-                      : "border-border focus:border-primary"
-                      }`}
+                    className={`w-full px-4 py-2.5 rounded-xl border text-sm bg-background text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${
+                      errors.phone
+                        ? "border-destructive focus:border-destructive"
+                        : "border-border focus:border-primary"
+                    }`}
                   />
-                  {errors.phone && (
-                    <p className="mt-1 text-xs text-destructive">{errors.phone}</p>
-                  )}
+                  {errors.phone && <p className="mt-1 text-xs text-destructive">{errors.phone}</p>}
                 </div>
 
                 {/* Shipping Address */}
@@ -400,15 +375,14 @@ export default function CheckoutPage() {
                     value={formData.shippingAddress}
                     onChange={handleChange}
                     placeholder="Số nhà, tên đường, Phường/Xã, Quận/Huyện, Tỉnh/Thành phố"
-                    className={`w-full px-4 py-2.5 rounded-xl border text-sm bg-background text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${errors.shippingAddress
-                      ? "border-destructive focus:border-destructive"
-                      : "border-border focus:border-primary"
-                      }`}
+                    className={`w-full px-4 py-2.5 rounded-xl border text-sm bg-background text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${
+                      errors.shippingAddress
+                        ? "border-destructive focus:border-destructive"
+                        : "border-border focus:border-primary"
+                    }`}
                   />
                   {errors.shippingAddress && (
-                    <p className="mt-1 text-xs text-destructive">
-                      {errors.shippingAddress}
-                    </p>
+                    <p className="mt-1 text-xs text-destructive">{errors.shippingAddress}</p>
                   )}
                 </div>
 
@@ -435,19 +409,18 @@ export default function CheckoutPage() {
                 <span className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center">
                   2
                 </span>
-                <h2 className="text-lg font-bold text-foreground">
-                  Phương Thức Thanh Toán
-                </h2>
+                <h2 className="text-lg font-bold text-foreground">Phương Thức Thanh Toán</h2>
               </div>
 
               <div className="flex flex-col gap-3.5">
                 {/* Option 1: COD */}
                 <label
                   onClick={() => handlePaymentSelect("COD")}
-                  className={`relative flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${formData.paymentMethod === "COD"
-                    ? "border-primary bg-primary/5 shadow-sm"
-                    : "border-border hover:border-muted-foreground/30 bg-background"
-                    }`}
+                  className={`relative flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    formData.paymentMethod === "COD"
+                      ? "border-primary bg-primary/5 shadow-sm"
+                      : "border-border hover:border-muted-foreground/30 bg-background"
+                  }`}
                 >
                   <input
                     type="radio"
@@ -467,16 +440,12 @@ export default function CheckoutPage() {
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Kiểm tra hàng trước khi thanh toán tiền mặt trực tiếp cho nhân viên giao hàng. An toàn 100%.
+                      Kiểm tra hàng trước khi thanh toán tiền mặt trực tiếp cho nhân viên giao hàng.
+                      An toàn 100%.
                     </p>
                   </div>
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -490,10 +459,11 @@ export default function CheckoutPage() {
                 {/* Option 2: VIETQR */}
                 <label
                   onClick={() => handlePaymentSelect("VIETQR")}
-                  className={`relative flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${formData.paymentMethod === "VIETQR"
-                    ? "border-primary bg-primary/5 shadow-sm"
-                    : "border-border hover:border-muted-foreground/30 bg-background"
-                    }`}
+                  className={`relative flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    formData.paymentMethod === "VIETQR"
+                      ? "border-primary bg-primary/5 shadow-sm"
+                      : "border-border hover:border-muted-foreground/30 bg-background"
+                  }`}
                 >
                   <input
                     type="radio"
@@ -513,16 +483,12 @@ export default function CheckoutPage() {
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Quét mã QR tự động bằng bất kỳ ứng dụng ngân hàng nào (MB Bank, Vietcombank, Techcombank...). Không cần nhập tay số tài khoản hay số tiền!
+                      Quét mã QR tự động bằng bất kỳ ứng dụng ngân hàng nào (MB Bank, Vietcombank,
+                      Techcombank...). Không cần nhập tay số tài khoản hay số tiền!
                     </p>
                   </div>
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -573,7 +539,8 @@ export default function CheckoutPage() {
                         Có {invalidCartItems.length} sản phẩm cần chọn lại
                       </p>
                       <p className="text-muted-foreground mt-0.5">
-                        Thông tin biến thể không hợp lệ hoặc là dữ liệu cũ. Vui lòng xóa hoặc chọn lại để tiếp tục:
+                        Thông tin biến thể không hợp lệ hoặc là dữ liệu cũ. Vui lòng xóa hoặc chọn
+                        lại để tiếp tục:
                       </p>
                       <ul className="list-disc list-inside mt-1.5 space-y-1 font-medium text-destructive">
                         {invalidCartItems.map((item) => (
@@ -616,7 +583,8 @@ export default function CheckoutPage() {
                         Có {outOfStockItems.length} sản phẩm đã hết hàng
                       </p>
                       <p className="text-muted-foreground mt-0.5">
-                        Tồn kho đã thay đổi kể từ lúc thêm vào giỏ. Vui lòng xóa sản phẩm hết hàng để tiếp tục:
+                        Tồn kho đã thay đổi kể từ lúc thêm vào giỏ. Vui lòng xóa sản phẩm hết hàng
+                        để tiếp tục:
                       </p>
                       <ul className="list-disc list-inside mt-1.5 space-y-1 font-medium text-destructive">
                         {outOfStockItems.map((item) => (
@@ -720,8 +688,8 @@ export default function CheckoutPage() {
                   invalidCartItems.length > 0
                     ? "Vui lòng xóa các sản phẩm lỗi hoặc chọn lại trước khi đặt hàng"
                     : outOfStockItems.length > 0
-                    ? "Vui lòng xóa các sản phẩm đã hết hàng trước khi đặt hàng"
-                    : undefined
+                      ? "Vui lòng xóa các sản phẩm đã hết hàng trước khi đặt hàng"
+                      : undefined
                 }
                 className="mt-6 w-full py-4 px-6 rounded-xl font-bold text-base text-white bg-[var(--primary)] hover:bg-[var(--primary)]/80 transition-all shadow-md active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
               >
@@ -733,12 +701,7 @@ export default function CheckoutPage() {
                 ) : (
                   <>
                     <span>Xác Nhận Đặt Hàng</span>
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"

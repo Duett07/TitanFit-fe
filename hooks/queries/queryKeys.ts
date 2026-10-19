@@ -2,8 +2,7 @@ export const queryKeys = {
   products: {
     all: ["products"] as const,
     lists: () => [...queryKeys.products.all, "list"] as const,
-    list: (params?: Record<string, unknown>) =>
-      [...queryKeys.products.lists(), params] as const,
+    list: (params?: Record<string, unknown>) => [...queryKeys.products.lists(), params] as const,
     details: () => [...queryKeys.products.all, "detail"] as const,
     detail: (slug: string) => [...queryKeys.products.details(), slug] as const,
     adminList: () => [...queryKeys.products.all, "admin"] as const,

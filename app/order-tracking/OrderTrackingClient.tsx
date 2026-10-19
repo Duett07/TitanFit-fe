@@ -118,27 +118,57 @@ function mapApiOrderToTracking(apiOrder: OrderResponse): TrackingOrder {
   let logs: { time: string; text: string }[] = [];
   if (mappedStatus === "CANCELLED") {
     logs = [
-      { time: "Đã hủy", text: `Đơn hàng #${apiOrder.orderCode} đã được ghi nhận hủy theo yêu cầu.` },
-      { time: orderTimeOnly, text: `Đơn hàng #${apiOrder.orderCode} đã được khởi tạo trên hệ thống TITANFIT.` },
+      {
+        time: "Đã hủy",
+        text: `Đơn hàng #${apiOrder.orderCode} đã được ghi nhận hủy theo yêu cầu.`,
+      },
+      {
+        time: orderTimeOnly,
+        text: `Đơn hàng #${apiOrder.orderCode} đã được khởi tạo trên hệ thống TITANFIT.`,
+      },
     ];
   } else if (mappedStatus === "COMPLETED") {
     logs = [
-      { time: "16:45", text: `Giao hàng thành công. Người nhận: ${apiOrder.customerName || "Khách Hàng"} (đã ký nhận)` },
-      { time: "14:10", text: `Bưu tá Viettel Post đã liên hệ và phát hàng tới ${apiOrder.shippingAddress || "địa chỉ nhận hàng"}` },
-      { time: "08:30", text: "Kiện hàng đã xuất kho trung tâm TITANFIT và bàn giao cho Viettel Post" },
-      { time: orderTimeOnly, text: `Đơn hàng #${apiOrder.orderCode} đã được tạo thành công trên hệ thống` },
+      {
+        time: "16:45",
+        text: `Giao hàng thành công. Người nhận: ${apiOrder.customerName || "Khách Hàng"} (đã ký nhận)`,
+      },
+      {
+        time: "14:10",
+        text: `Bưu tá Viettel Post đã liên hệ và phát hàng tới ${apiOrder.shippingAddress || "địa chỉ nhận hàng"}`,
+      },
+      {
+        time: "08:30",
+        text: "Kiện hàng đã xuất kho trung tâm TITANFIT và bàn giao cho Viettel Post",
+      },
+      {
+        time: orderTimeOnly,
+        text: `Đơn hàng #${apiOrder.orderCode} đã được tạo thành công trên hệ thống`,
+      },
     ];
   } else if (mappedStatus === "SHIPPING") {
     logs = [
-      { time: "11:20", text: `Bưu tá Viettel Post đang tiến hành phát hàng tới: ${apiOrder.shippingAddress || "địa chỉ người nhận"}` },
-      { time: "08:15", text: "Kiện hàng đã xuất kho trung tâm TITANFIT và bàn giao cho đơn vị vận chuyển" },
+      {
+        time: "11:20",
+        text: `Bưu tá Viettel Post đang tiến hành phát hàng tới: ${apiOrder.shippingAddress || "địa chỉ người nhận"}`,
+      },
+      {
+        time: "08:15",
+        text: "Kiện hàng đã xuất kho trung tâm TITANFIT và bàn giao cho đơn vị vận chuyển",
+      },
       { time: orderTimeOnly, text: `Đơn hàng #${apiOrder.orderCode} đã được tạo thành công` },
     ];
   } else {
     // PENDING / CONFIRMED
     logs = [
-      { time: "Đang xử lý", text: "Bộ phận kho TITANFIT đang kiểm tra tồn kho, niêm phong kiện hàng & dán tem bảo hành" },
-      { time: orderTimeOnly, text: `Đơn hàng #${apiOrder.orderCode} đã được tạo thành công trên hệ thống trực tuyến TITANFIT` },
+      {
+        time: "Đang xử lý",
+        text: "Bộ phận kho TITANFIT đang kiểm tra tồn kho, niêm phong kiện hàng & dán tem bảo hành",
+      },
+      {
+        time: orderTimeOnly,
+        text: `Đơn hàng #${apiOrder.orderCode} đã được tạo thành công trên hệ thống trực tuyến TITANFIT`,
+      },
     ];
   }
 
@@ -153,27 +183,28 @@ function mapApiOrderToTracking(apiOrder: OrderResponse): TrackingOrder {
     phone: apiOrder.phone || "",
     address: apiOrder.shippingAddress || "Địa chỉ giao hàng đã đăng ký",
     note: apiOrder.note || "Giao giờ hành chính, gọi trước khi đến",
-    paymentMethod: isVietQR
-      ? "Chuyển khoản VietQR (Napas247)"
-      : "Thanh toán khi nhận hàng (COD)",
+    paymentMethod: isVietQR ? "Chuyển khoản VietQR (Napas247)" : "Thanh toán khi nhận hàng (COD)",
     paymentStatus: isPaid
       ? "Đã thanh toán"
       : isVietQR
-      ? "Chờ đối soát (VietQR)"
-      : "Chờ thu tiền khi giao (COD)",
+        ? "Chờ đối soát (VietQR)"
+        : "Chờ thu tiền khi giao (COD)",
     total: Number(apiOrder.totalAmount) || 0,
     trackingNumber: `VTP-${apiOrder.orderCode.replace(/[^0-9]/g, "") || "84920199"}`,
     carrier: "Viettel Post Express",
     logs,
-    items: items.length > 0 ? items : [
-      {
-        name: "Combo Thể Hình TITANFIT Chuyên Nghiệp",
-        variant: "Gói Đặt Hàng Tiêu Chuẩn",
-        price: Number(apiOrder.totalAmount) || 0,
-        qty: 1,
-        thumb: "/images/products/titan-iso-whey.jpg",
-      },
-    ],
+    items:
+      items.length > 0
+        ? items
+        : [
+            {
+              name: "Combo Thể Hình TITANFIT Chuyên Nghiệp",
+              variant: "Gói Đặt Hàng Tiêu Chuẩn",
+              price: Number(apiOrder.totalAmount) || 0,
+              qty: 1,
+              thumb: "/images/products/titan-iso-whey.jpg",
+            },
+          ],
   };
 }
 
@@ -234,69 +265,72 @@ export default function OrderTrackingClient() {
   };
 
   // 1. Fetch real order data directly from backend API
-  const loadInitialData = useCallback(async (silent = false) => {
-    if (!silent) {
-      setIsLoading(true);
-    }
-
-    try {
-      // 1. Fetch real orders of the authenticated user from Backend API
-      const res = await orderApiRequest.getMyOrders();
-      let apiOrders: TrackingOrder[] = [];
-
-      if (res.data?.data && Array.isArray(res.data.data)) {
-        apiOrders = res.data.data.map(mapApiOrderToTracking);
+  const loadInitialData = useCallback(
+    async (silent = false) => {
+      if (!silent) {
+        setIsLoading(true);
       }
 
-      // 2. If a specific order is requested via query param (?order=TF-xxxxxx), verify presence
-      if (requestedOrderParam) {
-        const found = apiOrders.find(
-          (o) => o.code.toLowerCase() === requestedOrderParam.toLowerCase()
-        );
-        if (!found) {
-          try {
-            const singleRes = await orderApiRequest.getOrderByCode(requestedOrderParam);
-            if (singleRes.data?.data) {
-              const fetchedOrder = mapApiOrderToTracking(singleRes.data.data);
-              apiOrders = [fetchedOrder, ...apiOrders];
-            }
-          } catch (err) {
-            console.warn("Could not fetch requested order by code:", err);
-          }
-        }
-      }
+      try {
+        // 1. Fetch real orders of the authenticated user from Backend API
+        const res = await orderApiRequest.getMyOrders();
+        let apiOrders: TrackingOrder[] = [];
 
-      setOrders(apiOrders);
-
-      // Determine active order preserving current selection
-      setActiveOrder((prev) => {
-        if (prev?.code) {
-          const updatedCurrent = apiOrders.find(
-            (o) => o.code.toLowerCase() === prev.code.toLowerCase()
-          );
-          if (updatedCurrent) return updatedCurrent;
+        if (res.data?.data && Array.isArray(res.data.data)) {
+          apiOrders = res.data.data.map(mapApiOrderToTracking);
         }
 
+        // 2. If a specific order is requested via query param (?order=TF-xxxxxx), verify presence
         if (requestedOrderParam) {
           const found = apiOrders.find(
             (o) => o.code.toLowerCase() === requestedOrderParam.toLowerCase()
           );
-          return found || apiOrders[0] || null;
+          if (!found) {
+            try {
+              const singleRes = await orderApiRequest.getOrderByCode(requestedOrderParam);
+              if (singleRes.data?.data) {
+                const fetchedOrder = mapApiOrderToTracking(singleRes.data.data);
+                apiOrders = [fetchedOrder, ...apiOrders];
+              }
+            } catch (err) {
+              console.warn("Could not fetch requested order by code:", err);
+            }
+          }
         }
-        return apiOrders[0] || null;
-      });
-    } catch (err) {
-      console.warn("Could not fetch user orders from backend:", err);
-      if (!silent) {
-        setOrders([]);
-        setActiveOrder(null);
+
+        setOrders(apiOrders);
+
+        // Determine active order preserving current selection
+        setActiveOrder((prev) => {
+          if (prev?.code) {
+            const updatedCurrent = apiOrders.find(
+              (o) => o.code.toLowerCase() === prev.code.toLowerCase()
+            );
+            if (updatedCurrent) return updatedCurrent;
+          }
+
+          if (requestedOrderParam) {
+            const found = apiOrders.find(
+              (o) => o.code.toLowerCase() === requestedOrderParam.toLowerCase()
+            );
+            return found || apiOrders[0] || null;
+          }
+          return apiOrders[0] || null;
+        });
+      } catch (err) {
+        console.warn("Could not fetch user orders from backend:", err);
+        if (!silent) {
+          setOrders([]);
+          setActiveOrder(null);
+        }
+      } finally {
+        if (!silent) {
+          setIsLoading(false);
+        }
       }
-    } finally {
-      if (!silent) {
-        setIsLoading(false);
-      }
-    }
-  }, [requestedOrderParam]);
+    },
+    [requestedOrderParam]
+  );
 
   useEffect(() => {
     async function init() {
@@ -316,7 +350,6 @@ export default function OrderTrackingClient() {
     intervalMs: 30000,
     enableFocusSync: true,
   });
-
 
   // Tab Counts
   const counts = useMemo(() => {
@@ -489,8 +522,8 @@ export default function OrderTrackingClient() {
             toastMessage.type === "success"
               ? "bg-emerald-950 text-emerald-100 border-emerald-800"
               : toastMessage.type === "error"
-              ? "bg-rose-950 text-rose-100 border-rose-800"
-              : "bg-zinc-900 text-zinc-100 border-zinc-700"
+                ? "bg-rose-950 text-rose-100 border-rose-800"
+                : "bg-zinc-900 text-zinc-100 border-zinc-700"
           }`}
         >
           {toastMessage.type === "success" && (
@@ -519,7 +552,8 @@ export default function OrderTrackingClient() {
               Đơn Hàng Của Tôi
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Theo dõi trạng thái giao hàng theo thời gian thực, kiểm tra lịch sử mua sắm và hóa đơn điện tử
+              Theo dõi trạng thái giao hàng theo thời gian thực, kiểm tra lịch sử mua sắm và hóa đơn
+              điện tử
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -528,7 +562,14 @@ export default function OrderTrackingClient() {
               onClick={() => setIsLookupFormOpen(!isLookupFormOpen)}
               className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg border border-border bg-card hover:bg-secondary text-foreground text-xs font-semibold transition-colors cursor-pointer"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.3-4.3" />
               </svg>
@@ -539,7 +580,14 @@ export default function OrderTrackingClient() {
               onClick={handleRefreshData}
               className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg border border-border bg-card hover:bg-secondary text-foreground text-xs font-semibold transition-colors cursor-pointer"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                 <path d="M3 3v5h5" />
                 <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
@@ -556,7 +604,14 @@ export default function OrderTrackingClient() {
             <div className="flex items-center justify-between pb-3 mb-4 border-b border-border">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <circle cx="11" cy="11" r="8" />
                     <path d="m21 21-4.3-4.3" />
                   </svg>
@@ -581,7 +636,14 @@ export default function OrderTrackingClient() {
 
             {searchError && (
               <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium flex items-center gap-2">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <circle cx="12" cy="12" r="10" />
                   <line x1="12" y1="8" x2="12" y2="12" />
                   <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -592,21 +654,41 @@ export default function OrderTrackingClient() {
 
             {searchSuccess && (
               <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-medium flex items-center gap-2">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
                 <span>{searchSuccess}</span>
               </div>
             )}
 
-            <form onSubmit={handleGuestLookup} className="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-4 items-end">
+            <form
+              onSubmit={handleGuestLookup}
+              className="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-4 items-end"
+            >
               <div className="sm:col-span-5">
-                <label className="block text-xs font-semibold text-foreground mb-1.5" htmlFor="guestOrderCode">
+                <label
+                  className="block text-xs font-semibold text-foreground mb-1.5"
+                  htmlFor="guestOrderCode"
+                >
                   Mã Đơn Hàng <span className="text-destructive">*</span>
                 </label>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
                       <rect width="20" height="14" x="2" y="5" rx="2" />
                       <path d="M2 10h20" />
                     </svg>
@@ -623,12 +705,22 @@ export default function OrderTrackingClient() {
               </div>
 
               <div className="sm:col-span-5">
-                <label className="block text-xs font-semibold text-foreground mb-1.5" htmlFor="guestOrderPhone">
+                <label
+                  className="block text-xs font-semibold text-foreground mb-1.5"
+                  htmlFor="guestOrderPhone"
+                >
                   Số Điện Thoại Nhận Hàng <span className="text-destructive">*</span>
                 </label>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
                       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                     </svg>
                   </span>
@@ -726,7 +818,10 @@ export default function OrderTrackingClient() {
 
         {/* 4. MAIN BUYER 2-COLUMN GRID LAYOUT (Synchronized with wireframe) */}
         {activeOrder ? (
-          <div id="activeOrderSection" className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-6 xl:gap-8 items-start">
+          <div
+            id="activeOrderSection"
+            className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-6 xl:gap-8 items-start"
+          >
             {/* Left Column: Delivery Progress & Recipient Info */}
             <div className="flex flex-col gap-6">
               {/* Card 1: Delivery Progress Timeline */}
@@ -746,7 +841,9 @@ export default function OrderTrackingClient() {
                       {copiedCode ? "Đã copy!" : "Copy"}
                     </button>
                     <span className="text-xs text-muted-foreground hidden sm:inline">&bull;</span>
-                    <span className="text-xs text-muted-foreground">Đặt lúc {activeOrder.time}</span>
+                    <span className="text-xs text-muted-foreground">
+                      Đặt lúc {activeOrder.time}
+                    </span>
                   </div>
 
                   {/* Status Badge */}
@@ -777,7 +874,15 @@ export default function OrderTrackingClient() {
                 {/* Subheader: Lộ Trình & Mã Vận Đơn */}
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
                   <div className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="text-primary"
+                    >
                       <rect width="20" height="14" x="2" y="5" rx="2" />
                       <path d="M2 10h20" />
                     </svg>
@@ -814,13 +919,19 @@ export default function OrderTrackingClient() {
                           activeOrder.status === "PENDING"
                             ? "bg-primary text-white ring-4 ring-primary/20 shadow-xs"
                             : activeOrder.status === "CANCELLED"
-                            ? "bg-muted text-muted-foreground"
-                            : "bg-emerald-500 text-white"
+                              ? "bg-muted text-muted-foreground"
+                              : "bg-emerald-500 text-white"
                         }`}
                       >
-                        {activeOrder.status === "PENDING" ? "2" : activeOrder.status === "CANCELLED" ? "✕" : "✓"}
+                        {activeOrder.status === "PENDING"
+                          ? "2"
+                          : activeOrder.status === "CANCELLED"
+                            ? "✕"
+                            : "✓"}
                       </div>
-                      <div className={`text-xs font-bold ${activeOrder.status === "PENDING" ? "text-primary" : "text-foreground"}`}>
+                      <div
+                        className={`text-xs font-bold ${activeOrder.status === "PENDING" ? "text-primary" : "text-foreground"}`}
+                      >
                         Đã Xác Nhận
                       </div>
                       <div className="text-[11px] text-muted-foreground mt-0.5">
@@ -837,7 +948,9 @@ export default function OrderTrackingClient() {
                             : "bg-secondary text-muted-foreground border border-border"
                         }`}
                       >
-                        {activeOrder.status === "SHIPPING" || activeOrder.status === "COMPLETED" ? "✓" : "3"}
+                        {activeOrder.status === "SHIPPING" || activeOrder.status === "COMPLETED"
+                          ? "✓"
+                          : "3"}
                       </div>
                       <div className="text-xs font-semibold text-foreground">Đóng Gói Kho</div>
                       <div className="text-[11px] text-muted-foreground mt-0.5">Tem niêm phong</div>
@@ -850,13 +963,15 @@ export default function OrderTrackingClient() {
                           activeOrder.status === "SHIPPING"
                             ? "bg-primary text-white ring-4 ring-primary/20 shadow-xs"
                             : activeOrder.status === "COMPLETED"
-                            ? "bg-emerald-500 text-white"
-                            : "bg-secondary text-muted-foreground border border-border"
+                              ? "bg-emerald-500 text-white"
+                              : "bg-secondary text-muted-foreground border border-border"
                         }`}
                       >
                         {activeOrder.status === "COMPLETED" ? "✓" : "4"}
                       </div>
-                      <div className={`text-xs font-bold ${activeOrder.status === "SHIPPING" ? "text-primary" : "text-foreground"}`}>
+                      <div
+                        className={`text-xs font-bold ${activeOrder.status === "SHIPPING" ? "text-primary" : "text-foreground"}`}
+                      >
                         Đang Vận Chuyển
                       </div>
                       <div className="text-[11px] text-muted-foreground mt-0.5">Viettel Post</div>
@@ -888,7 +1003,11 @@ export default function OrderTrackingClient() {
                     {(activeOrder.logs || []).map((log, i) => (
                       <div key={i} className="flex items-baseline gap-3">
                         <span className="font-semibold text-primary min-w-[45px]">{log.time}</span>
-                        <span className={i === 0 ? "text-foreground font-medium" : "text-muted-foreground"}>
+                        <span
+                          className={
+                            i === 0 ? "text-foreground font-medium" : "text-muted-foreground"
+                          }
+                        >
                           {log.text}
                         </span>
                       </div>
@@ -900,7 +1019,14 @@ export default function OrderTrackingClient() {
               {/* Card 2: Recipient Details & Payment Info */}
               <div className="bg-card border border-border rounded-2xl p-5 sm:p-7 shadow-sm">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2 pb-3 mb-4 border-b border-border">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
                     <circle cx="12" cy="10" r="3" />
                   </svg>
@@ -913,14 +1039,18 @@ export default function OrderTrackingClient() {
                       Người Nhận Hàng
                     </div>
                     <div className="font-bold text-foreground text-sm">{activeOrder.customer}</div>
-                    <div className="text-muted-foreground mt-0.5 font-mono">{activeOrder.phone}</div>
+                    <div className="text-muted-foreground mt-0.5 font-mono">
+                      {activeOrder.phone}
+                    </div>
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-secondary/50 border border-border/80">
                     <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
                       Địa Chỉ Nhận Hàng
                     </div>
-                    <div className="font-medium text-foreground leading-relaxed">{activeOrder.address}</div>
+                    <div className="font-medium text-foreground leading-relaxed">
+                      {activeOrder.address}
+                    </div>
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-secondary/50 border border-border/80">
@@ -934,7 +1064,9 @@ export default function OrderTrackingClient() {
                     <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
                       Trạng Thái Thanh Toán
                     </div>
-                    <div className="font-bold text-amber-600 dark:text-amber-400">{activeOrder.paymentStatus}</div>
+                    <div className="font-bold text-amber-600 dark:text-amber-400">
+                      {activeOrder.paymentStatus}
+                    </div>
                   </div>
                 </div>
 
@@ -952,7 +1084,14 @@ export default function OrderTrackingClient() {
               <div className="bg-card border border-border rounded-2xl p-5 sm:p-7 shadow-sm">
                 <div className="flex items-center justify-between pb-3 mb-4 border-b border-border">
                   <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
                       <path d="M12 20v-6M6 20V10M18 20V4" />
                     </svg>
                     <span>Các Đơn Hàng Khác Của Bạn</span>
@@ -968,7 +1107,9 @@ export default function OrderTrackingClient() {
                         key={ord.code}
                         onClick={() => {
                           setActiveOrder(ord);
-                          document.getElementById("activeOrderSection")?.scrollIntoView({ behavior: "smooth" });
+                          document
+                            .getElementById("activeOrderSection")
+                            ?.scrollIntoView({ behavior: "smooth" });
                         }}
                         className="p-3.5 rounded-xl border border-border hover:border-primary bg-card hover:bg-secondary/40 flex flex-wrap items-center justify-between gap-3 cursor-pointer transition-all"
                       >
@@ -997,7 +1138,9 @@ export default function OrderTrackingClient() {
                                 ❌ Đã Hủy
                               </span>
                             )}
-                            <span className="text-[11px] text-muted-foreground">&bull; {ord.time}</span>
+                            <span className="text-[11px] text-muted-foreground">
+                              &bull; {ord.time}
+                            </span>
                           </div>
                           <div className="text-xs text-foreground mt-1 line-clamp-1">
                             {ord.items.map((i) => i.name).join(" + ")}
@@ -1029,7 +1172,15 @@ export default function OrderTrackingClient() {
               <div className="bg-card border border-border rounded-2xl p-5 sm:p-7 shadow-sm">
                 <div className="flex items-center justify-between pb-3 mb-4 border-b border-border">
                   <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="text-primary"
+                    >
                       <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
                       <path d="M3 6h18" />
                       <path d="M16 10a4 4 0 0 1-8 0" />
@@ -1038,7 +1189,9 @@ export default function OrderTrackingClient() {
                       Sản Phẩm Trong Đơn ({activeOrder.items.reduce((s, it) => s + it.qty, 0)} món)
                     </span>
                   </h3>
-                  <span className="font-mono text-xs font-bold text-primary">#{activeOrder.code}</span>
+                  <span className="font-mono text-xs font-bold text-primary">
+                    #{activeOrder.code}
+                  </span>
                 </div>
 
                 {/* Items List */}
@@ -1054,10 +1207,15 @@ export default function OrderTrackingClient() {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-bold text-xs sm:text-sm text-foreground truncate" title={item.name}>
+                        <div
+                          className="font-bold text-xs sm:text-sm text-foreground truncate"
+                          title={item.name}
+                        >
                           {item.name}
                         </div>
-                        <div className="text-[11px] text-muted-foreground mt-0.5 truncate">{item.variant}</div>
+                        <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                          {item.variant}
+                        </div>
                         <div className="text-xs text-muted-foreground mt-1">
                           Số lượng: <strong className="text-foreground">{item.qty}</strong> &times;{" "}
                           {formatVND(item.price)}
@@ -1074,7 +1232,9 @@ export default function OrderTrackingClient() {
                 <div className="pt-4 border-t border-border space-y-2 text-xs">
                   <div className="flex justify-between items-center text-muted-foreground">
                     <span>Tạm tính:</span>
-                    <span className="font-semibold text-foreground">{formatVND(activeOrder.total)}</span>
+                    <span className="font-semibold text-foreground">
+                      {formatVND(activeOrder.total)}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center text-muted-foreground">
                     <span>Phí vận chuyển:</span>
@@ -1102,8 +1262,18 @@ export default function OrderTrackingClient() {
                       onClick={() => handleOpenCancelModal(activeOrder)}
                       className="w-full h-10 rounded-xl border border-destructive/40 text-destructive hover:bg-destructive/10 text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                     >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                       <span>Yêu Cầu Hỗ Trợ Hủy Đơn</span>
                     </button>
@@ -1114,7 +1284,14 @@ export default function OrderTrackingClient() {
                     onClick={handleReBuy}
                     className="w-full h-10 rounded-xl bg-secondary hover:bg-secondary/80 border border-border text-foreground text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
                       <path d="M3 2v6h6" />
                       <path d="M3 13a9 9 0 1 0 3-7.7L3 8" />
                     </svg>
@@ -1126,7 +1303,14 @@ export default function OrderTrackingClient() {
                     className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5"
                   >
                     <span>Tiếp Tục Mua Sắm</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
                       <path d="M5 12h14" />
                       <path d="m12 5 7 7-7 7" />
                     </svg>
@@ -1188,7 +1372,12 @@ export default function OrderTrackingClient() {
               aria-label="Đóng"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
 
@@ -1216,14 +1405,20 @@ export default function OrderTrackingClient() {
 
             {/* Notice */}
             <div className="p-3.5 rounded-xl bg-muted/60 border border-border/80 text-xs text-muted-foreground leading-relaxed mb-4">
-              Đơn hàng đang ở trạng thái <strong className="text-foreground">Chờ xác nhận</strong> và chuẩn bị xuất kho. Để đảm bảo hủy kịp thời và hoàn tiền (nếu đã thanh toán), quý khách vui lòng liên hệ trực tiếp với bộ phận CSKH TitanFit.
+              Đơn hàng đang ở trạng thái <strong className="text-foreground">Chờ xác nhận</strong>{" "}
+              và chuẩn bị xuất kho. Để đảm bảo hủy kịp thời và hoàn tiền (nếu đã thanh toán), quý
+              khách vui lòng liên hệ trực tiếp với bộ phận CSKH TitanFit.
             </div>
 
             {/* Order Code Quick Copy Box */}
             <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/80 border border-border mb-4">
               <div className="text-xs">
-                <span className="text-muted-foreground block text-[11px]">Mã đơn hàng của bạn:</span>
-                <strong className="text-sm font-mono text-primary font-bold">#{cancelModalOrder.code}</strong>
+                <span className="text-muted-foreground block text-[11px]">
+                  Mã đơn hàng của bạn:
+                </span>
+                <strong className="text-sm font-mono text-primary font-bold">
+                  #{cancelModalOrder.code}
+                </strong>
               </div>
               <button
                 type="button"
@@ -1261,7 +1456,9 @@ export default function OrderTrackingClient() {
                     </svg>
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-foreground block">Hotline Hỗ Trợ 24/7</span>
+                    <span className="text-xs font-bold text-foreground block">
+                      Hotline Hỗ Trợ 24/7
+                    </span>
                     <span className="text-sm font-extrabold text-primary">1900 8888</span>
                   </div>
                 </div>
@@ -1291,7 +1488,9 @@ export default function OrderTrackingClient() {
                     </svg>
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-foreground block">Gửi Email Yêu Cầu</span>
+                    <span className="text-xs font-bold text-foreground block">
+                      Gửi Email Yêu Cầu
+                    </span>
                     <span className="text-xs text-muted-foreground">cskh@titanfit.vn</span>
                   </div>
                 </div>

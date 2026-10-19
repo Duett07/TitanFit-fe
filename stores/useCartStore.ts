@@ -74,15 +74,14 @@ export const useCartStore = create<CartState>()(
 
         const items = get().items;
         const existingIndex = items.findIndex(
-          (item) => item.id === itemId || (Boolean(product.variantId) && item.variantId === product.variantId)
+          (item) =>
+            item.id === itemId ||
+            (Boolean(product.variantId) && item.variantId === product.variantId)
         );
 
         if (existingIndex > -1) {
           const updatedItems = [...items];
-          const newQty = Math.min(
-            updatedItems[existingIndex].quantity + quantity,
-            product.stock
-          );
+          const newQty = Math.min(updatedItems[existingIndex].quantity + quantity, product.stock);
           updatedItems[existingIndex] = {
             ...updatedItems[existingIndex],
             id: itemId,
@@ -154,10 +153,7 @@ export const useCartStore = create<CartState>()(
       },
 
       getTotalPrice: () => {
-        return get().items.reduce(
-          (total, item) => total + item.price * item.quantity,
-          0
-        );
+        return get().items.reduce((total, item) => total + item.price * item.quantity, 0);
       },
 
       syncCart: async () => {
@@ -206,13 +202,11 @@ export const useCartStore = create<CartState>()(
             if (!freshVariant) return item;
 
             const newPrice = freshVariant.price ?? item.price;
-            const newStock =
-              freshVariant.stockQuantity ?? freshVariant.stock ?? item.stock;
+            const newStock = freshVariant.stockQuantity ?? freshVariant.stock ?? item.stock;
             const newQty = Math.min(item.quantity, Math.max(0, newStock));
 
             const isPriceChanged = newPrice !== item.price;
-            const isStockChanged =
-              newStock !== item.stock || newQty !== item.quantity;
+            const isStockChanged = newStock !== item.stock || newQty !== item.quantity;
 
             if (isPriceChanged || isStockChanged) {
               hasChanges = true;
@@ -257,7 +251,16 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "titanfit_cart_storage",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => {
+        if (typeof window !== "undefined") {
+          return window.localStorage;
+        }
+        return {
+          getItem: () => null,
+          setItem: () => {},
+          removeItem: () => {},
+        };
+      }),
       // Only persist cart items, not open/closed state of drawer or ephemeral sync notices
       partialize: (state) => ({ items: state.items }),
     }

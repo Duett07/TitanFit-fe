@@ -17,15 +17,12 @@ const configSchema = z.object({
 });
 
 const config = configSchema.safeParse({
-  NEXT_PUBLIC_API_ENDPOINT:
-    rawEndpoint || (!isProduction ? "http://localhost:8080" : undefined),
+  NEXT_PUBLIC_API_ENDPOINT: rawEndpoint || (!isProduction ? "http://localhost:8080" : undefined),
 });
 
 if (!config.success) {
   console.error("Config validation error:", config.error.issues);
-  throw new Error(
-    "Missing or invalid NEXT_PUBLIC_API_ENDPOINT environment configuration"
-  );
+  throw new Error("Missing or invalid NEXT_PUBLIC_API_ENDPOINT environment configuration");
 }
 
 const envConfig = config.data;

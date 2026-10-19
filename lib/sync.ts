@@ -3,11 +3,7 @@
 import { useEffect, useRef } from "react";
 
 export type SyncEventType =
-  | "ORDER_UPDATED"
-  | "PRODUCT_UPDATED"
-  | "INVENTORY_UPDATED"
-  | "CART_UPDATED"
-  | "AUTH_CHANGED";
+  "ORDER_UPDATED" | "PRODUCT_UPDATED" | "INVENTORY_UPDATED" | "CART_UPDATED" | "AUTH_CHANGED";
 
 const CHANNEL_NAME = "titanfit_realtime_sync";
 const STORAGE_KEY = "titanfit_last_sync_event";
@@ -42,9 +38,7 @@ let isHubInitialized = false;
 function dispatchInternalSync(message: SyncMessage) {
   if (typeof window === "undefined") return;
   try {
-    window.dispatchEvent(
-      new CustomEvent(INTERNAL_EVENT_NAME, { detail: message })
-    );
+    window.dispatchEvent(new CustomEvent(INTERNAL_EVENT_NAME, { detail: message }));
   } catch {
     // ignore
   }
@@ -251,4 +245,3 @@ export function useAutoSync({
     };
   }, [enableFocusSync, intervalMs]);
 }
-

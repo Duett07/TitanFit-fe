@@ -14,15 +14,9 @@ interface FeaturedApparelProps {
   initialProducts?: ProductDetail[];
 }
 
-export default function FeaturedApparel({
-  initialProducts,
-}: FeaturedApparelProps) {
-  const [products, setProducts] = useState<ProductDetail[]>(
-    initialProducts || []
-  );
-  const [loading, setLoading] = useState(
-    !initialProducts || initialProducts.length === 0
-  );
+export default function FeaturedApparel({ initialProducts }: FeaturedApparelProps) {
+  const [products, setProducts] = useState<ProductDetail[]>(initialProducts || []);
+  const [loading, setLoading] = useState(!initialProducts || initialProducts.length === 0);
   const [toastText, setToastText] = useState<string | null>(null);
   const { addItem } = useCartStore();
 
@@ -30,22 +24,13 @@ export default function FeaturedApparel({
     try {
       const res = await productApiRequest.getProducts({ page: 0, size: 50 });
       const content = res.data?.data?.content;
-      if (
-        content &&
-        Array.isArray(content) &&
-        content.length > 0
-      ) {
+      if (content && Array.isArray(content) && content.length > 0) {
         const all = content.map(transformBackendProductSummary);
-        const apparel = all
-          .filter((p) => p.category === "apparel")
-          .slice(0, 4);
+        const apparel = all.filter((p) => p.category === "apparel").slice(0, 4);
         setProducts(apparel);
       }
     } catch (err) {
-      console.warn(
-        "Failed to fetch featured apparel via productApiRequest:",
-        err
-      );
+      console.warn("Failed to fetch featured apparel via productApiRequest:", err);
     } finally {
       setLoading(false);
     }
@@ -146,9 +131,7 @@ export default function FeaturedApparel({
                 const discountPercent =
                   product.originalPrice && product.originalPrice > product.price
                     ? Math.round(
-                        ((product.originalPrice - product.price) /
-                          product.originalPrice) *
-                          100
+                        ((product.originalPrice - product.price) / product.originalPrice) * 100
                       )
                     : null;
 

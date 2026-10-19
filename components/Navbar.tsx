@@ -58,9 +58,7 @@ export default function Navbar() {
 
   const currentUser = isHydrated && isAuthenticated ? user : null;
 
-  const cartCount = isHydrated
-    ? items.reduce((total, item) => total + item.quantity, 0)
-    : 0;
+  const cartCount = isHydrated ? items.reduce((total, item) => total + item.quantity, 0) : 0;
 
   const theme = React.useSyncExternalStore(
     subscribeTheme,
@@ -124,8 +122,18 @@ export default function Navbar() {
       <>
         {toastMessage && (
           <div className="fixed top-6 right-6 z-50 px-4 py-3 rounded-xl shadow-xl border bg-rose-950 text-rose-100 border-rose-800 text-sm font-semibold flex items-center gap-2.5 animate-in fade-in slide-in-from-top-4 duration-300">
-            <svg className="w-5 h-5 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <svg
+              className="w-5 h-5 text-rose-400 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
             </svg>
             <span>{toastMessage}</span>
           </div>
@@ -139,8 +147,18 @@ export default function Navbar() {
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-6 right-6 z-50 px-4 py-3 rounded-xl shadow-xl border bg-rose-950 text-rose-100 border-rose-800 text-sm font-semibold flex items-center gap-2.5 animate-in fade-in slide-in-from-top-4 duration-300">
-          <svg className="w-5 h-5 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <svg
+            className="w-5 h-5 text-rose-400 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
           </svg>
           <span>{toastMessage}</span>
         </div>
@@ -149,7 +167,8 @@ export default function Navbar() {
       {/* Top Announcement Bar */}
       <div className="bg-secondary border-b border-border py-2 text-center text-xs text-muted-foreground font-medium transition-colors">
         Miễn phí giao hàng cho đơn từ 500.000₫ &bull;{" "}
-        <strong className="text-foreground">100% Chính Hãng Nhập Khẩu</strong> &bull; Hỗ trợ thanh toán VietQR tự động
+        <strong className="text-foreground">100% Chính Hãng Nhập Khẩu</strong> &bull; Hỗ trợ thanh
+        toán VietQR tự động
       </div>
 
       {/* Header Navbar */}
@@ -312,7 +331,9 @@ export default function Navbar() {
                     <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs ring-1 ring-border shrink-0">
                       {currentUser.fullName ? currentUser.fullName.charAt(0).toUpperCase() : "U"}
                     </div>
-                    <span className="max-w-[120px] truncate">{getShortName(currentUser.fullName)}</span>
+                    <span className="max-w-[120px] truncate">
+                      {getShortName(currentUser.fullName)}
+                    </span>
                     <svg
                       width="12"
                       height="12"
@@ -339,14 +360,22 @@ export default function Navbar() {
                         {currentUser.fullName ? currentUser.fullName.charAt(0).toUpperCase() : "U"}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-bold text-sm text-foreground truncate" title={currentUser.fullName}>
+                        <div
+                          className="font-bold text-sm text-foreground truncate"
+                          title={currentUser.fullName}
+                        >
                           {currentUser.fullName}
                         </div>
-                        <div className="text-[11.5px] text-muted-foreground truncate mt-0.5" title={currentUser.email}>
+                        <div
+                          className="text-[11.5px] text-muted-foreground truncate mt-0.5"
+                          title={currentUser.email}
+                        >
                           {currentUser.email}
                         </div>
                         <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/15 text-primary mt-1">
-                          {currentUser.role === "ROLE_ADMIN" ? "Quản Trị Viên (Admin)" : "Hội Viên Vàng (Gold)"}
+                          {currentUser.role === "ROLE_ADMIN"
+                            ? "Quản Trị Viên (Admin)"
+                            : "Hội Viên Vàng (Gold)"}
                         </span>
                       </div>
                     </div>
@@ -359,21 +388,27 @@ export default function Navbar() {
                         className="flex flex-col items-center hover:opacity-80 transition-opacity"
                         title="Xem đơn hàng đang giao"
                       >
-                        <span className="text-[14.5px] font-extrabold text-primary font-heading">1</span>
+                        <span className="text-[14.5px] font-extrabold text-primary font-heading">
+                          1
+                        </span>
                         <span className="text-[10px] text-muted-foreground mt-0.5">Đang Giao</span>
                       </Link>
                       <div
                         className="flex flex-col items-center hover:opacity-80 transition-opacity cursor-pointer"
                         title="Xem kho voucher"
                       >
-                        <span className="text-[14.5px] font-extrabold text-emerald-500 font-heading">3</span>
+                        <span className="text-[14.5px] font-extrabold text-emerald-500 font-heading">
+                          3
+                        </span>
                         <span className="text-[10px] text-muted-foreground mt-0.5">Voucher</span>
                       </div>
                       <div
                         className="flex flex-col items-center hover:opacity-80 transition-opacity cursor-pointer"
                         title="Điểm thưởng thành viên"
                       >
-                        <span className="text-[14.5px] font-extrabold text-primary font-heading">1.250</span>
+                        <span className="text-[14.5px] font-extrabold text-primary font-heading">
+                          1.250
+                        </span>
                         <span className="text-[10px] text-muted-foreground mt-0.5">Điểm ⭐</span>
                       </div>
                     </div>
@@ -389,11 +424,20 @@ export default function Navbar() {
                         onClick={() => setIsUserMenuOpen(false)}
                         className="w-full px-4 py-2 text-xs font-semibold text-primary hover:bg-secondary flex items-center gap-2.5 transition-colors"
                       >
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg
+                          width="15"
+                          height="15"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
                           <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                         </svg>
                         <span>Cổng Quản Trị Shop (Admin)</span>
-                        <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary/20 text-primary">Admin</span>
+                        <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary/20 text-primary">
+                          Admin
+                        </span>
                       </Link>
                     )}
 
@@ -402,12 +446,22 @@ export default function Navbar() {
                       onClick={() => setIsUserMenuOpen(false)}
                       className="w-full px-4 py-2 text-xs font-medium text-foreground hover:bg-secondary hover:text-primary flex items-center gap-2.5 transition-colors"
                     >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="text-primary"
+                      >
                         <rect width="20" height="14" x="2" y="5" rx="2" />
                         <path d="M2 10h20" />
                       </svg>
                       <span>Đơn Hàng Của Tôi</span>
-                      <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary text-white">1 đang giao</span>
+                      <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary text-white">
+                        1 đang giao
+                      </span>
                     </Link>
 
                     <button
@@ -415,11 +469,21 @@ export default function Navbar() {
                       onClick={() => setIsUserMenuOpen(false)}
                       className="w-full px-4 py-2 text-xs font-medium text-foreground hover:bg-secondary hover:text-primary flex items-center gap-2.5 transition-colors text-left cursor-pointer"
                     >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-rose-500">
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="text-rose-500"
+                      >
                         <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
                       </svg>
                       <span>Sản Phẩm Đã Lưu (Wishlist)</span>
-                      <span className="ml-auto text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">4 món</span>
+                      <span className="ml-auto text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">
+                        4 món
+                      </span>
                     </button>
 
                     <Link
@@ -427,7 +491,15 @@ export default function Navbar() {
                       onClick={() => setIsUserMenuOpen(false)}
                       className="w-full px-4 py-2 text-xs font-medium text-foreground hover:bg-secondary hover:text-primary flex items-center gap-2.5 transition-colors"
                     >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground">
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="text-muted-foreground"
+                      >
                         <path d="M3 2v6h6" />
                         <path d="M3 13a9 9 0 1 0 3-7.7L3 8" />
                       </svg>
@@ -444,14 +516,24 @@ export default function Navbar() {
                       onClick={() => setIsUserMenuOpen(false)}
                       className="w-full px-4 py-2 text-xs font-medium text-foreground hover:bg-secondary hover:text-primary flex items-center gap-2.5 transition-colors text-left cursor-pointer"
                     >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-emerald-500">
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="text-emerald-500"
+                      >
                         <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
                         <path d="M13 5v2" />
                         <path d="M13 17v2" />
                         <path d="M13 11v2" />
                       </svg>
                       <span>Kho Voucher Giảm Giá</span>
-                      <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">3 mã</span>
+                      <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                        3 mã
+                      </span>
                     </button>
 
                     {/* 5. Group 3: THIẾT LẬP TÀI KHOẢN */}
@@ -464,7 +546,15 @@ export default function Navbar() {
                       onClick={() => setIsUserMenuOpen(false)}
                       className="w-full px-4 py-2 text-xs font-medium text-foreground hover:bg-secondary hover:text-primary flex items-center gap-2.5 transition-colors text-left cursor-pointer"
                     >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground">
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="text-muted-foreground"
+                      >
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />
                       </svg>
@@ -476,7 +566,15 @@ export default function Navbar() {
                       onClick={() => setIsUserMenuOpen(false)}
                       className="w-full px-4 py-2 text-xs font-medium text-foreground hover:bg-secondary hover:text-primary flex items-center gap-2.5 transition-colors text-left cursor-pointer"
                     >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground">
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="text-muted-foreground"
+                      >
                         <path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h12a2 2 0 0 1 2 2v5Z" />
                         <path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1" />
                       </svg>
@@ -493,7 +591,14 @@ export default function Navbar() {
                       }}
                       className="w-full px-4 py-2.5 text-xs font-semibold text-destructive hover:bg-destructive/10 border-t border-border mt-1.5 flex items-center gap-2.5 transition-colors text-left cursor-pointer"
                     >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                         <polyline points="16 17 21 12 16 7" />
                         <line x1="21" x2="9" y1="12" y2="12" />

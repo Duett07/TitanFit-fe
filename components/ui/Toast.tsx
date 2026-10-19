@@ -37,12 +37,7 @@ const typeStyles: Record<
   },
 };
 
-export const Toast: React.FC<ToastProps> = ({
-  text,
-  type = "info",
-  onClose,
-  className = "",
-}) => {
+export const Toast: React.FC<ToastProps> = ({ text, type = "info", onClose, className = "" }) => {
   const current = typeStyles[type];
 
   return (

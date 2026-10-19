@@ -1,7 +1,6 @@
 import { UIProductDetail, ProductVariantOption, ProductVariantSKU } from "@/data/products";
 import { ProductDetailDto, ProductSummaryDto, VariantDto } from "@/types/product.type";
 
-
 /**
  * Smart parser that parses variantName into option dimensions
  * Examples:
@@ -30,10 +29,47 @@ export function parseVariantName(
     /\b(\d+(?:\.\d+)?\s*(?:g|kg|lbs?|ml|l|oz|servings?|viên|gói))\b/i.test(str) ||
     /^(hộp|gói|túi|chai|lọ|bình)/i.test(str);
 
-  const isColor = (str: string) =>
-    /\b(màu|màu sắc|color|đen|trắng|xám|xanh|đỏ|vàng|cam|tím|hồng|black|white|grey|gray|blue|red|navy|beige)\b/i.test(str);
+  const isColor = (str: string) => {
+    const s = str.toLowerCase();
+    const colors = [
+      "màu",
+      "color",
+      "đen",
+      "trắng",
+      "xám",
+      "xanh",
+      "đỏ",
+      "vàng",
+      "cam",
+      "tím",
+      "hồng",
+      "black",
+      "white",
+      "grey",
+      "gray",
+      "blue",
+      "red",
+      "navy",
+      "beige",
+    ];
+    return colors.some((c) => s.includes(c));
+  };
 
-  // Pattern 1: Delimiter separated (" - ", " / ", " | ", or " ; ")
+  // Pattern 1: Parentheses separated (e.g. "Vị Delicious Strawberry (5 Lbs / 2.27kg)")
+  // Checked first to avoid delimiters inside parentheses breaking the name
+  const parenMatch = safeName.match(/^(.*?)\s*\((.*?)\)$/);
+  if (parenMatch) {
+    const mainPart = parenMatch[1].trim().replace(/^vị\s+/i, "");
+    const subPart = parenMatch[2].trim();
+    return {
+      option1Name: isApparel ? "Phân loại" : "Hương Vị",
+      option1Val: mainPart,
+      option2Name: isWeight(subPart) ? "Khối lượng / Quy cách" : "Quy cách",
+      option2Val: subPart,
+    };
+  }
+
+  // Pattern 2: Delimiter separated (" - ", " / ", " | ", or " ; ")
   const delimiterRegex = /\s*(?: - | \/ | \| | ; )\s*/;
   if (delimiterRegex.test(safeName)) {
     const parts = safeName.split(delimiterRegex).filter(Boolean);
@@ -54,7 +90,7 @@ export function parseVariantName(
         return {
           option1Name: "Kích thước (Size)",
           option1Val: partB,
-          option2Name: isColor(partA) ? "Màu sắc" : "Phân loại",
+          option2Name: isColor(partA) || isApparel ? "Màu sắc" : "Phân loại",
           option2Val: partA,
         };
       }
@@ -84,21 +120,10 @@ export function parseVariantName(
     }
   }
 
-  // Pattern 2: Parentheses separated (e.g. "Vị Delicious Strawberry (5 Lbs / 2.27kg)")
-  const parenMatch = safeName.match(/^(.*?)\s*\((.*?)\)$/);
-  if (parenMatch) {
-    const mainPart = parenMatch[1].trim().replace(/^vị\s+/i, "");
-    const subPart = parenMatch[2].trim();
-    return {
-      option1Name: isApparel ? "Phân loại" : "Hương Vị",
-      option1Val: mainPart,
-      option2Name: isWeight(subPart) ? "Khối lượng / Quy cách" : "Quy cách",
-      option2Val: subPart,
-    };
-  }
-
   // Pattern 3: Trailing weight/volume specification
-  const weightMatch = safeName.match(/^(.*?)\s+(\d+(?:\.\d+)?\s*(?:g|kg|lbs?|ml|l|oz|servings?|viên|gói))$/i);
+  const weightMatch = safeName.match(
+    /^(.*?)\s+(\d+(?:\.\d+)?\s*(?:g|kg|lbs?|ml|l|oz|servings?|viên|gói))$/i
+  );
   if (weightMatch) {
     return {
       option1Name: isApparel ? "Phân loại" : "Hương Vị",
@@ -175,17 +200,12 @@ export function transformBackendProductDetail(beProduct: ProductDetailDto): UIPr
   );
 
   // Real product images from thumbnail and variant images only
-  const allImages = [
-    beProduct.thumbnailUrl,
-    ...beProduct.variants.map((v) => v.imageUrl),
-  ].filter((img): img is string => Boolean(img && img.trim()));
+  const allImages = [beProduct.thumbnailUrl, ...beProduct.variants.map((v) => v.imageUrl)].filter(
+    (img): img is string => Boolean(img && img.trim())
+  );
   const uniqueImages = Array.from(new Set(allImages));
   const galleryImages =
-    uniqueImages.length > 0
-      ? uniqueImages
-      : beProduct.thumbnailUrl
-      ? [beProduct.thumbnailUrl]
-      : [];
+    uniqueImages.length > 0 ? uniqueImages : beProduct.thumbnailUrl ? [beProduct.thumbnailUrl] : [];
 
   return {
     id: beProduct.id,
@@ -240,4 +260,3 @@ export function transformBackendProductSummary(item: ProductSummaryDto): UIProdu
     specs: [],
   };
 }
-

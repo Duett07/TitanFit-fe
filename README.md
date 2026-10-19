@@ -13,6 +13,7 @@ cp .env.example .env.local
 ```
 
 ### Các biến môi trường trong `.env.local`:
+
 - `NEXT_PUBLIC_API_ENDPOINT`: URL của Backend Spring Boot (mặc định: `http://localhost:8080`).
 - `NEXT_PUBLIC_APP_URL`: URL của Frontend (mặc định: `http://localhost:3000`).
 

@@ -16,12 +16,30 @@ import { emitSyncEvent, useAutoSync } from "@/lib/sync";
 
 // Mẫu ảnh sẵn cho tiện chọn nhanh khi thêm sản phẩm mới
 const SAMPLE_IMAGES = [
-  { label: "Whey Protein", url: "https://images.unsplash.com/photo-1579722821273-0f6c7d44362f?auto=format&fit=crop&w=600&q=80" },
-  { label: "Áo Thun Pro-Combat", url: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=600&q=80" },
-  { label: "Creatine 300g", url: "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?auto=format&fit=crop&w=600&q=80" },
-  { label: "Pre-Workout C4", url: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80" },
-  { label: "Bình Lắc Shaker", url: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=600&q=80" },
-  { label: "Quần Short Gym", url: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=600&q=80" },
+  {
+    label: "Whey Protein",
+    url: "https://images.unsplash.com/photo-1579722821273-0f6c7d44362f?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    label: "Áo Thun Pro-Combat",
+    url: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    label: "Creatine 300g",
+    url: "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    label: "Pre-Workout C4",
+    url: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    label: "Bình Lắc Shaker",
+    url: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    label: "Quần Short Gym",
+    url: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=600&q=80",
+  },
 ];
 
 export default function AdminProductsPage() {
@@ -96,8 +114,8 @@ export default function AdminProductsPage() {
       const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
       setErrorMessage(
         errorObj.response?.data?.message ||
-        errorObj.message ||
-        "Không thể tải danh sách sản phẩm từ backend."
+          errorObj.message ||
+          "Không thể tải danh sách sản phẩm từ backend."
       );
     } finally {
       if (!isSilent) setIsLoading(false);
@@ -132,9 +150,7 @@ export default function AdminProductsPage() {
 
     // Optimistic UI update
     setProducts((prev) =>
-      prev.map((item) =>
-        item.id === p.id ? { ...item, isActive: nextActive } : item
-      )
+      prev.map((item) => (item.id === p.id ? { ...item, isActive: nextActive } : item))
     );
 
     try {
@@ -150,9 +166,7 @@ export default function AdminProductsPage() {
       console.error("Toggle active error:", err);
       // Revert lại nếu có lỗi
       setProducts((prev) =>
-        prev.map((item) =>
-          item.id === p.id ? { ...item, isActive: currentActive } : item
-        )
+        prev.map((item) => (item.id === p.id ? { ...item, isActive: currentActive } : item))
       );
       showToast("Không thể thay đổi trạng thái sản phẩm lúc này.", "error");
     }
@@ -168,9 +182,7 @@ export default function AdminProductsPage() {
     setFormDescription("");
     setFormThumbnailUrl(SAMPLE_IMAGES[0].url);
     setFormIsActive(true);
-    setFormVariants([
-      { variantName: "Tiêu chuẩn", price: 0, stockQuantity: 50, sku: "" },
-    ]);
+    setFormVariants([{ variantName: "Tiêu chuẩn", price: 0, stockQuantity: 50, sku: "" }]);
     setIsModalOpen(true);
   };
 
@@ -360,10 +372,7 @@ export default function AdminProductsPage() {
       fetchProducts(true);
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
-      showToast(
-        errorObj.response?.data?.message || "Không thể xóa sản phẩm lúc này.",
-        "error"
-      );
+      showToast(errorObj.response?.data?.message || "Không thể xóa sản phẩm lúc này.", "error");
     }
   };
 
@@ -403,24 +412,45 @@ export default function AdminProductsPage() {
             toastMessage.type === "success"
               ? "bg-emerald-600 text-white border-emerald-500 shadow-emerald-950/20"
               : toastMessage.type === "error"
-              ? "bg-rose-600 text-white border-rose-500 shadow-rose-950/20"
-              : "bg-zinc-800 text-white border-zinc-700 shadow-zinc-950/20"
+                ? "bg-rose-600 text-white border-rose-500 shadow-rose-950/20"
+                : "bg-zinc-800 text-white border-zinc-700 shadow-zinc-950/20"
           }`}
         >
           {toastMessage.type === "success" && (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
               <path d="M20 6 9 17l-5-5" />
             </svg>
           )}
           {toastMessage.type === "error" && (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
               <circle cx="12" cy="12" r="10" />
               <line x1="15" y1="9" x2="9" y2="15" />
               <line x1="9" y1="9" x2="15" y2="15" />
             </svg>
           )}
           {toastMessage.type === "info" && (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="16" x2="12" y2="12" />
               <line x1="12" y1="8" x2="12.01" y2="8" />
@@ -453,7 +483,8 @@ export default function AdminProductsPage() {
             </span>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Tạo mới sản phẩm kèm upload ảnh, quản lý giá bán, biến thể SKU và bật/tắt trạng thái kinh doanh
+            Tạo mới sản phẩm kèm upload ảnh, quản lý giá bán, biến thể SKU và bật/tắt trạng thái
+            kinh doanh
           </p>
         </div>
 
@@ -464,7 +495,14 @@ export default function AdminProductsPage() {
             onClick={openAddProductModal}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm shadow-primary/25 transition-all cursor-pointer active:scale-95"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
               <path d="M5 12h14" />
               <path d="M12 5v14" />
             </svg>
@@ -574,7 +612,8 @@ export default function AdminProductsPage() {
           </select>
 
           <div className="text-xs text-muted-foreground pl-1">
-            Hiển thị <strong className="text-foreground">{filteredProducts.length}</strong> / {products.length} sản phẩm
+            Hiển thị <strong className="text-foreground">{filteredProducts.length}</strong> /{" "}
+            {products.length} sản phẩm
           </div>
         </div>
       </div>
@@ -599,21 +638,45 @@ export default function AdminProductsPage() {
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, idx) => (
                   <tr key={`sk-${idx}`} className="animate-pulse">
-                    <td className="py-4 px-4"><div className="w-10 h-10 bg-muted rounded-lg" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-muted rounded w-48 mb-1" /><div className="h-3 bg-muted/60 rounded w-28" /></td>
-                    <td className="py-4 px-4"><div className="h-5 bg-muted rounded w-24" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-muted rounded w-20" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-muted rounded w-16" /></td>
-                    <td className="py-4 px-4"><div className="h-5 bg-muted rounded-full w-20" /></td>
-                    <td className="py-4 px-4"><div className="h-6 bg-muted rounded-full w-24" /></td>
-                    <td className="py-4 px-4 text-right"><div className="h-7 bg-muted rounded w-20 ml-auto" /></td>
+                    <td className="py-4 px-4">
+                      <div className="w-10 h-10 bg-muted rounded-lg" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-muted rounded w-48 mb-1" />
+                      <div className="h-3 bg-muted/60 rounded w-28" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-5 bg-muted rounded w-24" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-muted rounded w-20" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-muted rounded w-16" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-5 bg-muted rounded-full w-20" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-6 bg-muted rounded-full w-24" />
+                    </td>
+                    <td className="py-4 px-4 text-right">
+                      <div className="h-7 bg-muted rounded w-20 ml-auto" />
+                    </td>
                   </tr>
                 ))
               ) : filteredProducts.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-muted-foreground">
                     <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3 text-muted-foreground">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
                         <path d="m7.5 4.27 9 5.15" />
                         <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
                       </svg>
@@ -685,15 +748,15 @@ export default function AdminProductsPage() {
                             totalStock === 0
                               ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30"
                               : totalStock < 10
-                              ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
-                              : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                                ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
+                                : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
                           }`}
                         >
                           {totalStock === 0
                             ? "Hết hàng"
                             : totalStock < 10
-                            ? `Sắp hết (${totalStock})`
-                            : `Còn ${totalStock}`}
+                              ? `Sắp hết (${totalStock})`
+                              : `Còn ${totalStock}`}
                         </span>
                       </td>
 
@@ -707,11 +770,17 @@ export default function AdminProductsPage() {
                               ? "bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
                               : "bg-muted hover:bg-muted/80 text-muted-foreground border border-border line-through"
                           }`}
-                          title={isProductActive ? "Bấm để TẠM ẨN sản phẩm khỏi Buyer" : "Bấm để BẬT BÁN sản phẩm"}
+                          title={
+                            isProductActive
+                              ? "Bấm để TẠM ẨN sản phẩm khỏi Buyer"
+                              : "Bấm để BẬT BÁN sản phẩm"
+                          }
                         >
                           <span
                             className={`w-1.5 h-1.5 rounded-full ${
-                              isProductActive ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground"
+                              isProductActive
+                                ? "bg-emerald-500 animate-pulse"
+                                : "bg-muted-foreground"
                             }`}
                           />
                           <span>{isProductActive ? "● Đang bán" : "○ Tạm ẩn"}</span>
@@ -783,7 +852,10 @@ export default function AdminProductsPage() {
             </div>
 
             {/* Modal Form Body */}
-            <form onSubmit={handleSaveProduct} className="flex-1 overflow-y-auto p-5 space-y-5 text-xs">
+            <form
+              onSubmit={handleSaveProduct}
+              className="flex-1 overflow-y-auto p-5 space-y-5 text-xs"
+            >
               {/* PHẦN 1: THÔNG TIN CHUNG */}
               <div className="p-4 rounded-xl bg-muted/30 border border-border space-y-4">
                 <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground block">
@@ -835,7 +907,9 @@ export default function AdminProductsPage() {
                       min={0}
                       step={1000}
                       value={formBasePrice}
-                      onChange={(e) => setFormBasePrice(e.target.value === "" ? "" : Number(e.target.value))}
+                      onChange={(e) =>
+                        setFormBasePrice(e.target.value === "" ? "" : Number(e.target.value))
+                      }
                       placeholder="1850000"
                       className="w-full px-3 py-2 rounded-xl bg-background border border-border text-foreground text-xs font-mono font-bold focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                     />
@@ -897,13 +971,17 @@ export default function AdminProductsPage() {
                         unoptimized
                       />
                     </div>
-                    <span className="text-[10px] text-muted-foreground mt-2">Ảnh đại diện chính</span>
+                    <span className="text-[10px] text-muted-foreground mt-2">
+                      Ảnh đại diện chính
+                    </span>
                   </div>
 
                   {/* Nhập link hoặc chọn file */}
                   <div className="sm:col-span-8 space-y-2.5">
                     <div>
-                      <label className="font-bold text-foreground block mb-1">Link Ảnh Trực Tiếp (URL):</label>
+                      <label className="font-bold text-foreground block mb-1">
+                        Link Ảnh Trực Tiếp (URL):
+                      </label>
                       <input
                         type="url"
                         value={formThumbnailUrl}
@@ -915,7 +993,14 @@ export default function AdminProductsPage() {
 
                     <div className="flex items-center gap-2">
                       <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground text-xs font-semibold border border-border cursor-pointer transition-colors">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
                           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                           <polyline points="17 8 12 3 7 8" />
                           <line x1="12" x2="12" y1="3" y2="15" />
@@ -942,7 +1027,9 @@ export default function AdminProductsPage() {
 
                     {/* Mẫu ảnh chọn nhanh */}
                     <div>
-                      <span className="text-[10px] text-muted-foreground block mb-1">Hoặc chọn nhanh ảnh mẫu:</span>
+                      <span className="text-[10px] text-muted-foreground block mb-1">
+                        Hoặc chọn nhanh ảnh mẫu:
+                      </span>
                       <div className="flex flex-wrap gap-1.5">
                         {SAMPLE_IMAGES.map((img, i) => (
                           <button
@@ -980,7 +1067,14 @@ export default function AdminProductsPage() {
                     onClick={handleAddVariantRow}
                     className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
                   >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
                       <path d="M5 12h14" />
                       <path d="M12 5v14" />
                     </svg>
@@ -1009,7 +1103,9 @@ export default function AdminProductsPage() {
                               type="text"
                               required
                               value={v.variantName}
-                              onChange={(e) => handleVariantChange(idx, "variantName", e.target.value)}
+                              onChange={(e) =>
+                                handleVariantChange(idx, "variantName", e.target.value)
+                              }
                               placeholder="VD: Vị Double Rich Chocolate • 5 Lbs"
                               className="w-full px-2.5 py-1.5 rounded-lg bg-card border border-border text-foreground text-xs focus:outline-none focus:border-primary"
                             />
@@ -1033,7 +1129,9 @@ export default function AdminProductsPage() {
                               min={0}
                               step={1000}
                               value={v.price}
-                              onChange={(e) => handleVariantChange(idx, "price", Number(e.target.value))}
+                              onChange={(e) =>
+                                handleVariantChange(idx, "price", Number(e.target.value))
+                              }
                               className="w-28 px-2.5 py-1.5 rounded-lg bg-card border border-border text-foreground text-xs font-mono font-bold focus:outline-none focus:border-primary"
                             />
                           </td>
@@ -1044,7 +1142,9 @@ export default function AdminProductsPage() {
                               type="number"
                               min={0}
                               value={v.stockQuantity}
-                              onChange={(e) => handleVariantChange(idx, "stockQuantity", Number(e.target.value))}
+                              onChange={(e) =>
+                                handleVariantChange(idx, "stockQuantity", Number(e.target.value))
+                              }
                               className="w-20 px-2 py-1.5 rounded-lg bg-card border border-border text-foreground text-xs text-center font-bold focus:outline-none focus:border-primary"
                             />
                           </td>
