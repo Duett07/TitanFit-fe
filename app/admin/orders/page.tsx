@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AlertCircle, ArrowLeft, RefreshCw, Search, X } from "lucide-react";
 import orderApiRequest from "@/apiRequest/order";
 import { formatVND } from "@/lib/format";
+import { getErrorMessage } from "@/lib/error";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
 import { EmptyState, Modal, StatusBadge, Toast } from "@/components/ui";
 import { PaymentMethod, OrderStatus, PaymentStatus } from "@/types/order.type";
@@ -140,13 +141,13 @@ export default function AdminOrdersPage() {
         const mapped = rawData.map(mapOrder);
         setOrders(mapped);
       } catch (err: unknown) {
-        const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
-        const message =
-          errorObj.response?.data?.message ||
-          errorObj.message ||
-          "Không thể tải danh sách đơn hàng từ máy chủ. Vui lòng kiểm tra kết nối.";
         if (!isSilent) {
-          setFetchError(message);
+          setFetchError(
+            getErrorMessage(
+              err,
+              "Không thể tải danh sách đơn hàng từ máy chủ. Vui lòng kiểm tra kết nối."
+            )
+          );
         }
       } finally {
         if (!isSilent) {
@@ -168,11 +169,11 @@ export default function AdminOrdersPage() {
         }
       } catch (err: unknown) {
         if (!ignore) {
-          const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
           setFetchError(
-            errorObj.response?.data?.message ||
-              errorObj.message ||
+            getErrorMessage(
+              err,
               "Không thể tải danh sách đơn hàng từ máy chủ. Vui lòng kiểm tra kết nối."
+            )
           );
         }
       } finally {
@@ -258,10 +259,10 @@ export default function AdminOrdersPage() {
         setSelectedOrder(previousOrders.find((o) => o.code === orderCode) || null);
       }
 
-      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
-      const errorMessage =
-        errorObj.response?.data?.message ||
-        `Lỗi khi cập nhật trạng thái đơn #${orderCode}. Vui lòng thử lại.`;
+      const errorMessage = getErrorMessage(
+        err,
+        `Lỗi khi cập nhật trạng thái đơn #${orderCode}. Vui lòng thử lại.`
+      );
 
       setToastMessage({ type: "error", text: errorMessage });
     } finally {

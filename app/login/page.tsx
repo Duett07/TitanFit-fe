@@ -9,6 +9,7 @@ import authApiRequest from "@/apiRequest/auth";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { queryKeys } from "@/hooks/queries/queryKeys";
 import { getSafeRedirect } from "@/lib/security";
+import { getErrorMessage } from "@/lib/error";
 import { Button, Toast } from "@/components/ui";
 
 function LoginFormContent() {
@@ -77,13 +78,10 @@ function LoginFormContent() {
         }, 350);
       }
     } catch (err: unknown) {
-      const axiosErr = err as {
-        response?: { data?: { message?: string } };
-        message?: string;
-      };
-      const message =
-        axiosErr.response?.data?.message ||
-        "Email hoặc mật khẩu không chính xác. Vui lòng thử lại.";
+      const message = getErrorMessage(
+        err,
+        "Email hoặc mật khẩu không chính xác. Vui lòng thử lại."
+      );
       setErrorMessage(message);
     } finally {
       setIsLoading(false);

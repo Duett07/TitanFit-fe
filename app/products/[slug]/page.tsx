@@ -9,7 +9,10 @@ const getProduct = cache(async (slug: string) => {
   try {
     const res = await productApiRequest.getProductBySlug(slug);
     return res.data?.data || null;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(`Failed to fetch product for slug "${slug}":`, err);
+    }
     return null;
   }
 });

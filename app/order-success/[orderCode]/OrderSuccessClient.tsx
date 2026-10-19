@@ -51,7 +51,9 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
         setOrder(res.data.data);
       }
     } catch (err) {
-      console.warn("Could not fetch order from backend via orderCode:", err);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Could not fetch order from backend via orderCode:", err);
+      }
     }
   }, [orderCode]);
 
@@ -66,7 +68,9 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
           return;
         }
       } catch (err) {
-        console.warn("Could not fetch order from backend via orderCode:", err);
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("Could not fetch order from backend via orderCode:", err);
+        }
       }
 
       if (!ignore) {

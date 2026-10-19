@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Product, ProductCategory, PriceFilterKey, SortOptionKey } from "@/data/products";
 import { formatVND } from "@/lib/format";
+import { getErrorMessage } from "@/lib/error";
 import productApiRequest from "@/apiRequest/product";
 import { transformBackendProductSummary } from "@/lib/backend-adapter";
 import { useAutoSync } from "@/lib/sync";
@@ -150,9 +151,11 @@ function ProductsContent() {
         setProductList([]);
       }
     } catch (err) {
-      console.error("Error fetching products via productApiRequest:", err);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Error fetching products via productApiRequest:", err);
+      }
       setProductList([]);
-      setFetchError("Không thể tải danh sách sản phẩm từ máy chủ.");
+      setFetchError(getErrorMessage(err, "Không thể tải danh sách sản phẩm từ máy chủ."));
     } finally {
       if (!silent) setIsLoading(false);
     }

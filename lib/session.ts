@@ -42,7 +42,9 @@ export function clearSession() {
       window.dispatchEvent(new Event("authchange"));
       emitSyncEvent("AUTH_CHANGED");
     } catch (err) {
-      console.warn("Could not clear session storage:", err);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Could not clear session storage:", err);
+      }
     }
   }
 }

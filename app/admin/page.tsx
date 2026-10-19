@@ -7,6 +7,7 @@ import productApiRequest from "@/apiRequest/product";
 import { ProductSummaryDto, VariantDto } from "@/types/product.type";
 import { PaymentMethod, OrderStatus, PaymentStatus } from "@/types/order.type";
 import { formatVND } from "@/lib/format";
+import { getErrorMessage } from "@/lib/error";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
 
 interface UrgentOrder {
@@ -142,11 +143,18 @@ export default function AdminDashboardPage() {
         alerts.sort((a, b) => a.stock - b.stock);
         setLowStockList(alerts);
       } catch (prodErr) {
-        console.warn("Could not fetch product inventory:", prodErr);
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("Could not fetch product inventory:", prodErr);
+        }
       }
     } catch (err) {
-      console.error("Dashboard backend sync error:", err);
-      showToast("Không thể kết nối máy chủ backend. Vui lòng kiểm tra lại dịch vụ.", "error");
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Dashboard backend sync error:", err);
+      }
+      showToast(
+        getErrorMessage(err, "Không thể kết nối máy chủ backend. Vui lòng kiểm tra lại dịch vụ."),
+        "error"
+      );
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -304,8 +312,7 @@ export default function AdminDashboardPage() {
       if (selectedOrder && selectedOrder.code === orderCode) {
         setSelectedOrder(previousOrders.find((o) => o.code === orderCode) || null);
       }
-      const errorObj = e as { response?: { data?: { message?: string } }; message?: string };
-      showToast(errorObj.response?.data?.message || "Cập nhật trạng thái thất bại", "error");
+      showToast(getErrorMessage(e, "Cập nhật trạng thái thất bại"), "error");
     } finally {
       setUpdatingCode(null);
     }

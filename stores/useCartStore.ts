@@ -241,7 +241,9 @@ export const useCartStore = create<CartState>()(
 
           return { hasChanges, changedCount, outOfStockCount };
         } catch (error) {
-          console.error("Lỗi khi đồng bộ giỏ hàng:", error);
+          if (process.env.NODE_ENV !== "production") {
+            console.warn("Lỗi khi đồng bộ giỏ hàng:", error);
+          }
           set({ isSyncing: false });
           return { hasChanges: false, changedCount: 0, outOfStockCount: 0 };
         }

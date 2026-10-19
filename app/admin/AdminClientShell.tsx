@@ -84,7 +84,11 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
       localStorage.setItem("titanfit_theme_mode", nextTheme);
       localStorage.setItem("titanfit_theme", nextTheme);
       window.dispatchEvent(new Event("themechange"));
-    } catch {}
+    } catch (e) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Could not save theme preference to localStorage:", e);
+      }
+    }
     document.documentElement.setAttribute("data-theme", nextTheme);
   };
 
@@ -123,7 +127,11 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
         ).length;
         setPendingCount(count);
       })
-      .catch(() => {});
+      .catch((err) => {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("Could not refresh pending orders count:", err);
+        }
+      });
 
     const countLowStock = (products: ProductSummaryDto[]) => {
       let count = 0;
@@ -154,7 +162,11 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
             const products = res.data?.data?.content || [];
             countLowStock(products);
           })
-          .catch(() => {});
+          .catch((err) => {
+            if (process.env.NODE_ENV !== "production") {
+              console.warn("Could not fetch fallback products count:", err);
+            }
+          });
       });
   }, []);
 

@@ -34,7 +34,9 @@ export const useAuthStore = create<AuthState>()(
             window.dispatchEvent(new Event("authchange"));
             emitSyncEvent("AUTH_CHANGED", { userId: user.id });
           } catch (err) {
-            console.warn("Could not dispatch auth change event:", err);
+            if (process.env.NODE_ENV !== "production") {
+              console.warn("Could not dispatch auth change event:", err);
+            }
           }
         }
       },
@@ -43,7 +45,9 @@ export const useAuthStore = create<AuthState>()(
         try {
           await authApiRequest.logout();
         } catch (err) {
-          console.warn("Backend logout failed or offline:", err);
+          if (process.env.NODE_ENV !== "production") {
+            console.warn("Backend logout failed or offline:", err);
+          }
         } finally {
           clearSession();
         }

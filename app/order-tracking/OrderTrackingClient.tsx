@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { formatVND } from "@/lib/format";
+import { getErrorMessage } from "@/lib/error";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useCartStore } from "@/stores/useCartStore";
 import orderApiRequest from "@/apiRequest/order";
@@ -293,7 +294,9 @@ export default function OrderTrackingClient() {
                 apiOrders = [fetchedOrder, ...apiOrders];
               }
             } catch (err) {
-              console.warn("Could not fetch requested order by code:", err);
+              if (process.env.NODE_ENV !== "production") {
+                console.warn("Could not fetch requested order by code:", err);
+              }
             }
           }
         }
@@ -318,7 +321,9 @@ export default function OrderTrackingClient() {
           return apiOrders[0] || null;
         });
       } catch (err) {
-        console.warn("Could not fetch user orders from backend:", err);
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("Could not fetch user orders from backend:", err);
+        }
         if (!silent) {
           setOrders([]);
           setActiveOrder(null);
@@ -445,13 +450,10 @@ export default function OrderTrackingClient() {
         setSearchError("Không tìm thấy đơn hàng hoặc số điện thoại không trùng khớp.");
       }
     } catch (err: unknown) {
-      console.warn("Lookup failed:", err);
-      const axiosErr = err as {
-        response?: { data?: { message?: string } };
-      };
-      const message =
-        axiosErr.response?.data?.message ||
-        "Không tìm thấy đơn hàng hoặc số điện thoại không trùng khớp. Vui lòng kiểm tra lại.";
+      const message = getErrorMessage(
+        err,
+        "Không tìm thấy đơn hàng hoặc số điện thoại không trùng khớp. Vui lòng kiểm tra lại."
+      );
       setSearchError(message);
     } finally {
       setIsSearching(false);

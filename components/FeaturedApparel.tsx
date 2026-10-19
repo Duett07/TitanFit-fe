@@ -30,7 +30,9 @@ export default function FeaturedApparel({ initialProducts }: FeaturedApparelProp
         setProducts(apparel);
       }
     } catch (err) {
-      console.warn("Failed to fetch featured apparel via productApiRequest:", err);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Failed to fetch featured apparel via productApiRequest:", err);
+      }
     } finally {
       setLoading(false);
     }
