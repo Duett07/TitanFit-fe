@@ -79,7 +79,6 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
     setTheme(nextTheme);
     try {
       localStorage.setItem("titanfit_theme_mode", nextTheme);
-      localStorage.setItem("titanfit_theme", nextTheme);
       window.dispatchEvent(new Event("themechange"));
     } catch (e) {
       if (process.env.NODE_ENV !== "production") {

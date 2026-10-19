@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { UIProductDetail, ProductVariantSKU } from "@/data/products";
 import { formatVND } from "@/lib/format";
@@ -253,11 +254,13 @@ export default function ProductDetailClient({
                   </span>
                 </div>
               )}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={selectedImage || product.image}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
               />
             </div>
 
@@ -278,11 +281,12 @@ export default function ProductDetailClient({
                       onClick={() => setSelectedImage(img)}
                       aria-label={`Xem ảnh ${idx + 1}`}
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <Image
                         src={img}
                         alt={`${product.name} thumbnail ${idx + 1}`}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="64px"
+                        className="object-cover"
                       />
                     </button>
                   );

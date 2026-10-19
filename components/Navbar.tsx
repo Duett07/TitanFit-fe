@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useCartStore } from "@/stores/useCartStore";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useHydrated } from "@/hooks/useHydrated";
 
 import Logo from "@/components/Logo";
 
@@ -50,11 +51,7 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const isHydrated = React.useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
+  const isHydrated = useHydrated();
 
   const currentUser = isHydrated && isAuthenticated ? user : null;
 
@@ -70,7 +67,6 @@ export default function Navbar() {
     const nextTheme = theme === "dark" ? "light" : "dark";
     try {
       localStorage.setItem("titanfit_theme_mode", nextTheme);
-      localStorage.setItem("titanfit_theme", nextTheme);
       window.dispatchEvent(new Event("themechange"));
     } catch {
       // Ignore in SSR
