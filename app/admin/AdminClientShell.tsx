@@ -7,7 +7,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import Logo from "@/components/Logo";
 import orderApiRequest from "@/apiRequest/order";
 import productApiRequest from "@/apiRequest/product";
-import { ProductSummaryDto, VariantDto } from "@/types/product.type";
+import { ProductSummaryDto } from "@/types/product.type";
 import { UserResponse } from "@/types/auth.type";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/hooks/queries/queryKeys";
@@ -28,17 +28,14 @@ interface NotificationItem {
   link: string;
 }
 
-const INITIAL_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: "notif-1",
-    type: "order",
-    title: "Đơn hàng mới trong hệ thống",
-    description: "Có đơn hàng mới đang chờ xử lý và xuất kho",
-    time: "Vừa xong",
-    isRead: false,
-    link: "/admin/orders",
-  },
-];
+function getUserInitials(name?: string): string {
+  if (!name || !name.trim()) return "AD";
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) {
+    return words[0].slice(0, 2).toUpperCase();
+  }
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+}
 
 export default function AdminClientShell({ children, initialUser }: AdminClientShellProps) {
   const router = useRouter();
@@ -49,7 +46,7 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
 
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [prevPathname, setPrevPathname] = useState(pathname);
   if (prevPathname !== pathname) {
     setPrevPathname(pathname);
@@ -114,60 +111,98 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
     router.replace("/login");
   };
 
-  // Sync real counts from backend
+  // Sync real counts & generate live notifications from backend
   const refreshCounts = useCallback(() => {
-    orderApiRequest
-      .getAllOrders()
-      .then((res) => {
-        const raw = res.data?.data || [];
-        const count = raw.filter(
+    Promise.allSettled([
+      orderApiRequest.getAllOrders(),
+      productApiRequest
+        .adminGetAllProducts()
+        .catch(() => productApiRequest.getProducts({ size: 100 })),
+    ]).then(([ordersRes, productsRes]) => {
+      const generatedNotifs: NotificationItem[] = [];
+
+      // 1. Process orders
+      if (ordersRes.status === "fulfilled") {
+        const rawOrders = ordersRes.value.data?.data || [];
+        const pendingOrders = rawOrders.filter(
           (o) =>
             (o.orderStatus || "").toUpperCase() === "PENDING" ||
             (o.orderStatus || "").toUpperCase() === "CONFIRMED"
-        ).length;
-        setPendingCount(count);
-      })
-      .catch((err) => {
-        if (process.env.NODE_ENV !== "production") {
-          console.warn("Could not refresh pending orders count:", err);
-        }
-      });
+        );
+        setPendingCount(pendingOrders.length);
 
-    const countLowStock = (products: ProductSummaryDto[]) => {
-      let count = 0;
-      products.forEach((p: ProductSummaryDto) => {
-        if (p.variants && Array.isArray(p.variants)) {
-          p.variants.forEach((v: VariantDto) => {
-            if (v.stockQuantity !== undefined && v.stockQuantity < 10) {
-              count++;
-            }
+        if (pendingOrders.length > 0) {
+          const newest = pendingOrders[0];
+          generatedNotifs.push({
+            id: `notif-orders-${newest?.orderCode || pendingOrders.length}`,
+            type: "order",
+            title: `${pendingOrders.length} đơn hàng mới cần xử lý`,
+            description: `Đơn #${newest?.orderCode || "mới"} đang chờ xử lý và xuất kho.`,
+            time: newest?.createdAt
+              ? new Date(newest.createdAt).toLocaleTimeString("vi-VN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "Hôm nay",
+            isRead: false,
+            link: "/admin/orders",
           });
         }
-      });
-      setLowStockCount(count);
-    };
+      } else if (process.env.NODE_ENV !== "production") {
+        console.warn("Could not refresh orders:", ordersRes.reason);
+      }
 
-    // Use admin API for accurate catalog count across active and inactive products without 100-item limit
-    productApiRequest
-      .adminGetAllProducts()
-      .then((res) => {
-        const products = res.data?.data || [];
-        countLowStock(products);
-      })
-      .catch(() => {
-        // Fallback to public products if admin endpoint fails
-        productApiRequest
-          .getProducts({ size: 100 })
-          .then((res) => {
-            const products = res.data?.data?.content || [];
-            countLowStock(products);
-          })
-          .catch((err) => {
-            if (process.env.NODE_ENV !== "production") {
-              console.warn("Could not fetch fallback products count:", err);
-            }
+      // 2. Process products / low stock
+      if (productsRes.status === "fulfilled") {
+        const raw = productsRes.value.data?.data;
+        const products: ProductSummaryDto[] = Array.isArray(raw)
+          ? raw
+          : (raw as { content?: ProductSummaryDto[] })?.content || [];
+
+        let lowStockVariantsCount = 0;
+        let sampleProduct = "";
+
+        products.forEach((p) => {
+          if (p.variants && Array.isArray(p.variants)) {
+            p.variants.forEach((v) => {
+              if (v.stockQuantity !== undefined && v.stockQuantity < 10) {
+                lowStockVariantsCount++;
+                if (!sampleProduct) {
+                  sampleProduct = `${p.name} (${v.variantName}: còn ${v.stockQuantity})`;
+                }
+              }
+            });
+          }
+        });
+
+        setLowStockCount(lowStockVariantsCount);
+
+        if (lowStockVariantsCount > 0) {
+          generatedNotifs.push({
+            id: `notif-low-stock-${lowStockVariantsCount}`,
+            type: "inventory",
+            title: `${lowStockVariantsCount} biến thể sắp hết hàng (< 10)`,
+            description: sampleProduct
+              ? `Cảnh báo: ${sampleProduct}. Cần bổ sung nhập kho.`
+              : `Có ${lowStockVariantsCount} biến thể tồn kho dưới 10 sản phẩm.`,
+            time: "Cảnh báo kho",
+            isRead: false,
+            link: "/admin/inventory",
           });
+        }
+      } else if (process.env.NODE_ENV !== "production") {
+        console.warn("Could not refresh products count:", productsRes.reason);
+      }
+
+      // 3. Update notifications while preserving isRead status
+      setNotifications((prev) => {
+        const readIds = new Set(prev.filter((n) => n.isRead).map((n) => n.id));
+        return generatedNotifs.map((n) => ({
+          ...n,
+          isRead: readIds.has(n.id),
+        }));
       });
+    });
   }, []);
 
   useEffect(() => {
@@ -392,15 +427,15 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
         {/* Sidebar Footer: User Card & Logout */}
         <div className="p-3.5 border-t border-border shrink-0 bg-card/60 flex flex-col gap-2.5">
           <div className="p-2.5 rounded-xl bg-secondary/60 border border-border flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-primary text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-sm">
-              AD
+            <div className="w-9 h-9 rounded-full bg-primary text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-sm uppercase">
+              {getUserInitials(user?.fullName)}
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-xs font-bold text-foreground truncate">
                 {user?.fullName || "Quản Trị Viên"}
               </div>
               <div className="text-[11px] text-muted-foreground truncate">
-                {user?.email || "admin@titanfit.vn"}
+                {user?.email || "Tài khoản quản trị"}
               </div>
             </div>
           </div>
@@ -565,42 +600,62 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
                   </div>
 
                   <div className="max-h-72 overflow-y-auto divide-y divide-border/60">
-                    {notifications.map((notif) => (
-                      <Link
-                        key={notif.id}
-                        href={notif.link}
-                        onClick={() => {
-                          setIsNotifOpen(false);
-                        }}
-                        className={`p-3.5 flex items-start gap-3 hover:bg-secondary/60 transition-colors cursor-pointer ${
-                          !notif.isRead ? "bg-primary/5" : ""
-                        }`}
-                      >
-                        <div
-                          className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
-                            notif.type === "order"
-                              ? "bg-primary/15 text-primary"
-                              : notif.type === "inventory"
-                                ? "bg-amber-500/15 text-amber-500"
-                                : "bg-emerald-500/15 text-emerald-500"
+                    {notifications.length === 0 ? (
+                      <div className="p-6 text-center text-muted-foreground">
+                        <div className="w-9 h-9 rounded-full bg-muted/60 flex items-center justify-center mx-auto mb-2 text-base">
+                          🔔
+                        </div>
+                        <p className="text-xs font-semibold text-foreground">
+                          Không có thông báo mới
+                        </p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Tất cả đơn hàng và tồn kho đều ổn định.
+                        </p>
+                      </div>
+                    ) : (
+                      notifications.map((notif) => (
+                        <Link
+                          key={notif.id}
+                          href={notif.link}
+                          onClick={() => {
+                            setIsNotifOpen(false);
+                          }}
+                          className={`p-3.5 flex items-start gap-3 hover:bg-secondary/60 transition-colors cursor-pointer ${
+                            !notif.isRead ? "bg-primary/5" : ""
                           }`}
                         >
-                          {notif.type === "order" ? "📦" : notif.type === "inventory" ? "⚠️" : "💰"}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-foreground truncate">
-                            {notif.title}
-                          </p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
-                            {notif.description}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground/75 mt-1">{notif.time}</p>
-                        </div>
-                        {!notif.isRead && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                        )}
-                      </Link>
-                    ))}
+                          <div
+                            className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
+                              notif.type === "order"
+                                ? "bg-primary/15 text-primary"
+                                : notif.type === "inventory"
+                                  ? "bg-amber-500/15 text-amber-500"
+                                  : "bg-emerald-500/15 text-emerald-500"
+                            }`}
+                          >
+                            {notif.type === "order"
+                              ? "📦"
+                              : notif.type === "inventory"
+                                ? "⚠️"
+                                : "💰"}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold text-foreground truncate">
+                              {notif.title}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                              {notif.description}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground/75 mt-1">
+                              {notif.time}
+                            </p>
+                          </div>
+                          {!notif.isRead && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                          )}
+                        </Link>
+                      ))
+                    )}
                   </div>
 
                   <div className="p-2 border-t border-border bg-muted/20 text-center">
