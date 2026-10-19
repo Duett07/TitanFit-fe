@@ -105,8 +105,16 @@ export default function AdminProductsPage() {
   }, []);
 
   useEffect(() => {
-    fetchCategories();
-    fetchProducts();
+    let isMounted = true;
+    Promise.resolve().then(() => {
+      if (isMounted) {
+        void fetchCategories();
+        void fetchProducts();
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
   }, [fetchCategories, fetchProducts]);
 
   // Real-time synchronization: Auto-refresh products when updated from other tabs or actions

@@ -156,7 +156,15 @@ function ProductsContent() {
   }, []);
 
   React.useEffect(() => {
-    loadProducts(false);
+    let isMounted = true;
+    Promise.resolve().then(() => {
+      if (isMounted) {
+        void loadProducts(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
   }, [loadProducts]);
 
   // Tự động làm mới danh sách sản phẩm khi Admin thêm/sửa/tắt bật hoặc khi quay lại tab

@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useCartStore } from "@/stores/useCartStore";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -98,11 +97,25 @@ export default function Navbar() {
     const storedErr = sessionStorage.getItem("titanfit_auth_error");
 
     if (err || storedErr) {
-      setToastMessage(err || storedErr || "Không có quyền truy cập");
+      const msg = err || storedErr || "Không có quyền truy cập";
       sessionStorage.removeItem("titanfit_auth_error");
       const cleanUrl = window.location.pathname;
       window.history.replaceState({}, "", cleanUrl);
-      setTimeout(() => setToastMessage(null), 4500);
+
+      let isMounted = true;
+      Promise.resolve().then(() => {
+        if (isMounted) {
+          setToastMessage(msg);
+        }
+      });
+      const timer = setTimeout(() => {
+        if (isMounted) setToastMessage(null);
+      }, 4500);
+
+      return () => {
+        isMounted = false;
+        clearTimeout(timer);
+      };
     }
   }, [pathname]);
 
