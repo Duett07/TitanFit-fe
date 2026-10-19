@@ -44,6 +44,27 @@ const SAMPLE_IMAGES = [
   },
 ];
 
+interface FormVariantItem extends CreateProductVariantDto {
+  _clientId: string;
+}
+
+const createFormVariantItem = (
+  initial?: Partial<CreateProductVariantDto>,
+  customClientId?: string
+): FormVariantItem => ({
+  _clientId:
+    customClientId ||
+    initial?.id ||
+    (typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `var-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`),
+  variantName: initial?.variantName ?? "Tiêu chuẩn",
+  price: initial?.price ?? 0,
+  stockQuantity: initial?.stockQuantity ?? 50,
+  sku: initial?.sku ?? "",
+  ...(initial?.id ? { id: initial.id } : {}),
+});
+
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<ProductSummaryDto[]>([]);
   const [categories, setCategories] = useState<CategoryDto[]>([]);
@@ -70,8 +91,14 @@ export default function AdminProductsPage() {
   const [formDescription, setFormDescription] = useState("");
   const [formThumbnailUrl, setFormThumbnailUrl] = useState("");
   const [formIsActive, setFormIsActive] = useState(true);
-  const [formVariants, setFormVariants] = useState<CreateProductVariantDto[]>([
-    { variantName: "Mặc định", price: 0, stockQuantity: 50, sku: "" },
+  const [formVariants, setFormVariants] = useState<FormVariantItem[]>([
+    {
+      _clientId: "default-var-1",
+      variantName: "Mặc định",
+      price: 0,
+      stockQuantity: 50,
+      sku: "",
+    },
   ]);
 
   // Toast notification
@@ -91,15 +118,15 @@ export default function AdminProductsPage() {
       const res = await categoryApiRequest.getAllCategories();
       const list = res.data?.data || [];
       setCategories(list);
-      if (list.length > 0 && !formCategorySlug) {
-        setFormCategorySlug(list[0].slug);
+      if (list.length > 0) {
+        setFormCategorySlug((prev) => prev || list[0].slug);
       }
     } catch (e) {
       if (process.env.NODE_ENV !== "production") {
         console.warn("Could not load categories:", e);
       }
     }
-  }, [formCategorySlug]);
+  }, []);
 
   // Tải danh sách sản phẩm từ backend
   const fetchProducts = useCallback(async (isSilent = false) => {
@@ -187,7 +214,9 @@ export default function AdminProductsPage() {
     setFormDescription("");
     setFormThumbnailUrl(SAMPLE_IMAGES[0].url);
     setFormIsActive(true);
-    setFormVariants([{ variantName: "Tiêu chuẩn", price: 0, stockQuantity: 50, sku: "" }]);
+    setFormVariants([
+      createFormVariantItem({ variantName: "Tiêu chuẩn", price: 0, stockQuantity: 50, sku: "" }),
+    ]);
     setIsModalOpen(true);
   };
 
@@ -204,17 +233,24 @@ export default function AdminProductsPage() {
     // Điền danh sách biến thể có sẵn
     if (p.variants && p.variants.length > 0) {
       setFormVariants(
-        p.variants.map((v) => ({
-          id: v.id,
-          sku: v.sku,
-          variantName: v.variantName,
-          price: v.price,
-          stockQuantity: v.stockQuantity,
-        }))
+        p.variants.map((v) =>
+          createFormVariantItem({
+            id: v.id,
+            sku: v.sku,
+            variantName: v.variantName,
+            price: v.price,
+            stockQuantity: v.stockQuantity,
+          })
+        )
       );
     } else {
       setFormVariants([
-        { variantName: "Tiêu chuẩn", price: p.basePrice, stockQuantity: 50, sku: "" },
+        createFormVariantItem({
+          variantName: "Tiêu chuẩn",
+          price: p.basePrice,
+          stockQuantity: 50,
+          sku: "",
+        }),
       ]);
     }
 
@@ -245,35 +281,33 @@ export default function AdminProductsPage() {
     const defaultPrice = Number(formBasePrice) || 0;
     setFormVariants((prev) => [
       ...prev,
-      {
+      createFormVariantItem({
         variantName: "",
         price: defaultPrice,
         stockQuantity: 20,
         sku: "",
-      },
+      }),
     ]);
   };
 
   // Xử lý thay đổi trường trong biến thể
   const handleVariantChange = (
-    index: number,
+    clientId: string,
     field: keyof CreateProductVariantDto,
     val: string | number
   ) => {
-    setFormVariants((prev) => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], [field]: val };
-      return updated;
-    });
+    setFormVariants((prev) =>
+      prev.map((item) => (item._clientId === clientId ? { ...item, [field]: val } : item))
+    );
   };
 
   // Xóa một dòng biến thể
-  const handleRemoveVariantRow = (index: number) => {
+  const handleRemoveVariantRow = (clientId: string) => {
     if (formVariants.length <= 1) {
       showToast("Sản phẩm cần ít nhất một biến thể hoặc SKU!", "error");
       return;
     }
-    setFormVariants((prev) => prev.filter((_, i) => i !== index));
+    setFormVariants((prev) => prev.filter((item) => item._clientId !== clientId));
   };
 
   // Xử lý chọn ảnh từ máy tính (FileReader sang Base64 data URL)
@@ -1099,8 +1133,8 @@ export default function AdminProductsPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/60">
-                      {formVariants.map((v, idx) => (
-                        <tr key={idx} className="hover:bg-muted/10">
+                      {formVariants.map((v) => (
+                        <tr key={v._clientId} className="hover:bg-muted/10">
                           {/* Tên biến thể */}
                           <td className="py-2.5 px-3">
                             <input
@@ -1108,7 +1142,7 @@ export default function AdminProductsPage() {
                               required
                               value={v.variantName}
                               onChange={(e) =>
-                                handleVariantChange(idx, "variantName", e.target.value)
+                                handleVariantChange(v._clientId, "variantName", e.target.value)
                               }
                               placeholder="VD: Vị Double Rich Chocolate • 5 Lbs"
                               className="w-full px-2.5 py-1.5 rounded-lg bg-card border border-border text-foreground text-xs focus:outline-none focus:border-primary"
@@ -1120,7 +1154,9 @@ export default function AdminProductsPage() {
                             <input
                               type="text"
                               value={v.sku || ""}
-                              onChange={(e) => handleVariantChange(idx, "sku", e.target.value)}
+                              onChange={(e) =>
+                                handleVariantChange(v._clientId, "sku", e.target.value)
+                              }
                               placeholder="Tự động sinh nếu để trống"
                               className="w-full px-2.5 py-1.5 rounded-lg bg-card border border-border text-foreground text-xs font-mono focus:outline-none focus:border-primary"
                             />
@@ -1134,7 +1170,7 @@ export default function AdminProductsPage() {
                               step={1000}
                               value={v.price}
                               onChange={(e) =>
-                                handleVariantChange(idx, "price", Number(e.target.value))
+                                handleVariantChange(v._clientId, "price", Number(e.target.value))
                               }
                               className="w-28 px-2.5 py-1.5 rounded-lg bg-card border border-border text-foreground text-xs font-mono font-bold focus:outline-none focus:border-primary"
                             />
@@ -1147,7 +1183,11 @@ export default function AdminProductsPage() {
                               min={0}
                               value={v.stockQuantity}
                               onChange={(e) =>
-                                handleVariantChange(idx, "stockQuantity", Number(e.target.value))
+                                handleVariantChange(
+                                  v._clientId,
+                                  "stockQuantity",
+                                  Number(e.target.value)
+                                )
                               }
                               className="w-20 px-2 py-1.5 rounded-lg bg-card border border-border text-foreground text-xs text-center font-bold focus:outline-none focus:border-primary"
                             />
@@ -1157,7 +1197,7 @@ export default function AdminProductsPage() {
                           <td className="py-2.5 px-3 text-right">
                             <button
                               type="button"
-                              onClick={() => handleRemoveVariantRow(idx)}
+                              onClick={() => handleRemoveVariantRow(v._clientId)}
                               className="w-7 h-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 inline-flex items-center justify-center transition-colors cursor-pointer"
                               title="Xóa biến thể này"
                             >

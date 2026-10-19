@@ -18,7 +18,7 @@ interface UrgentOrder {
   phone: string;
   address: string;
   itemsSummary: string;
-  itemsList: { name: string; variant: string; qty: number; price: number }[];
+  itemsList: { id?: string; name: string; variant: string; qty: number; price: number }[];
   total: number;
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
@@ -95,7 +95,8 @@ export default function AdminDashboardPage() {
             o.items && o.items.length > 0
               ? o.items.map((it) => it.productName).join(" + ")
               : "Sản phẩm thể hình TITANFIT",
-          itemsList: (o.items || []).map((it) => ({
+          itemsList: (o.items || []).map((it, itemIdx) => ({
+            id: it.id || it.variantId || `${o.id}-${itemIdx}`,
             name: it.productName || "Sản phẩm",
             variant: it.variantName || "Tiêu chuẩn",
             qty: it.quantity || 1,
@@ -201,7 +202,13 @@ export default function AdminDashboardPage() {
   const chartData = useMemo(() => {
     const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
     const today = new Date();
-    const result: { day: string; revenue: number; orders: number; percent: number }[] = [];
+    const result: {
+      date: string;
+      day: string;
+      revenue: number;
+      orders: number;
+      percent: number;
+    }[] = [];
 
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -217,6 +224,7 @@ export default function AdminDashboardPage() {
 
       const dayRevenue = matchedOrders.reduce((sum, ord) => sum + ord.total, 0);
       result.push({
+        date: dateStr,
         day: dayName,
         revenue: dayRevenue,
         orders: matchedOrders.length,
@@ -551,9 +559,9 @@ export default function AdminDashboardPage() {
 
           {/* Dynamic Bar Chart */}
           <div className="flex items-end justify-between gap-2 h-44 pt-4 pb-2 px-1">
-            {chartData.map((item, index) => (
+            {chartData.map((item) => (
               <div
-                key={index}
+                key={item.date || item.day}
                 className="flex-1 flex flex-col items-center gap-2 h-full justify-end group cursor-pointer relative"
               >
                 {/* Tooltip on hover */}
@@ -1017,7 +1025,9 @@ export default function AdminDashboardPage() {
                   </thead>
                   <tbody className="divide-y divide-border/60">
                     {selectedOrder.itemsList.map((item, idx) => (
-                      <tr key={idx}>
+                      <tr
+                        key={item.id || `${selectedOrder.id}-${item.name}-${item.variant}-${idx}`}
+                      >
                         <td className="py-2.5 px-3 font-semibold text-foreground">{item.name}</td>
                         <td className="py-2.5 px-3 text-muted-foreground">{item.variant}</td>
                         <td className="py-2.5 px-3 font-mono">{formatVND(item.price)}</td>
