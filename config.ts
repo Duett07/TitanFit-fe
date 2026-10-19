@@ -2,11 +2,6 @@ import { z } from "zod";
 
 const isProduction = process.env.NODE_ENV === "production";
 
-const rawEndpoint =
-  process.env.NEXT_PUBLIC_API_ENDPOINT ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  process.env.BACKEND_API_URL;
-
 const configSchema = z.object({
   NEXT_PUBLIC_API_ENDPOINT: isProduction
     ? z
@@ -17,7 +12,8 @@ const configSchema = z.object({
 });
 
 const config = configSchema.safeParse({
-  NEXT_PUBLIC_API_ENDPOINT: rawEndpoint || (!isProduction ? "http://localhost:8080" : undefined),
+  NEXT_PUBLIC_API_ENDPOINT:
+    process.env.NEXT_PUBLIC_API_ENDPOINT || (!isProduction ? "http://localhost:8080" : undefined),
 });
 
 if (!config.success) {
