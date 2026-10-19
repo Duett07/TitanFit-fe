@@ -4,16 +4,7 @@ import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
-import {
-  AlertCircle,
-  Eye,
-  EyeOff,
-  Lock,
-  Mail,
-  Phone,
-  ShieldCheck,
-  User,
-} from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Lock, Mail, Phone, ShieldCheck, User } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { queryKeys } from "@/hooks/queries/queryKeys";
@@ -41,12 +32,8 @@ const registerSchema = z
         /^(0|\+84)[0-9]{9,10}$/,
         "Số điện thoại không hợp lệ (VD: 0987654321 hoặc +84987654321)"
       ),
-    password: z
-      .string()
-      .min(6, "Mật khẩu phải có tối thiểu 6 ký tự"),
-    confirmPassword: z
-      .string()
-      .min(1, "Vui lòng nhập lại mật khẩu xác nhận"),
+    password: z.string().min(6, "Mật khẩu phải có tối thiểu 6 ký tự"),
+    confirmPassword: z.string().min(1, "Vui lòng nhập lại mật khẩu xác nhận"),
     termsAccepted: z
       .boolean()
       .refine((val) => val === true, "Bạn cần đồng ý với Điều khoản dịch vụ và Chính sách bảo mật"),
@@ -90,10 +77,7 @@ function RegisterFormContent() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const handleChange = (
-    field: keyof RegisterFormValues,
-    value: string | boolean
-  ) => {
+  const handleChange = (field: keyof RegisterFormValues, value: string | boolean) => {
     setFormValues((prev) => ({ ...prev, [field]: value }));
     // Clear inline error on typing
     if (errors[field]) {
@@ -207,7 +191,8 @@ function RegisterFormContent() {
             Tạo Tài Khoản Mới
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground text-center leading-relaxed">
-            Trở thành hội viên TITANFIT để nhận ưu đãi thành viên, giáo án tập luyện và tích điểm đơn hàng.
+            Trở thành hội viên TITANFIT để nhận ưu đãi thành viên, giáo án tập luyện và tích điểm
+            đơn hàng.
           </p>
         </div>
 
@@ -226,7 +211,10 @@ function RegisterFormContent() {
         <form onSubmit={handleRegisterSubmit} noValidate>
           {/* 1. Full Name */}
           <div className="mb-4">
-            <label className="block text-xs font-semibold text-foreground mb-1.5" htmlFor="regFullName">
+            <label
+              className="block text-xs font-semibold text-foreground mb-1.5"
+              htmlFor="regFullName"
+            >
               Họ và Tên <span className="text-destructive">*</span>
             </label>
             <div className="relative">
@@ -237,7 +225,9 @@ function RegisterFormContent() {
                 id="regFullName"
                 type="text"
                 className={`w-full h-10.5 pl-10 pr-3.5 rounded-xl bg-secondary border text-foreground text-xs font-sans placeholder:text-muted-foreground focus:outline-none focus:bg-background transition-all ${
-                  errors.fullName ? "border-destructive focus:border-destructive" : "border-border focus:border-primary"
+                  errors.fullName
+                    ? "border-destructive focus:border-destructive"
+                    : "border-border focus:border-primary"
                 }`}
                 placeholder="VD: Nguyễn Văn Hoàng"
                 value={formValues.fullName}
@@ -255,7 +245,10 @@ function RegisterFormContent() {
 
           {/* 2. Email Address */}
           <div className="mb-4">
-            <label className="block text-xs font-semibold text-foreground mb-1.5" htmlFor="regEmail">
+            <label
+              className="block text-xs font-semibold text-foreground mb-1.5"
+              htmlFor="regEmail"
+            >
               Địa Chỉ Email <span className="text-destructive">*</span>
             </label>
             <div className="relative">
@@ -266,7 +259,9 @@ function RegisterFormContent() {
                 id="regEmail"
                 type="email"
                 className={`w-full h-10.5 pl-10 pr-3.5 rounded-xl bg-secondary border text-foreground text-xs font-sans placeholder:text-muted-foreground focus:outline-none focus:bg-background transition-all ${
-                  errors.email ? "border-destructive focus:border-destructive" : "border-border focus:border-primary"
+                  errors.email
+                    ? "border-destructive focus:border-destructive"
+                    : "border-border focus:border-primary"
                 }`}
                 placeholder="hoang.nguyen@example.com"
                 value={formValues.email}
@@ -284,7 +279,10 @@ function RegisterFormContent() {
 
           {/* 3. Phone Number */}
           <div className="mb-4">
-            <label className="block text-xs font-semibold text-foreground mb-1.5" htmlFor="regPhone">
+            <label
+              className="block text-xs font-semibold text-foreground mb-1.5"
+              htmlFor="regPhone"
+            >
               Số Điện Thoại <span className="text-destructive">*</span>
             </label>
             <div className="relative">
@@ -295,7 +293,9 @@ function RegisterFormContent() {
                 id="regPhone"
                 type="tel"
                 className={`w-full h-10.5 pl-10 pr-3.5 rounded-xl bg-secondary border text-foreground text-xs font-sans placeholder:text-muted-foreground focus:outline-none focus:bg-background transition-all ${
-                  errors.phone ? "border-destructive focus:border-destructive" : "border-border focus:border-primary"
+                  errors.phone
+                    ? "border-destructive focus:border-destructive"
+                    : "border-border focus:border-primary"
                 }`}
                 placeholder="VD: 0987 654 321"
                 value={formValues.phone}
@@ -313,7 +313,10 @@ function RegisterFormContent() {
 
           {/* 4. Password */}
           <div className="mb-4">
-            <label className="block text-xs font-semibold text-foreground mb-1.5" htmlFor="regPassword">
+            <label
+              className="block text-xs font-semibold text-foreground mb-1.5"
+              htmlFor="regPassword"
+            >
               Mật Khẩu <span className="text-destructive">*</span>
             </label>
             <div className="relative">
@@ -324,7 +327,9 @@ function RegisterFormContent() {
                 id="regPassword"
                 type={showPassword ? "text" : "password"}
                 className={`w-full h-10.5 pl-10 pr-10 rounded-xl bg-secondary border text-foreground text-xs font-sans placeholder:text-muted-foreground focus:outline-none focus:bg-background transition-all ${
-                  errors.password ? "border-destructive focus:border-destructive" : "border-border focus:border-primary"
+                  errors.password
+                    ? "border-destructive focus:border-destructive"
+                    : "border-border focus:border-primary"
                 }`}
                 placeholder="Tối thiểu 6 ký tự..."
                 value={formValues.password}
@@ -338,11 +343,7 @@ function RegisterFormContent() {
                 onClick={() => setShowPassword(!showPassword)}
                 title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
             {errors.password && (
@@ -355,7 +356,10 @@ function RegisterFormContent() {
 
           {/* 5. Confirm Password */}
           <div className="mb-4">
-            <label className="block text-xs font-semibold text-foreground mb-1.5" htmlFor="regConfirmPassword">
+            <label
+              className="block text-xs font-semibold text-foreground mb-1.5"
+              htmlFor="regConfirmPassword"
+            >
               Nhập Lại Mật Khẩu <span className="text-destructive">*</span>
             </label>
             <div className="relative">
@@ -382,11 +386,7 @@ function RegisterFormContent() {
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 title={showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
-                {showConfirmPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
+                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
             {errors.confirmPassword && (

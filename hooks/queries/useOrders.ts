@@ -69,13 +69,7 @@ export function useCreateOrder() {
 export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      orderId,
-      status,
-    }: {
-      orderId: string;
-      status: UpdatableOrderStatus;
-    }) => {
+    mutationFn: async ({ orderId, status }: { orderId: string; status: UpdatableOrderStatus }) => {
       const res = await orderApiRequest.updateOrderStatus(orderId, status);
       return res.data?.data;
     },

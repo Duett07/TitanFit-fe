@@ -135,7 +135,10 @@ function LoginFormContent() {
         <form onSubmit={handleFormSubmit}>
           {/* Email */}
           <div className="mb-4">
-            <label className="block text-xs font-semibold text-foreground mb-1.5" htmlFor="loginEmail">
+            <label
+              className="block text-xs font-semibold text-foreground mb-1.5"
+              htmlFor="loginEmail"
+            >
               Email
             </label>
             <div className="relative flex items-center">
@@ -159,7 +162,10 @@ function LoginFormContent() {
           {/* Password */}
           <div className="mb-6">
             <div className="flex justify-between items-center mb-1.5">
-              <label className="block text-xs font-semibold text-foreground mb-0" htmlFor="loginPassword">
+              <label
+                className="block text-xs font-semibold text-foreground mb-0"
+                htmlFor="loginPassword"
+              >
                 Mật khẩu
               </label>
               <button
@@ -194,11 +200,7 @@ function LoginFormContent() {
                 title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                 aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
@@ -264,7 +266,9 @@ function LoginFormContent() {
         <div className="text-center mt-6 pt-4 border-t border-border/60 text-xs text-muted-foreground">
           Chưa có tài khoản TITANFIT?{" "}
           <Link
-            href={rawRedirect ? `/register?redirect=${encodeURIComponent(redirectTarget)}` : "/register"}
+            href={
+              rawRedirect ? `/register?redirect=${encodeURIComponent(redirectTarget)}` : "/register"
+            }
             className="text-primary font-bold hover:underline ml-1"
           >
             Đăng ký ngay &rarr;

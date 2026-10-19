@@ -111,7 +111,9 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
       <div className="min-h-[70vh] flex flex-col items-center justify-center py-20 px-4">
         <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin mb-4" />
         <p className="text-sm font-medium text-muted-foreground">
-          {isAuthChecking ? "Đang kiểm tra quyền truy cập..." : `Đang xác nhận mã đơn hàng #${orderCode}...`}
+          {isAuthChecking
+            ? "Đang kiểm tra quyền truy cập..."
+            : `Đang xác nhận mã đơn hàng #${orderCode}...`}
         </p>
       </div>
     );
@@ -175,9 +177,7 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
               </div>
               <div className="text-right">
                 <span className="text-xs text-muted-foreground">Số tiền cần chuyển:</span>
-                <p className="text-2xl font-black text-primary">
-                  {formatVND(totalAmount)}
-                </p>
+                <p className="text-2xl font-black text-primary">{formatVND(totalAmount)}</p>
               </div>
             </div>
 
@@ -209,9 +209,7 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
                   <span className="text-[11px] text-muted-foreground block font-medium">
                     Ngân hàng thụ hưởng:
                   </span>
-                  <span className="text-sm font-bold text-foreground">
-                    {BANK_CONFIG.bankName}
-                  </span>
+                  <span className="text-sm font-bold text-foreground">{BANK_CONFIG.bankName}</span>
                 </div>
 
                 {/* Account Number with Copy */}
@@ -279,7 +277,8 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
                 />
               </svg>
               <span>
-                Hệ thống sẽ tự động đối soát và kích hoạt giao hàng ngay khi nhận được biến động số dư.
+                Hệ thống sẽ tự động đối soát và kích hoạt giao hàng ngay khi nhận được biến động số
+                dư.
               </span>
             </div>
           </div>
@@ -290,12 +289,7 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
           <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-sm">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -315,7 +309,9 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
               </div>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Nhân viên tư vấn của TitanFit sẽ liên hệ qua số điện thoại <strong>{order?.phone}</strong> trong vòng 15-30 phút để xác nhận đơn hàng và thời gian giao hàng thuận tiện nhất cho bạn.
+              Nhân viên tư vấn của TitanFit sẽ liên hệ qua số điện thoại{" "}
+              <strong>{order?.phone}</strong> trong vòng 15-30 phút để xác nhận đơn hàng và thời
+              gian giao hàng thuận tiện nhất cho bạn.
             </p>
           </div>
         )}
@@ -353,16 +349,24 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
             <h3 className="text-base font-bold text-foreground pb-3 mb-4 border-b border-border flex items-center justify-between">
               <span>Sản Phẩm Trong Đơn Hàng ({order.items.length})</span>
               <span className="text-xs text-muted-foreground font-normal">
-                Tổng cộng: <strong className="text-foreground font-bold">{formatVND(totalAmount)}</strong>
+                Tổng cộng:{" "}
+                <strong className="text-foreground font-bold">{formatVND(totalAmount)}</strong>
               </span>
             </h3>
             <div className="divide-y divide-border/60">
               {order.items.map((item, index) => (
-                <div key={item.id || index} className="py-3.5 flex items-center justify-between gap-4">
+                <div
+                  key={item.id || index}
+                  className="py-3.5 flex items-center justify-between gap-4"
+                >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-foreground truncate">{item.productName}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{item.variantName || "Tiêu Chuẩn"}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Số lượng: x{item.quantity}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {item.variantName || "Tiêu Chuẩn"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Số lượng: x{item.quantity}
+                    </p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-sm font-bold text-primary">
@@ -384,12 +388,7 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
             href={`/order-tracking?order=${orderCode}`}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3.5 px-8 rounded-xl font-bold text-white bg-primary hover:bg-primary/90 transition-all shadow-md active:scale-95 text-sm cursor-pointer"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

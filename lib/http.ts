@@ -26,8 +26,7 @@ http.interceptors.response.use(
 
       // 1. Skip global session wipe & redirect for auth attempt endpoints (e.g. wrong login credentials)
       const isAuthEndpoint =
-        requestUrl.includes("/api/auth/login") ||
-        requestUrl.includes("/api/auth/register");
+        requestUrl.includes("/api/auth/login") || requestUrl.includes("/api/auth/register");
 
       if (!isAuthEndpoint && typeof window !== "undefined") {
         const pathname = window.location.pathname;
@@ -48,11 +47,7 @@ http.interceptors.response.use(
 
         const shouldRedirect = !isMeEndpoint || isProtectedPage;
 
-        if (
-          shouldRedirect &&
-          !pathname.startsWith("/login") &&
-          !pathname.startsWith("/register")
-        ) {
+        if (shouldRedirect && !pathname.startsWith("/login") && !pathname.startsWith("/register")) {
           window.location.replace(`/login?redirect=${encodeURIComponent(currentPath)}`);
         }
       }
@@ -61,8 +56,7 @@ http.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  },
+  }
 );
 
 export default http;
-

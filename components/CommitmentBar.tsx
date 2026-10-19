@@ -26,12 +26,8 @@ export default function CommitmentBar() {
               </svg>
             </div>
             <div>
-              <div className="font-semibold text-sm text-foreground">
-                Giao Hàng Nhanh 24h
-              </div>
-              <div className="text-xs text-muted-foreground mt-0.5">
-                Miễn phí đơn từ 500.000₫
-              </div>
+              <div className="font-semibold text-sm text-foreground">Giao Hàng Nhanh 24h</div>
+              <div className="text-xs text-muted-foreground mt-0.5">Miễn phí đơn từ 500.000₫</div>
             </div>
           </div>
 
@@ -53,12 +49,8 @@ export default function CommitmentBar() {
               </svg>
             </div>
             <div>
-              <div className="font-semibold text-sm text-foreground">
-                100% Chính Hãng
-              </div>
-              <div className="text-xs text-muted-foreground mt-0.5">
-                Nhập khẩu tem phụ rõ ràng
-              </div>
+              <div className="font-semibold text-sm text-foreground">100% Chính Hãng</div>
+              <div className="text-xs text-muted-foreground mt-0.5">Nhập khẩu tem phụ rõ ràng</div>
             </div>
           </div>
 
@@ -80,12 +72,8 @@ export default function CommitmentBar() {
               </svg>
             </div>
             <div>
-              <div className="font-semibold text-sm text-foreground">
-                Đổi Trả Trong 7 Ngày
-              </div>
-              <div className="text-xs text-muted-foreground mt-0.5">
-                Đổi size miễn phí tiện lợi
-              </div>
+              <div className="font-semibold text-sm text-foreground">Đổi Trả Trong 7 Ngày</div>
+              <div className="text-xs text-muted-foreground mt-0.5">Đổi size miễn phí tiện lợi</div>
             </div>
           </div>
 
@@ -117,9 +105,7 @@ export default function CommitmentBar() {
               </svg>
             </div>
             <div>
-              <div className="font-semibold text-sm text-foreground">
-                VietQR Tự Động Khớp Lệnh
-              </div>
+              <div className="font-semibold text-sm text-foreground">VietQR Tự Động Khớp Lệnh</div>
               <div className="text-xs text-muted-foreground mt-0.5">
                 Quét mã chuyển khoản chuẩn xác
               </div>

@@ -18,10 +18,8 @@ const variantStyles: Record<NonNullable<ButtonProps["variant"]>, string> = {
     "bg-transparent hover:bg-muted text-foreground font-semibold border border-border focus-visible:ring-primary",
   destructive:
     "bg-destructive hover:bg-destructive/90 text-white font-bold shadow-sm shadow-destructive/20 focus-visible:ring-destructive",
-  ghost:
-    "bg-transparent hover:bg-muted text-foreground font-medium focus-visible:ring-muted",
-  link:
-    "bg-transparent text-primary hover:underline font-semibold p-0 h-auto focus-visible:ring-0",
+  ghost: "bg-transparent hover:bg-muted text-foreground font-medium focus-visible:ring-muted",
+  link: "bg-transparent text-primary hover:underline font-semibold p-0 h-auto focus-visible:ring-0",
 };
 
 const sizeStyles: Record<NonNullable<ButtonProps["size"]>, string> = {

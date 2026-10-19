@@ -1,11 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { useAutoSync, SyncMessage } from "@/lib/sync";
 import { queryKeys } from "@/hooks/queries/queryKeys";
 import { useSession } from "@/hooks/queries/useSession";

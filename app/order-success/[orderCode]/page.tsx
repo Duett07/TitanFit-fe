@@ -14,20 +14,12 @@ export async function generateMetadata({
   };
 }
 
-async function OrderSuccessLoader({
-  params,
-}: {
-  params: Promise<{ orderCode: string }>;
-}) {
+async function OrderSuccessLoader({ params }: { params: Promise<{ orderCode: string }> }) {
   const { orderCode } = await params;
   return <OrderSuccessClient orderCode={orderCode} />;
 }
 
-export default function OrderSuccessPage({
-  params,
-}: {
-  params: Promise<{ orderCode: string }>;
-}) {
+export default function OrderSuccessPage({ params }: { params: Promise<{ orderCode: string }> }) {
   return (
     <Suspense
       fallback={

@@ -3,10 +3,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  UIProductDetail,
-  ProductVariantSKU,
-} from "@/data/products";
+import { UIProductDetail, ProductVariantSKU } from "@/data/products";
 import { formatVND } from "@/lib/format";
 import { useCartStore } from "@/stores/useCartStore";
 import productApiRequest from "@/apiRequest/product";
@@ -46,36 +43,39 @@ export default function ProductDetailClient({
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Fetch product from API
-  const loadProduct = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true);
+  const loadProduct = useCallback(
+    async (silent = false) => {
+      if (!silent) setLoading(true);
 
-    try {
-      const res = await productApiRequest.getProductBySlug(slug);
-      const data = res.data?.data;
-      if (data) {
-        const transformed = transformBackendProductDetail(data);
-        setProduct(transformed);
-        if (!silent) {
-          setSelectedImage(transformed.images[0] || transformed.image);
-          setSelectedOptions(getInitialOptions(transformed));
-          setQuantity(1);
+      try {
+        const res = await productApiRequest.getProductBySlug(slug);
+        const data = res.data?.data;
+        if (data) {
+          const transformed = transformBackendProductDetail(data);
+          setProduct(transformed);
+          if (!silent) {
+            setSelectedImage(transformed.images[0] || transformed.image);
+            setSelectedOptions(getInitialOptions(transformed));
+            setQuantity(1);
+          }
+          if (!silent) setLoading(false);
+          return;
         }
-        if (!silent) setLoading(false);
-        return;
-      }
 
-      if (!silent) {
-        setProduct(null);
-        setLoading(false);
+        if (!silent) {
+          setProduct(null);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("API fetch error via productApiRequest:", err);
+        if (!silent) {
+          setProduct(null);
+          setLoading(false);
+        }
       }
-    } catch (err) {
-      console.error("API fetch error via productApiRequest:", err);
-      if (!silent) {
-        setProduct(null);
-        setLoading(false);
-      }
-    }
-  }, [slug]);
+    },
+    [slug]
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -107,9 +107,7 @@ export default function ProductDetailClient({
 
     return (
       product.variants.find((v) => {
-        return Object.entries(selectedOptions).every(
-          ([key, val]) => v.options[key] === val
-        );
+        return Object.entries(selectedOptions).every(([key, val]) => v.options[key] === val);
       }) || product.variants[0]
     );
   }, [product, selectedOptions]);
@@ -223,7 +221,10 @@ export default function ProductDetailClient({
         <p className="text-sm text-muted-foreground mb-6">
           Sản phẩm với đường dẫn &ldquo;{slug}&rdquo; không tồn tại hoặc đã ngừng kinh doanh.
         </p>
-        <Link href="/products" className="inline-flex items-center px-6 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors">
+        <Link
+          href="/products"
+          className="inline-flex items-center px-6 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors"
+        >
           Quay Về Danh Sách Sản Phẩm
         </Link>
       </div>
@@ -268,7 +269,9 @@ export default function ProductDetailClient({
                       key={idx}
                       type="button"
                       className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
-                        isActive ? "border-primary shadow-sm" : "border-border hover:border-primary/50"
+                        isActive
+                          ? "border-primary shadow-sm"
+                          : "border-border hover:border-primary/50"
                       }`}
                       onClick={() => setSelectedImage(img)}
                       aria-label={`Xem ảnh ${idx + 1}`}
@@ -295,7 +298,10 @@ export default function ProductDetailClient({
               </span>
 
               <span className="font-mono text-xs text-muted-foreground">
-                SKU: <span className="text-foreground font-semibold">{currentVariant?.sku || "TITAN-SKU"}</span>
+                SKU:{" "}
+                <span className="text-foreground font-semibold">
+                  {currentVariant?.sku || "TITAN-SKU"}
+                </span>
               </span>
 
               {isOutOfStock ? (
@@ -363,7 +369,8 @@ export default function ProductDetailClient({
                       const isValOutOfStock = testVariant && testVariant.stock === 0;
 
                       // Add price info if weight option group
-                      const isWeightGroup = group.name.includes("Khối lượng") || group.name.includes("Trọng Lượng");
+                      const isWeightGroup =
+                        group.name.includes("Khối lượng") || group.name.includes("Trọng Lượng");
 
                       return (
                         <button
@@ -374,9 +381,7 @@ export default function ProductDetailClient({
                             isSelected
                               ? "bg-primary text-white border-primary shadow-xs font-bold"
                               : "border-border bg-card text-foreground hover:border-primary/50"
-                          } ${
-                            isValOutOfStock && !isSelected ? "opacity-40" : ""
-                          }`}
+                          } ${isValOutOfStock && !isSelected ? "opacity-40" : ""}`}
                         >
                           {val}
                           {isWeightGroup && testVariant ? ` • ${formatVND(testVariant.price)}` : ""}
@@ -437,14 +442,18 @@ export default function ProductDetailClient({
             {product.specs && product.specs.length > 0 && (
               <div className="mt-7 p-5 rounded-2xl bg-card border border-border">
                 <div className="font-semibold text-xs text-foreground uppercase tracking-wider mb-3">
-                  {isApparel ? "Thông Số Chất Liệu & Bảo Hành" : "Thành Phần Dinh Dưỡng Mỗi Khẩu Phần"}
+                  {isApparel
+                    ? "Thông Số Chất Liệu & Bảo Hành"
+                    : "Thành Phần Dinh Dưỡng Mỗi Khẩu Phần"}
                 </div>
                 <table className="w-full text-xs">
                   <tbody>
                     {product.specs.map((spec, i) => (
                       <tr key={i} className="border-b border-border/60 last:border-0">
                         <td className="py-2.5 text-muted-foreground">{spec.label}</td>
-                        <td className="py-2.5 text-right font-medium text-foreground">{spec.value}</td>
+                        <td className="py-2.5 text-right font-medium text-foreground">
+                          {spec.value}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

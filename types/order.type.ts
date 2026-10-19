@@ -1,18 +1,9 @@
 export type PaymentMethod = "COD" | "VIETQR";
 
 export type OrderStatus =
-  | "PENDING"
-  | "CONFIRMED"
-  | "SHIPPING"
-  | "DELIVERED"
-  | "COMPLETED"
-  | "CANCELLED";
+  "PENDING" | "CONFIRMED" | "SHIPPING" | "DELIVERED" | "COMPLETED" | "CANCELLED";
 
-export type UpdatableOrderStatus =
-  | "CONFIRMED"
-  | "SHIPPING"
-  | "COMPLETED"
-  | "CANCELLED";
+export type UpdatableOrderStatus = "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED";
 
 export type PaymentStatus = "UNPAID" | "PAID";
 

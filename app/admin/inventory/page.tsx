@@ -64,8 +64,8 @@ export default function AdminInventoryPage() {
       if (!isSilent) {
         setErrorMessage(
           errorObj.response?.data?.message ||
-          errorObj.message ||
-          "Không thể tải dữ liệu tồn kho từ backend."
+            errorObj.message ||
+            "Không thể tải dữ liệu tồn kho từ backend."
         );
       }
     } finally {
@@ -203,21 +203,39 @@ export default function AdminInventoryPage() {
               {isLoading ? (
                 Array.from({ length: 4 }).map((_, idx) => (
                   <tr key={`sk-${idx}`} className="animate-pulse">
-                    <td className="py-3.5 px-4"><div className="h-4 bg-muted rounded w-20" /></td>
-                    <td className="py-3.5 px-4"><div className="h-4 bg-muted rounded w-44" /></td>
-                    <td className="py-3.5 px-4"><div className="h-4 bg-muted rounded w-28" /></td>
-                    <td className="py-3.5 px-4"><div className="h-4 bg-muted rounded w-16" /></td>
-                    <td className="py-3.5 px-4"><div className="h-4 bg-muted rounded w-12" /></td>
-                    <td className="py-3.5 px-4"><div className="h-5 bg-muted rounded-full w-20" /></td>
-                    <td className="py-3.5 px-4 text-right"><div className="h-6 bg-muted rounded w-12 ml-auto" /></td>
+                    <td className="py-3.5 px-4">
+                      <div className="h-4 bg-muted rounded w-20" />
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="h-4 bg-muted rounded w-44" />
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="h-4 bg-muted rounded w-28" />
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="h-4 bg-muted rounded w-16" />
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="h-4 bg-muted rounded w-12" />
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="h-5 bg-muted rounded-full w-20" />
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="h-6 bg-muted rounded w-12 ml-auto" />
+                    </td>
                   </tr>
                 ))
               ) : alertItems.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-muted-foreground">
                     <div className="text-2xl mb-2">🎉</div>
-                    <p className="font-semibold text-sm text-foreground">Không có SKU nào dưới ngưỡng cảnh báo</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Tất cả các mặt hàng hiện đều có lượng tồn kho an toàn.</p>
+                    <p className="font-semibold text-sm text-foreground">
+                      Không có SKU nào dưới ngưỡng cảnh báo
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Tất cả các mặt hàng hiện đều có lượng tồn kho an toàn.
+                    </p>
                   </td>
                 </tr>
               ) : (
@@ -229,12 +247,8 @@ export default function AdminInventoryPage() {
                     <td className="py-3.5 px-4 font-semibold text-foreground">
                       {item.productName}
                     </td>
-                    <td className="py-3.5 px-4 text-muted-foreground">
-                      {item.variantName}
-                    </td>
-                    <td className="py-3.5 px-4 font-mono">
-                      {formatVND(item.price)}
-                    </td>
+                    <td className="py-3.5 px-4 text-muted-foreground">{item.variantName}</td>
+                    <td className="py-3.5 px-4 font-mono">{formatVND(item.price)}</td>
                     <td className="py-3.5 px-4 font-black text-sm">
                       <span className={item.stock === 0 ? "text-rose-600" : "text-amber-500"}>
                         {item.stock}

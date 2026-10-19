@@ -6,10 +6,6 @@ export const metadata: Metadata = {
     "Danh mục trang phục thể thao dry-fit, phụ kiện tập gym và thực phẩm bổ sung dinh dưỡng thể hình cao cấp chính hãng tại TITANFIT.",
 };
 
-export default function ProductsLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ProductsLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

@@ -83,9 +83,7 @@ export const Modal: React.FC<ModalProps> = ({
                   {title}
                 </h3>
               )}
-              {description && (
-                <p className="text-xs text-muted-foreground mt-1">{description}</p>
-              )}
+              {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
             </div>
             {showCloseButton && (
               <button

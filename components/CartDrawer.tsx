@@ -69,11 +69,7 @@ export default function CartDrawer() {
       }`}
     >
       {/* Background click to close */}
-      <div
-        className="absolute inset-0"
-        onClick={closeDrawer}
-        aria-hidden="true"
-      />
+      <div className="absolute inset-0" onClick={closeDrawer} aria-hidden="true" />
 
       <div
         className={`absolute right-0 top-0 bottom-0 w-full max-w-[400px] bg-card border-l border-border flex flex-col shadow-2xl transition-transform duration-300 ease-out ${
@@ -185,7 +181,10 @@ export default function CartDrawer() {
                   </div>
                   <div className="flex-1 min-w-0 flex flex-col justify-between">
                     <div className="flex justify-between items-start gap-2">
-                      <div className="text-xs font-semibold text-foreground truncate" title={item.name}>
+                      <div
+                        className="text-xs font-semibold text-foreground truncate"
+                        title={item.name}
+                      >
                         {item.name}
                       </div>
                       <button
@@ -198,10 +197,14 @@ export default function CartDrawer() {
                         ✕
                       </button>
                     </div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">{item.variantSummary}</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">
+                      {item.variantSummary}
+                    </div>
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-bold text-primary">{formatVND(item.price)}</span>
+                        <span className="text-xs font-bold text-primary">
+                          {formatVND(item.price)}
+                        </span>
                         {isOutOfStock && (
                           <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-destructive/15 text-destructive border border-destructive/25">
                             Hết hàng

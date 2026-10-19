@@ -2,13 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
-import {
-  AlertCircle,
-  ArrowLeft,
-  RefreshCw,
-  Search,
-  X,
-} from "lucide-react";
+import { AlertCircle, ArrowLeft, RefreshCw, Search, X } from "lucide-react";
 import orderApiRequest from "@/apiRequest/order";
 import { formatVND } from "@/lib/format";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
@@ -65,94 +59,103 @@ export default function AdminOrdersPage() {
   }, [toastMessage]);
 
   // Map Backend OrderResponse to AdminOrder
-  const mapOrder = useCallback((o: {
-    id: string;
-    orderCode: string;
-    customerName: string;
-    phone: string;
-    shippingAddress: string;
-    note?: string;
-    totalAmount: number;
-    orderStatus: string;
-    paymentMethod: string;
-    paymentStatus: string;
-    items: Array<{
-      productName: string;
-      variantName: string;
-      price: number;
-      quantity: number;
-    }>;
-    createdAt: string;
-  }): AdminOrder => {
-    const rawStatus = (o.orderStatus || "PENDING").toUpperCase();
-    const status = (["PENDING", "CONFIRMED", "SHIPPING", "COMPLETED", "CANCELLED"].includes(rawStatus)
-      ? rawStatus
-      : "PENDING") as AdminOrder["status"];
+  const mapOrder = useCallback(
+    (o: {
+      id: string;
+      orderCode: string;
+      customerName: string;
+      phone: string;
+      shippingAddress: string;
+      note?: string;
+      totalAmount: number;
+      orderStatus: string;
+      paymentMethod: string;
+      paymentStatus: string;
+      items: Array<{
+        productName: string;
+        variantName: string;
+        price: number;
+        quantity: number;
+      }>;
+      createdAt: string;
+    }): AdminOrder => {
+      const rawStatus = (o.orderStatus || "PENDING").toUpperCase();
+      const status = (
+        ["PENDING", "CONFIRMED", "SHIPPING", "COMPLETED", "CANCELLED"].includes(rawStatus)
+          ? rawStatus
+          : "PENDING"
+      ) as AdminOrder["status"];
 
-    let paymentStatusLabel = o.paymentStatus === "PAID" ? "Đã thanh toán" : "Chưa thanh toán";
-    if (o.paymentMethod === "VIETQR") {
-      paymentStatusLabel = o.paymentStatus === "PAID" ? "Đã thanh toán (Napas247)" : "Chờ đối soát";
-    } else if (o.paymentMethod === "COD") {
-      paymentStatusLabel = status === "COMPLETED" ? "Đã thu tiền mặt" : "Chờ thu tiền mặt";
-    }
+      let paymentStatusLabel = o.paymentStatus === "PAID" ? "Đã thanh toán" : "Chưa thanh toán";
+      if (o.paymentMethod === "VIETQR") {
+        paymentStatusLabel =
+          o.paymentStatus === "PAID" ? "Đã thanh toán (Napas247)" : "Chờ đối soát";
+      } else if (o.paymentMethod === "COD") {
+        paymentStatusLabel = status === "COMPLETED" ? "Đã thu tiền mặt" : "Chờ thu tiền mặt";
+      }
 
-    if (status === "CANCELLED") {
-      paymentStatusLabel = "Đã hủy đơn";
-    }
+      if (status === "CANCELLED") {
+        paymentStatusLabel = "Đã hủy đơn";
+      }
 
-    return {
-      id: o.id,
-      code: o.orderCode,
-      customer: o.customerName || "Khách Hàng",
-      phone: o.phone || "---",
-      address: o.shippingAddress || "---",
-      itemsSummary:
-        o.items && o.items.length > 0
-          ? o.items.map((it) => it.productName).join(" + ")
-          : "Đơn hàng TITANFIT",
-      itemsList: (o.items || []).map((it) => ({
-        name: it.productName || "Sản phẩm",
-        variant: it.variantName || "Tiêu chuẩn",
-        qty: it.quantity || 1,
-        price: Number(it.price) || 0,
-      })),
-      total: Number(o.totalAmount) || 0,
-      paymentMethod: (o.paymentMethod === "VIETQR" ? "VIETQR" : "COD") as PaymentMethod,
-      paymentStatus: (o.paymentStatus === "PAID" ? "PAID" : "UNPAID") as PaymentStatus,
-      paymentStatusLabel,
-      status,
-      time: o.createdAt ? new Date(o.createdAt).toLocaleString("vi-VN") : "---",
-      createdAt: o.createdAt,
-      note: o.note || "",
-    };
-  }, []);
+      return {
+        id: o.id,
+        code: o.orderCode,
+        customer: o.customerName || "Khách Hàng",
+        phone: o.phone || "---",
+        address: o.shippingAddress || "---",
+        itemsSummary:
+          o.items && o.items.length > 0
+            ? o.items.map((it) => it.productName).join(" + ")
+            : "Đơn hàng TITANFIT",
+        itemsList: (o.items || []).map((it) => ({
+          name: it.productName || "Sản phẩm",
+          variant: it.variantName || "Tiêu chuẩn",
+          qty: it.quantity || 1,
+          price: Number(it.price) || 0,
+        })),
+        total: Number(o.totalAmount) || 0,
+        paymentMethod: (o.paymentMethod === "VIETQR" ? "VIETQR" : "COD") as PaymentMethod,
+        paymentStatus: (o.paymentStatus === "PAID" ? "PAID" : "UNPAID") as PaymentStatus,
+        paymentStatusLabel,
+        status,
+        time: o.createdAt ? new Date(o.createdAt).toLocaleString("vi-VN") : "---",
+        createdAt: o.createdAt,
+        note: o.note || "",
+      };
+    },
+    []
+  );
 
   // Fetch real orders from Spring Boot Backend
-  const fetchOrders = useCallback(async (isSilent = false) => {
-    if (!isSilent) {
-      setIsLoading(true);
-      setFetchError(null);
-    }
-    try {
-      const res = await orderApiRequest.getAllOrders();
-      const rawData = res.data?.data || [];
-      const mapped = rawData.map(mapOrder);
-      setOrders(mapped);
-    } catch (err: unknown) {
-      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
-      const message =
-        errorObj.response?.data?.message ||
-        errorObj.message ||
-        "Không thể tải danh sách đơn hàng từ máy chủ. Vui lòng kiểm tra kết nối.";
+  const fetchOrders = useCallback(
+    async (isSilent = false) => {
       if (!isSilent) {
-        setFetchError(message);
+        setIsLoading(true);
+        setFetchError(null);
       }
-    } finally {
-      if (!isSilent) {
-        setIsLoading(false);
+      try {
+        const res = await orderApiRequest.getAllOrders();
+        const rawData = res.data?.data || [];
+        const mapped = rawData.map(mapOrder);
+        setOrders(mapped);
+      } catch (err: unknown) {
+        const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
+        const message =
+          errorObj.response?.data?.message ||
+          errorObj.message ||
+          "Không thể tải danh sách đơn hàng từ máy chủ. Vui lòng kiểm tra kết nối.";
+        if (!isSilent) {
+          setFetchError(message);
+        }
+      } finally {
+        if (!isSilent) {
+          setIsLoading(false);
+        }
       }
-    }
-  }, [mapOrder]);
+    },
+    [mapOrder]
+  );
 
   useEffect(() => {
     let ignore = false;
@@ -308,9 +311,7 @@ export default function AdminOrdersPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-border">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black tracking-tight text-foreground">
-              Quản Lý Đơn Hàng
-            </h1>
+            <h1 className="text-2xl font-black tracking-tight text-foreground">Quản Lý Đơn Hàng</h1>
             <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/25">
               {orders.length} đơn thực tế
             </span>
@@ -378,9 +379,7 @@ export default function AdminOrdersPage() {
           <span>Tất cả</span>
           <span
             className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
-              statusFilter === "ALL"
-                ? "bg-white/20 text-white"
-                : "bg-muted text-foreground"
+              statusFilter === "ALL" ? "bg-white/20 text-white" : "bg-muted text-foreground"
             }`}
           >
             {counts.ALL}
@@ -520,8 +519,8 @@ export default function AdminOrdersPage() {
         </div>
 
         <div className="text-xs text-muted-foreground self-end sm:self-auto">
-          Hiển thị{" "}
-          <strong className="text-foreground font-bold">{filteredOrders.length}</strong> / {orders.length} đơn hàng thực tế
+          Hiển thị <strong className="text-foreground font-bold">{filteredOrders.length}</strong> /{" "}
+          {orders.length} đơn hàng thực tế
         </div>
       </div>
 
@@ -637,11 +636,12 @@ export default function AdminOrdersPage() {
                             ord.paymentStatus === "PAID"
                               ? "text-emerald-600 dark:text-emerald-400"
                               : ord.status === "CANCELLED"
-                              ? "text-rose-500"
-                              : "text-amber-500"
+                                ? "text-rose-500"
+                                : "text-amber-500"
                           }`}
                         >
-                          {ord.paymentStatusLabel || (ord.paymentStatus === "PAID" ? "Đã thanh toán" : "Chưa thanh toán")}
+                          {ord.paymentStatusLabel ||
+                            (ord.paymentStatus === "PAID" ? "Đã thanh toán" : "Chưa thanh toán")}
                         </span>
                       </div>
                     </td>
@@ -673,12 +673,15 @@ export default function AdminOrdersPage() {
                             onChange={(e) =>
                               handleUpdateStatus(
                                 ord.code,
-                                e.target.value as "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED"
+                                e.target.value as
+                                  "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED"
                               )
                             }
                             className="h-7 text-[11px] rounded-lg bg-background border border-border px-2 text-foreground focus:outline-none focus:border-primary cursor-pointer disabled:opacity-50"
                           >
-                            <option value="PENDING" disabled>⏳ Chờ duyệt</option>
+                            <option value="PENDING" disabled>
+                              ⏳ Chờ duyệt
+                            </option>
                             <option value="CONFIRMED">📦 Xác nhận đơn</option>
                             <option value="SHIPPING">🚚 Đang giao hàng</option>
                             <option value="COMPLETED">✅ Giao thành công</option>
@@ -735,7 +738,11 @@ export default function AdminOrdersPage() {
                             type="button"
                             disabled={updatingCode === ord.code}
                             onClick={() => {
-                              if (confirm(`Bạn có chắc chắn muốn HỦY đơn #${ord.code}?\nHệ thống sẽ tự động hoàn trả lại số lượng tồn kho cho các sản phẩm trong đơn!`)) {
+                              if (
+                                confirm(
+                                  `Bạn có chắc chắn muốn HỦY đơn #${ord.code}?\nHệ thống sẽ tự động hoàn trả lại số lượng tồn kho cho các sản phẩm trong đơn!`
+                                )
+                              ) {
                                 handleUpdateStatus(ord.code, "CANCELLED");
                               }
                             }}
@@ -794,9 +801,7 @@ export default function AdminOrdersPage() {
                 <p className="text-muted-foreground font-mono mt-0.5">
                   Số điện thoại: <strong>{selectedOrder.phone}</strong>
                 </p>
-                <p className="text-muted-foreground mt-1">
-                  Địa chỉ: {selectedOrder.address}
-                </p>
+                <p className="text-muted-foreground mt-1">Địa chỉ: {selectedOrder.address}</p>
               </div>
 
               <div>
@@ -814,7 +819,10 @@ export default function AdminOrdersPage() {
                     {selectedOrder.paymentMethod}
                   </span>
                   <span className="text-muted-foreground font-medium">
-                    {selectedOrder.paymentStatusLabel || (selectedOrder.paymentStatus === "PAID" ? "Đã thanh toán" : "Chưa thanh toán")}
+                    {selectedOrder.paymentStatusLabel ||
+                      (selectedOrder.paymentStatus === "PAID"
+                        ? "Đã thanh toán"
+                        : "Chưa thanh toán")}
                   </span>
                 </div>
 
@@ -848,15 +856,9 @@ export default function AdminOrdersPage() {
                   <tbody className="divide-y divide-border/60">
                     {selectedOrder.itemsList.map((item, idx) => (
                       <tr key={idx} className="hover:bg-muted/20">
-                        <td className="py-2.5 px-3 font-semibold text-foreground">
-                          {item.name}
-                        </td>
-                        <td className="py-2.5 px-3 text-muted-foreground">
-                          {item.variant}
-                        </td>
-                        <td className="py-2.5 px-3 font-mono">
-                          {formatVND(item.price)}
-                        </td>
+                        <td className="py-2.5 px-3 font-semibold text-foreground">{item.name}</td>
+                        <td className="py-2.5 px-3 text-muted-foreground">{item.variant}</td>
+                        <td className="py-2.5 px-3 font-mono">{formatVND(item.price)}</td>
                         <td className="py-2.5 px-3 text-center font-bold text-foreground">
                           {item.qty}
                         </td>
@@ -916,7 +918,11 @@ export default function AdminOrdersPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (confirm(`Bạn có chắc chắn muốn HỦY đơn #${selectedOrder.code}?\nTồn kho sẽ được cộng lại tự động!`)) {
+                      if (
+                        confirm(
+                          `Bạn có chắc chắn muốn HỦY đơn #${selectedOrder.code}?\nTồn kho sẽ được cộng lại tự động!`
+                        )
+                      ) {
                         handleUpdateStatus(selectedOrder.code, "CANCELLED");
                       }
                     }}

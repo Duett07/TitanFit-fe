@@ -59,7 +59,9 @@ export const productApiRequest = {
     active?: boolean
   ): Promise<AxiosResponse<ApiResponse<ProductSummaryDto>>> => {
     const query = active !== undefined ? `?active=${active}` : "";
-    return http.patch<ApiResponse<ProductSummaryDto>>(`/api/admin/products/${id}/toggle-active${query}`);
+    return http.patch<ApiResponse<ProductSummaryDto>>(
+      `/api/admin/products/${id}/toggle-active${query}`
+    );
   },
 
   adminCreateProduct: (

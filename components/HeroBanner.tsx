@@ -27,8 +27,8 @@ export default function HeroBanner() {
                 </h1>
 
                 <p className="text-muted-foreground text-sm sm:text-base max-w-[480px] mb-7 leading-relaxed">
-                  Hệ thống bán lẻ chuyên sâu các dòng Whey Isolate tinh khiết, Creatine
-                  tăng sức mạnh cùng trang phục tập gym co giãn 4 chiều chuyên dụng.
+                  Hệ thống bán lẻ chuyên sâu các dòng Whey Isolate tinh khiết, Creatine tăng sức
+                  mạnh cùng trang phục tập gym co giãn 4 chiều chuyên dụng.
                 </p>
 
                 <div className="flex flex-wrap gap-3">

@@ -1,31 +1,11 @@
 import React from "react";
-import {
-  Check,
-  Truck,
-  CheckCircle2,
-  XCircle,
-  AlertCircle,
-  AlertTriangle,
-} from "lucide-react";
+import { Check, Truck, CheckCircle2, XCircle, AlertCircle, AlertTriangle } from "lucide-react";
 
-export type OrderStatusType =
-  | "PENDING"
-  | "CONFIRMED"
-  | "SHIPPING"
-  | "DELIVERED"
-  | "CANCELLED";
+export type OrderStatusType = "PENDING" | "CONFIRMED" | "SHIPPING" | "DELIVERED" | "CANCELLED";
 
-export type InventoryStatusType =
-  | "ACTIVE"
-  | "INACTIVE"
-  | "LOW_STOCK"
-  | "OUT_OF_STOCK";
+export type InventoryStatusType = "ACTIVE" | "INACTIVE" | "LOW_STOCK" | "OUT_OF_STOCK";
 
-export type BadgeVariant =
-  | "order"
-  | "inventory"
-  | "payment"
-  | "custom";
+export type BadgeVariant = "order" | "inventory" | "payment" | "custom";
 
 export interface StatusBadgeProps {
   status: string;
@@ -47,7 +27,10 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   const normalizedStatus = (status || "").toUpperCase();
 
   // 1. Order Statuses
-  if (variant === "order" || ["PENDING", "CONFIRMED", "SHIPPING", "DELIVERED", "CANCELLED"].includes(normalizedStatus)) {
+  if (
+    variant === "order" ||
+    ["PENDING", "CONFIRMED", "SHIPPING", "DELIVERED", "CANCELLED"].includes(normalizedStatus)
+  ) {
     switch (normalizedStatus) {
       case "PENDING":
         return (
@@ -111,7 +94,10 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   }
 
   // 2. Inventory / Stock Statuses
-  if (variant === "inventory" || ["ACTIVE", "INACTIVE", "LOW_STOCK", "OUT_OF_STOCK"].includes(normalizedStatus)) {
+  if (
+    variant === "inventory" ||
+    ["ACTIVE", "INACTIVE", "LOW_STOCK", "OUT_OF_STOCK"].includes(normalizedStatus)
+  ) {
     switch (normalizedStatus) {
       case "ACTIVE":
         return (

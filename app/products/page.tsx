@@ -4,12 +4,7 @@ import React, { Suspense, useState, useTransition, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Product,
-  ProductCategory,
-  PriceFilterKey,
-  SortOptionKey,
-} from "@/data/products";
+import { Product, ProductCategory, PriceFilterKey, SortOptionKey } from "@/data/products";
 import { formatVND } from "@/lib/format";
 import productApiRequest from "@/apiRequest/product";
 import { transformBackendProductSummary } from "@/lib/backend-adapter";
@@ -19,7 +14,15 @@ import { useAutoSync } from "@/lib/sync";
 function ProductsLoading() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 min-h-[50vh] flex items-center justify-center gap-3 text-muted-foreground">
-      <svg className="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        className="animate-spin"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="10" />
       </svg>
       <span className="text-sm font-medium">Đang tải danh mục sản phẩm TITANFIT...</span>
@@ -297,7 +300,14 @@ function ProductsContent() {
             onClick={() => setIsMobileFilterOpen(true)}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-border text-xs font-semibold hover:bg-muted transition-colors text-foreground"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
             </svg>
             <span>Bộ Lọc</span>
@@ -323,9 +333,7 @@ function ProductsContent() {
           <aside className="hidden md:block bg-card border border-border rounded-2xl p-5 sticky top-24 self-start">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-foreground">
-                  Bộ Lọc Tìm Kiếm
-                </span>
+                <span className="text-sm font-bold text-foreground">Bộ Lọc Tìm Kiếm</span>
                 {activeFiltersCount > 0 && (
                   <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-primary text-white">
                     {activeFiltersCount}
@@ -345,7 +353,9 @@ function ProductsContent() {
 
             {/* Phân loại danh mục */}
             <div className="py-4 border-b border-border">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Phân Loại Danh Mục</div>
+              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                Phân Loại Danh Mục
+              </div>
               <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                 <input
                   type="radio"
@@ -378,7 +388,9 @@ function ProductsContent() {
                   onChange={() => handleCategoryChange("supplements")}
                   className="accent-primary"
                 />
-                <span className={activeCategory === "supplements" ? "font-bold text-foreground" : ""}>
+                <span
+                  className={activeCategory === "supplements" ? "font-bold text-foreground" : ""}
+                >
                   Thực phẩm bổ sung ({categoryCounts.supplements})
                 </span>
               </label>
@@ -386,7 +398,9 @@ function ProductsContent() {
 
             {/* Lọc theo khoảng giá */}
             <div className="py-4 border-b border-border">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Khoảng Giá</div>
+              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                Khoảng Giá
+              </div>
               <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                 <input
                   type="radio"
@@ -456,7 +470,14 @@ function ProductsContent() {
                 onClick={handleResetFilters}
                 className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border text-xs font-medium hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
                   <path d="M21 3v5h-5" />
                   <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
@@ -522,9 +543,7 @@ function ProductsContent() {
 
               {/* Thanh chọn sắp xếp */}
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">
-                  Sắp xếp:
-                </span>
+                <span className="text-xs text-muted-foreground">Sắp xếp:</span>
                 <select
                   value={activeSort}
                   onChange={handleSortChange}
@@ -608,7 +627,8 @@ function ProductsContent() {
                   Không tìm thấy sản phẩm nào
                 </h3>
                 <p className="text-sm text-muted-foreground max-w-md leading-relaxed mb-6">
-                  Không có sản phẩm nào phù hợp với danh mục hoặc khoảng giá bạn đã chọn. Hãy thử nới lỏng bộ lọc hoặc đặt lại bộ lọc.
+                  Không có sản phẩm nào phù hợp với danh mục hoặc khoảng giá bạn đã chọn. Hãy thử
+                  nới lỏng bộ lọc hoặc đặt lại bộ lọc.
                 </p>
                 <button
                   type="button"
@@ -638,9 +658,7 @@ function ProductsContent() {
                   const discountPercent =
                     product.originalPrice && product.originalPrice > product.price
                       ? Math.round(
-                          ((product.originalPrice - product.price) /
-                            product.originalPrice) *
-                            100
+                          ((product.originalPrice - product.price) / product.originalPrice) * 100
                         )
                       : null;
 
@@ -661,7 +679,10 @@ function ProductsContent() {
                           </span>
                         ) : null}
 
-                        <Link href={`/products/${product.slug}`} className="block w-full h-full relative">
+                        <Link
+                          href={`/products/${product.slug}`}
+                          className="block w-full h-full relative"
+                        >
                           <Image
                             src={product.image}
                             alt={product.name}
@@ -688,9 +709,13 @@ function ProductsContent() {
 
                         {/* Hàng giá bán dạng xxx.xxx ₫ */}
                         <div className="flex items-baseline gap-2 mt-auto mb-3">
-                          <span className="text-base font-bold text-primary">{formatVND(product.price)}</span>
+                          <span className="text-base font-bold text-primary">
+                            {formatVND(product.price)}
+                          </span>
                           {product.originalPrice && product.originalPrice > product.price && (
-                            <span className="text-xs text-muted-foreground line-through">{formatVND(product.originalPrice)}</span>
+                            <span className="text-xs text-muted-foreground line-through">
+                              {formatVND(product.originalPrice)}
+                            </span>
                           )}
                         </div>
 
@@ -734,11 +759,7 @@ function ProductsContent() {
 
       {/* MOBILE FILTER DRAWER / SHEET */}
       {isMobileFilterOpen && (
-        <div
-          className="fixed inset-0 z-50 flex"
-          role="dialog"
-          aria-modal="true"
-        >
+        <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true">
           {/* Overlay backdrop */}
           <div
             className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
@@ -746,11 +767,11 @@ function ProductsContent() {
           />
 
           {/* Drawer content */}
-          <div
-            className="relative ml-auto w-full max-w-xs h-full bg-background border-l border-border p-5 flex flex-col z-10 shadow-2xl animate-in slide-in-from-right duration-200"
-          >
+          <div className="relative ml-auto w-full max-w-xs h-full bg-background border-l border-border p-5 flex flex-col z-10 shadow-2xl animate-in slide-in-from-right duration-200">
             <div className="flex items-center justify-between pb-4 border-b border-border">
-              <h3 className="font-heading font-semibold text-base text-foreground">Bộ Lọc Sản Phẩm</h3>
+              <h3 className="font-heading font-semibold text-base text-foreground">
+                Bộ Lọc Sản Phẩm
+              </h3>
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(false)}
@@ -763,7 +784,9 @@ function ProductsContent() {
             <div className="flex-1 overflow-y-auto py-4 space-y-6">
               {/* Danh mục */}
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Phân Loại Danh Mục</div>
+                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                  Phân Loại Danh Mục
+                </div>
                 <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                   <input
                     type="radio"
@@ -798,7 +821,9 @@ function ProductsContent() {
 
               {/* Khoảng giá */}
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Khoảng Giá</div>
+                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                  Khoảng Giá
+                </div>
                 <label className="flex items-center gap-2.5 text-sm cursor-pointer select-none py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                   <input
                     type="radio"

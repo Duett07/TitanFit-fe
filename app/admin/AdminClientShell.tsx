@@ -175,7 +175,14 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
       label: "Tổng Quan",
       href: "/admin",
       icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <rect width="7" height="9" x="3" y="3" rx="1" />
           <rect width="7" height="5" x="14" y="3" rx="1" />
           <rect width="7" height="9" x="14" y="12" rx="1" />
@@ -189,23 +196,38 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
       label: "Quản Lý Đơn Hàng",
       href: "/admin/orders",
       icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
           <path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1Z" />
         </svg>
       ),
-      badge: pendingCount > 0 ? (
-        <span className="ml-auto text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/15 text-primary">
-          {pendingCount}
-        </span>
-      ) : null,
+      badge:
+        pendingCount > 0 ? (
+          <span className="ml-auto text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/15 text-primary">
+            {pendingCount}
+          </span>
+        ) : null,
       isActive: pathname.startsWith("/admin/orders"),
     },
     {
       label: "Quản Lý Sản Phẩm",
       href: "/admin/products",
       icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <path d="m7.5 4.27 9 5.15" />
           <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
           <path d="m3.3 7 8.7 5 8.7-5" />
@@ -219,7 +241,14 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
       label: "Tồn Kho Cảnh Báo",
       href: "/admin/inventory",
       icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <line x1="8" x2="21" y1="6" y2="6" />
           <line x1="8" x2="21" y1="12" y2="12" />
           <line x1="8" x2="21" y1="18" y2="18" />
@@ -228,11 +257,12 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
           <line x1="3" x2="3.01" y1="18" y2="18" />
         </svg>
       ),
-      badge: lowStockCount > 0 ? (
-        <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
-          <span>⚠️</span> {lowStockCount} SKU
-        </span>
-      ) : null,
+      badge:
+        lowStockCount > 0 ? (
+          <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
+            <span>⚠️</span> {lowStockCount} SKU
+          </span>
+        ) : null,
       isActive: pathname.startsWith("/admin/inventory"),
     },
   ];
@@ -267,7 +297,14 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
             onClick={() => setIsMobileSidebarOpen(false)}
             aria-label="Đóng Menu"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M18 6 6 18" />
               <path d="m6 6 12 12" />
             </svg>
@@ -290,7 +327,9 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary border border-transparent"
               }`}
             >
-              <span className={`shrink-0 ${item.isActive ? "text-primary" : "text-muted-foreground"}`}>
+              <span
+                className={`shrink-0 ${item.isActive ? "text-primary" : "text-muted-foreground"}`}
+              >
                 {item.icon}
               </span>
               <span className="truncate">{item.label}</span>
@@ -309,13 +348,30 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                 <polyline points="9 22 9 12 15 12 15 22" />
               </svg>
               <span>Xem Website Buyer</span>
-              <svg className="ml-auto w-3.5 h-3.5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              <svg
+                className="ml-auto w-3.5 h-3.5 text-muted-foreground"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
               </svg>
             </Link>
           </div>
@@ -342,7 +398,14 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
             onClick={handleLogout}
             className="w-full h-9 rounded-xl border border-destructive/30 hover:border-destructive text-destructive hover:bg-destructive/10 text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
               <polyline points="16 17 21 12 16 7" />
               <line x1="21" x2="9" y1="12" y2="12" />
@@ -364,7 +427,14 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
               onClick={() => setIsMobileSidebarOpen(true)}
               aria-label="Mở Menu Quản Trị"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <line x1="3" x2="21" y1="6" y2="6" />
                 <line x1="3" x2="21" y1="12" y2="12" />
                 <line x1="3" x2="21" y1="18" y2="18" />
@@ -395,7 +465,14 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
               aria-label="Đổi giao diện"
             >
               {theme === "dark" ? (
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <circle cx="12" cy="12" r="4" />
                   <path d="M12 2v2" />
                   <path d="M12 20v2" />
@@ -407,7 +484,14 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
                   <path d="m19.07 4.93-1.41 1.41" />
                 </svg>
               ) : (
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
                 </svg>
               )}
@@ -423,7 +507,14 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
                 title={`Thông báo hệ thống (${unreadCount} mới)`}
                 aria-label="Thông báo"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
                   <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
                 </svg>
@@ -478,14 +569,16 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
                             notif.type === "order"
                               ? "bg-primary/15 text-primary"
                               : notif.type === "inventory"
-                              ? "bg-amber-500/15 text-amber-500"
-                              : "bg-emerald-500/15 text-emerald-500"
+                                ? "bg-amber-500/15 text-amber-500"
+                                : "bg-emerald-500/15 text-emerald-500"
                           }`}
                         >
                           {notif.type === "order" ? "📦" : notif.type === "inventory" ? "⚠️" : "💰"}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-foreground truncate">{notif.title}</p>
+                          <p className="text-xs font-bold text-foreground truncate">
+                            {notif.title}
+                          </p>
                           <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
                             {notif.description}
                           </p>
@@ -519,7 +612,14 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
               className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border bg-background hover:bg-secondary text-xs font-semibold text-foreground transition-colors"
             >
               <span>Xem Storefront</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M15 3h6v6" />
                 <path d="M10 14 21 3" />
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
@@ -539,9 +639,7 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background overflow-y-auto">
-          {children}
-        </main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background overflow-y-auto">{children}</main>
       </div>
     </div>
   );
