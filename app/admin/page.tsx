@@ -9,6 +9,7 @@ import { PaymentMethod, OrderStatus, PaymentStatus } from "@/types/order.type";
 import { formatVND } from "@/lib/format";
 import { getErrorMessage } from "@/lib/error";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
+import { ConfirmModal } from "@/components/ui";
 
 interface UrgentOrder {
   id: string;
@@ -47,6 +48,7 @@ export default function AdminDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [updatingCode, setUpdatingCode] = useState<string | null>(null);
+  const [cancellingOrderCode, setCancellingOrderCode] = useState<string | null>(null);
 
   const showToast = (text: string, type: "success" | "info" | "error" = "success") => {
     setToastMessage({ text, type });
@@ -316,6 +318,13 @@ export default function AdminDashboardPage() {
     } finally {
       setUpdatingCode(null);
     }
+  };
+
+  const confirmCancelOrder = async () => {
+    if (!cancellingOrderCode) return;
+    const code = cancellingOrderCode;
+    setCancellingOrderCode(null);
+    await handleUpdateStatus(code, "CANCELLED");
   };
 
   return (
@@ -925,15 +934,7 @@ export default function AdminDashboardPage() {
                             <button
                               type="button"
                               disabled={updatingCode === ord.code}
-                              onClick={() => {
-                                if (
-                                  confirm(
-                                    `Bạn có chắc chắn muốn HỦY đơn #${ord.code}?\nHệ thống sẽ tự động hoàn trả số lượng tồn kho!`
-                                  )
-                                ) {
-                                  handleUpdateStatus(ord.code, "CANCELLED");
-                                }
-                              }}
+                              onClick={() => setCancellingOrderCode(ord.code)}
                               className="px-2 py-1 rounded-lg border border-destructive/20 hover:border-destructive text-destructive hover:bg-destructive/10 text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-50"
                             >
                               Hủy
@@ -1056,6 +1057,22 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={Boolean(cancellingOrderCode)}
+        onClose={() => setCancellingOrderCode(null)}
+        onConfirm={confirmCancelOrder}
+        title="Xác nhận hủy đơn hàng"
+        message={
+          cancellingOrderCode
+            ? `Bạn có chắc chắn muốn HỦY đơn #${cancellingOrderCode}? Hệ thống sẽ tự động hoàn trả số lượng tồn kho!`
+            : ""
+        }
+        confirmText="Hủy đơn"
+        cancelText="Giữ lại"
+        variant="danger"
+        isLoading={Boolean(cancellingOrderCode && updatingCode === cancellingOrderCode)}
+      />
     </div>
   );
 }
