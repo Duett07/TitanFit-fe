@@ -1199,7 +1199,10 @@ export default function OrderTrackingClient() {
                 {/* Items List */}
                 <div className="divide-y divide-border/60 mb-5">
                   {activeOrder.items.map((item, index) => (
-                    <div key={index} className="py-3 flex items-center gap-3">
+                    <div
+                      key={item.id || `${activeOrder.code}-${item.name}-${item.variant}-${index}`}
+                      className="py-3 flex items-center gap-3"
+                    >
                       <div className="relative w-14 h-14 rounded-xl bg-secondary border border-border shrink-0 overflow-hidden">
                         <Image
                           src={item.thumb || "/images/products/titan-iso-whey.jpg"}

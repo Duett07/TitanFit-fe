@@ -566,11 +566,11 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
 
                   <div className="max-h-72 overflow-y-auto divide-y divide-border/60">
                     {notifications.map((notif) => (
-                      <div
+                      <Link
                         key={notif.id}
+                        href={notif.link}
                         onClick={() => {
                           setIsNotifOpen(false);
-                          router.push(notif.link);
                         }}
                         className={`p-3.5 flex items-start gap-3 hover:bg-secondary/60 transition-colors cursor-pointer ${
                           !notif.isRead ? "bg-primary/5" : ""
@@ -599,7 +599,7 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
                         {!notif.isRead && (
                           <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                         )}
-                      </div>
+                      </Link>
                     ))}
                   </div>
 

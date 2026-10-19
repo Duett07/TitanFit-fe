@@ -11,6 +11,7 @@ import { ConfirmModal, EmptyState, Modal, StatusBadge, Toast } from "@/component
 import { PaymentMethod, OrderStatus, PaymentStatus } from "@/types/order.type";
 
 export interface AdminOrderItem {
+  id?: string;
   name: string;
   variant: string;
   qty: number;
@@ -74,6 +75,8 @@ export default function AdminOrdersPage() {
       paymentMethod: string;
       paymentStatus: string;
       items: Array<{
+        id?: string;
+        variantId?: string;
         productName: string;
         variantName: string;
         price: number;
@@ -110,7 +113,8 @@ export default function AdminOrdersPage() {
           o.items && o.items.length > 0
             ? o.items.map((it) => it.productName).join(" + ")
             : "Đơn hàng TITANFIT",
-        itemsList: (o.items || []).map((it) => ({
+        itemsList: (o.items || []).map((it, itemIdx) => ({
+          id: it.id || it.variantId || `${o.id}-${itemIdx}`,
           name: it.productName || "Sản phẩm",
           variant: it.variantName || "Tiêu chuẩn",
           qty: it.quantity || 1,
@@ -856,7 +860,10 @@ export default function AdminOrdersPage() {
                   </thead>
                   <tbody className="divide-y divide-border/60">
                     {selectedOrder.itemsList.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-muted/20">
+                      <tr
+                        key={item.id || `${selectedOrder.id}-${item.name}-${item.variant}-${idx}`}
+                        className="hover:bg-muted/20"
+                      >
                         <td className="py-2.5 px-3 font-semibold text-foreground">{item.name}</td>
                         <td className="py-2.5 px-3 text-muted-foreground">{item.variant}</td>
                         <td className="py-2.5 px-3 font-mono">{formatVND(item.price)}</td>

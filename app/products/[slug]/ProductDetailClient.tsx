@@ -268,7 +268,7 @@ export default function ProductDetailClient({
                   const isActive = selectedImage === img;
                   return (
                     <button
-                      key={idx}
+                      key={img || idx}
                       type="button"
                       className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
                         isActive
