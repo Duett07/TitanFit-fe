@@ -5,6 +5,7 @@ import Link from "next/link";
 import productApiRequest from "@/apiRequest/product";
 import { ProductSummaryDto, VariantDto } from "@/types/product.type";
 import { formatVND } from "@/lib/format";
+import { getErrorMessage } from "@/lib/error";
 import { useAutoSync } from "@/lib/sync";
 
 interface LowStockItem {
@@ -60,13 +61,8 @@ export default function AdminInventoryPage() {
       items.sort((a, b) => a.stock - b.stock);
       setInventory(items);
     } catch (err: unknown) {
-      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
       if (!isSilent) {
-        setErrorMessage(
-          errorObj.response?.data?.message ||
-            errorObj.message ||
-            "Không thể tải dữ liệu tồn kho từ backend."
-        );
+        setErrorMessage(getErrorMessage(err, "Không thể tải dữ liệu tồn kho từ backend."));
       }
     } finally {
       if (!isSilent) {

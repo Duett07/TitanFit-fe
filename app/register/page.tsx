@@ -10,6 +10,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { queryKeys } from "@/hooks/queries/queryKeys";
 import authApiRequest from "@/apiRequest/auth";
 import { getSafeRedirect } from "@/lib/security";
+import { getErrorMessage, getFieldErrors } from "@/lib/error";
 import { Button, Toast } from "@/components/ui";
 
 // Zod Validation Schema
@@ -157,13 +158,14 @@ function RegisterFormContent() {
         router.push(redirectTarget);
       }, 500);
     } catch (err: unknown) {
-      const axiosErr = err as {
-        response?: { data?: { message?: string } };
-        message?: string;
-      };
-      const message =
-        axiosErr.response?.data?.message ||
-        "Đăng ký không thành công. Email hoặc số điện thoại có thể đã được sử dụng.";
+      const fieldErrors = getFieldErrors(err);
+      if (fieldErrors) {
+        setErrors((prev) => ({ ...prev, ...fieldErrors }));
+      }
+      const message = getErrorMessage(
+        err,
+        "Đăng ký không thành công. Email hoặc số điện thoại có thể đã được sử dụng."
+      );
       setErrorMessage(message);
     } finally {
       setIsLoading(false);

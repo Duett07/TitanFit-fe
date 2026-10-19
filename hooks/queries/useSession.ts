@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import authApiRequest from "@/apiRequest/auth";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -40,9 +41,8 @@ export function useSession(options?: UseSessionOptions) {
         }
         return user;
       } catch (err: unknown) {
-        const axiosErr = err as { response?: { status?: number } };
         // If 401 Unauthorized, token has expired or is invalid on backend
-        if (axiosErr.response?.status === 401) {
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
           clearSession();
           return null;
         }

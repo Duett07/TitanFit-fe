@@ -30,7 +30,9 @@ export default function FeaturedSupplements({ initialProducts }: FeaturedSupplem
         setProducts(supps);
       }
     } catch (err) {
-      console.warn("Failed to fetch featured supplements via productApiRequest:", err);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Failed to fetch featured supplements via productApiRequest:", err);
+      }
     } finally {
       setLoading(false);
     }

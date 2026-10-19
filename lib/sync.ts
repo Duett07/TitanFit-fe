@@ -198,7 +198,9 @@ export function useAutoSync({
         try {
           onSyncRef.current(customEvent.detail);
         } catch (error) {
-          console.error("AutoSync callback error:", error);
+          if (process.env.NODE_ENV !== "production") {
+            console.warn("AutoSync callback error:", error);
+          }
         }
       }
     };

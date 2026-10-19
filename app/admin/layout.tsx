@@ -25,8 +25,10 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
   try {
     const res = await authApiRequest.me(cookieStore.toString());
     user = res.data?.data || null;
-  } catch {
-    // If backend returns 401 or network error, session is invalid
+  } catch (err) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Admin session verification failed:", err);
+    }
     user = null;
   }
 

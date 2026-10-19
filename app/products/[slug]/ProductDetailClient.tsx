@@ -67,7 +67,9 @@ export default function ProductDetailClient({
           setLoading(false);
         }
       } catch (err) {
-        console.error("API fetch error via productApiRequest:", err);
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("API fetch error via productApiRequest:", err);
+        }
         if (!silent) {
           setProduct(null);
           setLoading(false);

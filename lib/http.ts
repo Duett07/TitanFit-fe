@@ -12,14 +12,6 @@ const http = axios.create({
 http.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (process.env.NODE_ENV !== "production") {
-      console.log("🔥 [AXIOS DEBUG] Lỗi nhận được:", {
-        status: error?.response?.status,
-        message: error?.message,
-        url: error?.config?.url,
-      });
-    }
-
     // If error is 401 (Unauthorized)
     if (error.response?.status === 401) {
       const requestUrl = error.config?.url || "";

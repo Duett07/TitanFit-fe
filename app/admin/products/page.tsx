@@ -12,6 +12,7 @@ import {
 } from "@/types/product.type";
 import { CategoryDto } from "@/types/category.type";
 import { formatVND } from "@/lib/format";
+import { getErrorMessage } from "@/lib/error";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
 
 // Mẫu ảnh sẵn cho tiện chọn nhanh khi thêm sản phẩm mới
@@ -89,7 +90,9 @@ export default function AdminProductsPage() {
         setFormCategorySlug(list[0].slug);
       }
     } catch (e) {
-      console.warn("Could not load categories:", e);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Could not load categories:", e);
+      }
     }
   }, [formCategorySlug]);
 
@@ -111,12 +114,7 @@ export default function AdminProductsPage() {
       }
       setProducts(items);
     } catch (err: unknown) {
-      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
-      setErrorMessage(
-        errorObj.response?.data?.message ||
-          errorObj.message ||
-          "Không thể tải danh sách sản phẩm từ backend."
-      );
+      setErrorMessage(getErrorMessage(err, "Không thể tải danh sách sản phẩm từ backend."));
     } finally {
       if (!isSilent) setIsLoading(false);
     }
@@ -163,7 +161,9 @@ export default function AdminProductsPage() {
       // Bắn sự kiện đồng bộ tức thời sang trang chủ và trang danh mục sản phẩm của Buyer
       emitSyncEvent("PRODUCT_UPDATED", { productId: p.id, isActive: nextActive });
     } catch (err) {
-      console.error("Toggle active error:", err);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Toggle active error:", err);
+      }
       // Revert lại nếu có lỗi
       setProducts((prev) =>
         prev.map((item) => (item.id === p.id ? { ...item, isActive: currentActive } : item))
@@ -221,7 +221,10 @@ export default function AdminProductsPage() {
       if (detailRes.data?.data?.description) {
         setFormDescription(detailRes.data.data.description);
       }
-    } catch {
+    } catch (e) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Could not load product description for edit modal:", e);
+      }
       setFormDescription("");
     }
   };
@@ -343,12 +346,7 @@ export default function AdminProductsPage() {
       emitSyncEvent("INVENTORY_UPDATED");
       await fetchProducts(true);
     } catch (err: unknown) {
-      console.error("Save product error:", err);
-      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
-      showToast(
-        errorObj.response?.data?.message || "Lỗi khi lưu sản phẩm. Vui lòng thử lại.",
-        "error"
-      );
+      showToast(getErrorMessage(err, "Lỗi khi lưu sản phẩm. Vui lòng thử lại."), "error");
     } finally {
       setIsSaving(false);
     }
@@ -371,8 +369,7 @@ export default function AdminProductsPage() {
       emitSyncEvent("INVENTORY_UPDATED");
       fetchProducts(true);
     } catch (err: unknown) {
-      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
-      showToast(errorObj.response?.data?.message || "Không thể xóa sản phẩm lúc này.", "error");
+      showToast(getErrorMessage(err, "Không thể xóa sản phẩm lúc này."), "error");
     }
   };
 

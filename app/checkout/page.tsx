@@ -4,10 +4,12 @@ import React, { useState, useEffect, useMemo, useSyncExternalStore } from "react
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import { z } from "zod";
 import { useCartStore } from "@/stores/useCartStore";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { formatVND } from "@/lib/format";
+import { getErrorMessage, getFieldErrors } from "@/lib/error";
 import orderApiRequest from "@/apiRequest/order";
 import { CreateOrderRequest, PaymentMethod } from "@/types/order.type";
 import { emitSyncEvent } from "@/lib/sync";
@@ -185,18 +187,18 @@ export default function CheckoutPage() {
         throw new Error("Không nhận được mã đơn hàng từ hệ thống.");
       }
     } catch (err: unknown) {
-      console.error("Order submission error:", err);
-      const anyErr = err as { response?: { status?: number; data?: { message?: string } } };
-      if (anyErr?.response?.status === 401) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
         // Requires authentication
         router.replace("/login?redirect=/checkout");
         return;
-      } else {
-        setErrorMessage(
-          anyErr?.response?.data?.message ||
-            "Có lỗi xảy ra khi tạo đơn hàng. Vui lòng kiểm tra lại thông tin!"
-        );
       }
+      const fieldErrors = getFieldErrors(err);
+      if (fieldErrors) {
+        setErrors((prev) => ({ ...prev, ...fieldErrors }));
+      }
+      setErrorMessage(
+        getErrorMessage(err, "Có lỗi xảy ra khi tạo đơn hàng. Vui lòng kiểm tra lại thông tin!")
+      );
     } finally {
       setIsSubmitting(false);
     }
