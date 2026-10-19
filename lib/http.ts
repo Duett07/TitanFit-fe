@@ -8,43 +8,87 @@ const http = axios.create({
   withCredentials: true,
 });
 
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: () => void;
+  reject: (error: unknown) => void;
+}> = [];
+
+const processQueue = (error: unknown) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve();
+    }
+  });
+
+  failedQueue = [];
+};
+
+// ===== REQUEST INTERCEPTOR =====
+// Credentials (HttpOnly cookies) are automatically attached by the browser
+http.interceptors.request.use(
+  (config) => config,
+  (error) => Promise.reject(error)
+);
+
 // ===== RESPONSE INTERCEPTOR =====
 http.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // If error is 401 (Unauthorized)
-    if (error.response?.status === 401) {
-      const requestUrl = error.config?.url || "";
+    const originalRequest = error.config;
 
-      // 1. Skip global session wipe & redirect for auth attempt endpoints (e.g. wrong login credentials)
-      const isAuthEndpoint =
-        requestUrl.includes("/api/auth/login") || requestUrl.includes("/api/auth/register");
+    // Handle 401 Unauthorized with token refresh rotation
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      const requestUrl = originalRequest.url || "";
 
-      if (!isAuthEndpoint && typeof window !== "undefined") {
-        const pathname = window.location.pathname;
-        const currentPath = `${pathname}${window.location.search}`;
-
-        // Clear Zustand store, localStorage, and legacy cookies
-        clearSession();
-
-        // 2. Redirect to login for protected pages or explicit authenticated actions:
-        // - If request was /api/auth/me, only redirect if currently on a protected route (avoid disrupting guests on public pages)
-        // - For other protected API requests (e.g. /api/admin/*, /api/orders/*), always redirect
-        const isMeEndpoint = requestUrl.includes("/api/auth/me");
-        const isProtectedPage =
-          pathname.startsWith("/admin") ||
-          pathname.startsWith("/checkout") ||
-          pathname.startsWith("/order-tracking") ||
-          pathname.startsWith("/order-success");
-
-        const shouldRedirect = !isMeEndpoint || isProtectedPage;
-
-        if (shouldRedirect && !pathname.startsWith("/login") && !pathname.startsWith("/register")) {
-          window.location.replace(`/login?redirect=${encodeURIComponent(currentPath)}`);
-        }
+      // Do not attempt refresh on auth endpoints
+      if (
+        requestUrl.includes("/api/auth/login") ||
+        requestUrl.includes("/api/auth/register") ||
+        requestUrl.includes("/api/auth/refresh")
+      ) {
+        return Promise.reject(error);
       }
 
-      return Promise.reject(error);
+      // If a refresh is already in progress, enqueue this request
+      if (isRefreshing) {
+        return new Promise<void>((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(() => http(originalRequest))
+          .catch((err) => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        await axios.post(
+          `${envConfig.NEXT_PUBLIC_API_ENDPOINT}/api/auth/refresh`,
+          {},
+          { withCredentials: true }
+        );
+
+        processQueue(null);
+        return http(originalRequest);
+      } catch (refreshErr) {
+        processQueue(refreshErr);
+
+        if (typeof window !== "undefined") {
+          clearSession();
+          const pathname = window.location.pathname;
+          if (!pathname.startsWith("/login") && !pathname.startsWith("/register")) {
+            const currentPath = `${pathname}${window.location.search}`;
+            window.location.replace(`/login?redirect=${encodeURIComponent(currentPath)}`);
+          }
+        }
+
+        return Promise.reject(refreshErr);
+      } finally {
+        isRefreshing = false;
+      }
     }
 
     return Promise.reject(error);

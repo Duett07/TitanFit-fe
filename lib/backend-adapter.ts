@@ -229,24 +229,26 @@ export function transformBackendProductDetail(beProduct: ProductDetailDto): UIPr
  * Transforms Backend ProductSummaryResponse item into ProductDetail / Card format
  */
 export function transformBackendProductSummary(item: ProductSummaryDto): UIProductDetail {
+  const catSlug = (item.categorySlug || "").toLowerCase();
   const isApparel =
-    item.categorySlug.includes("quan-ao") ||
-    item.categorySlug.includes("phu-kien") ||
-    item.categorySlug.includes("binh-lac") ||
-    item.categorySlug.includes("do-the-thao") ||
-    item.categorySlug.includes("apparel");
+    catSlug.includes("quan-ao") ||
+    catSlug.includes("phu-kien") ||
+    catSlug.includes("binh-lac") ||
+    catSlug.includes("do-the-thao") ||
+    catSlug.includes("apparel");
 
   const minPrice = item.basePrice || (item.variants?.[0]?.price ?? 0);
+  const imageUrl = item.thumbnailUrl || (item as unknown as { primaryImage?: string }).primaryImage || "/images/placeholder.jpg";
 
   return {
     id: item.id,
     slug: item.slug,
     name: item.name,
     category: isApparel ? "apparel" : "supplements",
-    categoryLabel: item.categoryName,
+    categoryLabel: item.categoryName || (isApparel ? "Đồ Thể Thao" : "Thực Phẩm Bổ Sung"),
     price: minPrice,
-    image: item.thumbnailUrl,
-    images: [item.thumbnailUrl],
+    image: imageUrl,
+    images: [imageUrl],
     actionText: "Xem chi tiết",
     description: item.name,
     variantOptions: [],

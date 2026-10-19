@@ -10,6 +10,7 @@ import { formatVND } from "@/lib/format";
 import { getErrorMessage } from "@/lib/error";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
 import { ConfirmModal } from "@/components/ui";
+import { extractOrdersList } from "@/hooks/queries/useOrders";
 
 interface UrgentOrder {
   id: string;
@@ -64,9 +65,9 @@ export default function AdminDashboardPage() {
     try {
       // 1. Fetch Real Orders
       const orderRes = await orderApiRequest.getAllOrders();
-      const rawOrders = orderRes.data?.data || [];
+      const orderList = extractOrdersList(orderRes.data?.data);
 
-      const mappedOrders: UrgentOrder[] = rawOrders.map((o) => {
+      const mappedOrders: UrgentOrder[] = orderList.map((o) => {
         const rawStatus = (o.orderStatus || "PENDING").toUpperCase();
         const status = (
           ["PENDING", "CONFIRMED", "SHIPPING", "COMPLETED", "CANCELLED"].includes(rawStatus)

@@ -12,6 +12,7 @@ import { UserResponse } from "@/types/auth.type";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/hooks/queries/queryKeys";
 import { useAutoSync } from "@/lib/sync";
+import { extractOrdersList } from "@/hooks/queries/useOrders";
 
 interface AdminClientShellProps {
   children: React.ReactNode;
@@ -122,8 +123,8 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
 
       // 1. Process orders
       if (ordersRes.status === "fulfilled") {
-        const rawOrders = ordersRes.value.data?.data || [];
-        const pendingOrders = rawOrders.filter(
+        const orderList = extractOrdersList(ordersRes.value.data?.data);
+        const pendingOrders = orderList.filter(
           (o) =>
             (o.orderStatus || "").toUpperCase() === "PENDING" ||
             (o.orderStatus || "").toUpperCase() === "CONFIRMED"

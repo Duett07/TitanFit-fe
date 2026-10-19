@@ -186,9 +186,6 @@ function RegisterFormContent() {
       <div className="w-full max-w-[480px] bg-card border border-border rounded-2xl p-7 sm:p-9 shadow-xl backdrop-blur-md">
         {/* Card Brand Header */}
         <div className="text-center mb-6">
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 mb-3 border border-emerald-500/20">
-            🎁 TẶNG VOUCHER 50.000₫ KHI ĐĂNG KÝ
-          </span>
           <h1 className="text-2xl font-extrabold text-foreground font-heading mb-1.5 text-center tracking-tight">
             Tạo Tài Khoản Mới
           </h1>

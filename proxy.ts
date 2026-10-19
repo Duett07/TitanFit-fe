@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const customerProtectedRoutes = ["/checkout", "/order-success", "/order-tracking"];
+const customerProtectedRoutes = ["/checkout", "/order-success", "/order-tracking", "/profile"];
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
@@ -36,5 +36,11 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/checkout/:path*", "/order-success/:path*", "/order-tracking/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/checkout/:path*",
+    "/order-success/:path*",
+    "/order-tracking/:path*",
+    "/profile/:path*",
+  ],
 };

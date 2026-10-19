@@ -368,48 +368,15 @@ export default function Navbar() {
                         >
                           {currentUser.email}
                         </div>
-                        <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/15 text-primary mt-1">
-                          {currentUser.role === "ROLE_ADMIN"
-                            ? "Quản Trị Viên (Admin)"
-                            : "Hội Viên Vàng (Gold)"}
-                        </span>
+                        {currentUser.role === "ROLE_ADMIN" && (
+                          <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/15 text-primary mt-1">
+                            Quản Trị Viên (Admin)
+                          </span>
+                        )}
                       </div>
                     </div>
 
-                    {/* 2. Quick Mini-Metrics Bar */}
-                    <div className="grid grid-cols-3 gap-1 p-2 bg-secondary/60 border border-border rounded-lg mx-3.5 my-2.5 text-center">
-                      <Link
-                        href="/order-tracking"
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="flex flex-col items-center hover:opacity-80 transition-opacity"
-                        title="Xem đơn hàng đang giao"
-                      >
-                        <span className="text-[14.5px] font-extrabold text-primary font-heading">
-                          1
-                        </span>
-                        <span className="text-[10px] text-muted-foreground mt-0.5">Đang Giao</span>
-                      </Link>
-                      <div
-                        className="flex flex-col items-center hover:opacity-80 transition-opacity cursor-pointer"
-                        title="Xem kho voucher"
-                      >
-                        <span className="text-[14.5px] font-extrabold text-emerald-500 font-heading">
-                          3
-                        </span>
-                        <span className="text-[10px] text-muted-foreground mt-0.5">Voucher</span>
-                      </div>
-                      <div
-                        className="flex flex-col items-center hover:opacity-80 transition-opacity cursor-pointer"
-                        title="Điểm thưởng thành viên"
-                      >
-                        <span className="text-[14.5px] font-extrabold text-primary font-heading">
-                          1.250
-                        </span>
-                        <span className="text-[10px] text-muted-foreground mt-0.5">Điểm ⭐</span>
-                      </div>
-                    </div>
-
-                    {/* 3. Group 1: ĐƠN HÀNG & MUA SẮM */}
+                    {/* 2. Group 1: ĐƠN HÀNG & MUA SẮM */}
                     <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-4 py-1.5">
                       Đơn Hàng & Mua Sắm
                     </div>
@@ -456,31 +423,9 @@ export default function Navbar() {
                       </svg>
                       <span>Đơn Hàng Của Tôi</span>
                       <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary text-white">
-                        1 đang giao
+                        0 đang giao
                       </span>
                     </Link>
-
-                    <button
-                      type="button"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="w-full px-4 py-2 text-xs font-medium text-foreground hover:bg-secondary hover:text-primary flex items-center gap-2.5 transition-colors text-left cursor-pointer"
-                    >
-                      <svg
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className="text-rose-500"
-                      >
-                        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                      </svg>
-                      <span>Sản Phẩm Đã Lưu (Wishlist)</span>
-                      <span className="ml-auto text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">
-                        4 món
-                      </span>
-                    </button>
 
                     <Link
                       href="/order-tracking"
@@ -502,45 +447,15 @@ export default function Navbar() {
                       <span>Mua Lại Đơn Trước (Re-Order)</span>
                     </Link>
 
-                    {/* 4. Group 2: ƯU ĐÃI & VÍ THÀNH VIÊN */}
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-4 py-1.5 mt-1 border-t border-border/50">
-                      Ưu Đãi & Ví Của Tôi
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="w-full px-4 py-2 text-xs font-medium text-foreground hover:bg-secondary hover:text-primary flex items-center gap-2.5 transition-colors text-left cursor-pointer"
-                    >
-                      <svg
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className="text-emerald-500"
-                      >
-                        <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
-                        <path d="M13 5v2" />
-                        <path d="M13 17v2" />
-                        <path d="M13 11v2" />
-                      </svg>
-                      <span>Kho Voucher Giảm Giá</span>
-                      <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-                        3 mã
-                      </span>
-                    </button>
-
-                    {/* 5. Group 3: THIẾT LẬP TÀI KHOẢN */}
+                    {/* 3. Group 2: THIẾT LẬP TÀI KHOẢN */}
                     <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-4 py-1.5 mt-1 border-t border-border/50">
                       Thiết Lập Tài Khoản
                     </div>
 
-                    <button
-                      type="button"
+                    <Link
+                      href="/profile"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="w-full px-4 py-2 text-xs font-medium text-foreground hover:bg-secondary hover:text-primary flex items-center gap-2.5 transition-colors text-left cursor-pointer"
+                      className="w-full px-4 py-2 text-xs font-medium text-foreground hover:bg-secondary hover:text-primary flex items-center gap-2.5 transition-colors"
                     >
                       <svg
                         width="15"
@@ -555,27 +470,7 @@ export default function Navbar() {
                         <circle cx="12" cy="7" r="4" />
                       </svg>
                       <span>Hồ Sơ & Sổ Địa Chỉ Giao Hàng</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="w-full px-4 py-2 text-xs font-medium text-foreground hover:bg-secondary hover:text-primary flex items-center gap-2.5 transition-colors text-left cursor-pointer"
-                    >
-                      <svg
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className="text-muted-foreground"
-                      >
-                        <path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h12a2 2 0 0 1 2 2v5Z" />
-                        <path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1" />
-                      </svg>
-                      <span>Trung Tâm Hỗ Trợ Khách Hàng</span>
-                    </button>
+                    </Link>
 
                     {/* 6. Đăng Xuất */}
                     <button

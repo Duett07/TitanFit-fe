@@ -1,5 +1,5 @@
 import http from "@/lib/http";
-import { ApiResponse } from "@/types/api.type";
+import { ApiResponse, PageResponse } from "@/types/api.type";
 import {
   CreateOrderRequest,
   OrderResponse,
@@ -11,7 +11,7 @@ export const orderApiRequest = {
   createOrder: (body: CreateOrderRequest) =>
     http.post<ApiResponse<OrderResponse>>("/api/orders", body),
   getMyOrders: (cookieHeader?: string) =>
-    http.get<ApiResponse<OrderResponse[]>>(
+    http.get<ApiResponse<PageResponse<OrderResponse> | OrderResponse[]>>(
       "/api/orders/my-orders",
       cookieHeader ? { headers: { Cookie: cookieHeader } } : {}
     ),
@@ -20,7 +20,7 @@ export const orderApiRequest = {
   trackOrder: (body: TrackOrderRequest) =>
     http.post<ApiResponse<OrderResponse>>("/api/orders/track", body),
   getAllOrders: (cookieHeader?: string) =>
-    http.get<ApiResponse<OrderResponse[]>>(
+    http.get<ApiResponse<PageResponse<OrderResponse> | OrderResponse[]>>(
       "/api/admin/orders",
       cookieHeader ? { headers: { Cookie: cookieHeader } } : {}
     ),
