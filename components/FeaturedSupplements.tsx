@@ -52,9 +52,17 @@ export default function FeaturedSupplements({
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
     if (!initialProducts || initialProducts.length === 0) {
-      loadSupplements();
+      Promise.resolve().then(() => {
+        if (isMounted) {
+          void loadSupplements();
+        }
+      });
     }
+    return () => {
+      isMounted = false;
+    };
   }, [initialProducts, loadSupplements]);
 
   // Tự động đồng bộ thời gian thực khi Admin thêm/sửa sản phẩm hoặc khi người dùng quay lại tab Buyer

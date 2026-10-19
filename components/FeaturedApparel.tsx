@@ -52,9 +52,17 @@ export default function FeaturedApparel({
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
     if (!initialProducts || initialProducts.length === 0) {
-      loadApparel();
+      Promise.resolve().then(() => {
+        if (isMounted) {
+          void loadApparel();
+        }
+      });
     }
+    return () => {
+      isMounted = false;
+    };
   }, [initialProducts, loadApparel]);
 
   // Tự động đồng bộ thời gian thực khi Admin thêm/sửa sản phẩm hoặc khi người dùng quay lại tab Buyer

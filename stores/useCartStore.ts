@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import productApiRequest from "@/apiRequest/product";
+import type { ProductDetailDto, VariantDto } from "@/types/product.type";
 
 export interface CartItem {
   id: string; // Canonical backend variant UUID (or productId-variantKey fallback)
@@ -171,7 +172,7 @@ export const useCartStore = create<CartState>()(
           const uniqueSlugs = Array.from(
             new Set(currentItems.map((item) => item.slug).filter(Boolean))
           );
-          const productMap = new Map<string, any>();
+          const productMap = new Map<string, ProductDetailDto>();
 
           await Promise.all(
             uniqueSlugs.map(async (slug) => {
@@ -196,7 +197,7 @@ export const useCartStore = create<CartState>()(
 
             // Find matching variant by variantId (UUID), or SKU, or summary
             const freshVariant = (freshProduct.variants || []).find(
-              (v: any) =>
+              (v: VariantDto) =>
                 (item.variantId && v.id === item.variantId) ||
                 (v.sku && item.id.includes(v.sku)) ||
                 (v.variantName && item.variantSummary.includes(v.variantName))

@@ -76,7 +76,15 @@ export default function AdminInventoryPage() {
   }, []);
 
   useEffect(() => {
-    fetchInventory();
+    let isMounted = true;
+    Promise.resolve().then(() => {
+      if (isMounted) {
+        void fetchInventory();
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
   }, [fetchInventory]);
 
   // Real-time synchronization: Auto-refresh inventory when stock changes or products are saved
