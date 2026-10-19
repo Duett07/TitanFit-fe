@@ -9,6 +9,7 @@ import { getErrorMessage } from "@/lib/error";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
 import { ConfirmModal, EmptyState, Modal, StatusBadge, Toast } from "@/components/ui";
 import { PaymentMethod, OrderStatus, PaymentStatus } from "@/types/order.type";
+import { extractOrdersList } from "@/hooks/queries/useOrders";
 
 export interface AdminOrderItem {
   id?: string;
@@ -142,8 +143,8 @@ export default function AdminOrdersPage() {
       }
       try {
         const res = await orderApiRequest.getAllOrders();
-        const rawData = res.data?.data || [];
-        const mapped = rawData.map(mapOrder);
+        const orderList = extractOrdersList(res.data?.data);
+        const mapped = orderList.map(mapOrder);
         setOrders(mapped);
       } catch (err: unknown) {
         if (!isSilent) {
@@ -169,8 +170,8 @@ export default function AdminOrdersPage() {
       try {
         const res = await orderApiRequest.getAllOrders();
         if (!ignore) {
-          const rawData = res.data?.data || [];
-          setOrders(rawData.map(mapOrder));
+          const orderList = extractOrdersList(res.data?.data);
+          setOrders(orderList.map(mapOrder));
         }
       } catch (err: unknown) {
         if (!ignore) {

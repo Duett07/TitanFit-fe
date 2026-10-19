@@ -4,7 +4,6 @@ import React from "react";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { useAutoSync, SyncMessage } from "@/lib/sync";
 import { queryKeys } from "@/hooks/queries/queryKeys";
-import { useSession } from "@/hooks/queries/useSession";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -78,7 +77,6 @@ function SyncQueryBridge() {
  * sync roles/info from BE into Zustand, and clear session on 401.
  */
 function SessionBridge() {
-  useSession();
   return null;
 }
 

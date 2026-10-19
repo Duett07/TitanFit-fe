@@ -14,6 +14,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   setUser: (user: UserResponse) => void;
+  updateUser: (partial: Partial<UserResponse>) => void;
   logout: () => Promise<void>;
 }
 
@@ -39,6 +40,24 @@ export const useAuthStore = create<AuthState>()(
             }
           }
         }
+      },
+
+      updateUser: (partial: Partial<UserResponse>) => {
+        set((state) => {
+          if (!state.user) return state;
+          const updated = { ...state.user, ...partial };
+          if (typeof window !== "undefined") {
+            try {
+              window.dispatchEvent(new Event("authchange"));
+              emitSyncEvent("AUTH_CHANGED", { userId: updated.id });
+            } catch (err) {
+              if (process.env.NODE_ENV !== "production") {
+                console.warn("Could not dispatch auth change event:", err);
+              }
+            }
+          }
+          return { user: updated };
+        });
       },
 
       logout: async () => {

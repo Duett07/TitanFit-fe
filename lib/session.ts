@@ -36,6 +36,7 @@ export function clearSession() {
   // 2. Clear browser storage and cookies
   if (typeof window !== "undefined") {
     try {
+      localStorage.removeItem("accessToken");
       localStorage.removeItem("user");
       localStorage.removeItem("titanfit_auth");
       clearLegacyAuthCookies();

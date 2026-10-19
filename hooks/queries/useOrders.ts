@@ -1,16 +1,36 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import orderApiRequest from "@/apiRequest/order";
-import { CreateOrderRequest, TrackOrderRequest, UpdatableOrderStatus } from "@/types/order.type";
+import {
+  CreateOrderRequest,
+  OrderResponse,
+  TrackOrderRequest,
+  UpdatableOrderStatus,
+} from "@/types/order.type";
 import { queryKeys } from "./queryKeys";
 import { emitSyncEvent } from "@/lib/sync";
 import { validateOrderListResponse, validateOrderResponse } from "@/lib/schemas";
+
+export function extractOrdersList(raw: unknown): OrderResponse[] {
+  if (Array.isArray(raw)) {
+    return raw;
+  }
+  if (
+    raw &&
+    typeof raw === "object" &&
+    "content" in raw &&
+    Array.isArray((raw as { content?: unknown }).content)
+  ) {
+    return (raw as { content: OrderResponse[] }).content;
+  }
+  return [];
+}
 
 export function useAdminOrders() {
   return useQuery({
     queryKey: queryKeys.orders.adminList(),
     queryFn: async () => {
       const res = await orderApiRequest.getAllOrders();
-      const data = res.data?.data || [];
+      const data = extractOrdersList(res.data?.data);
       if (process.env.NODE_ENV !== "production") {
         const validation = validateOrderListResponse(data);
         if (!validation.success) {
@@ -27,7 +47,7 @@ export function useMyOrders() {
     queryKey: queryKeys.orders.myOrders(),
     queryFn: async () => {
       const res = await orderApiRequest.getMyOrders();
-      return res.data?.data || [];
+      return extractOrdersList(res.data?.data);
     },
   });
 }

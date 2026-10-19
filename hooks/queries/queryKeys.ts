@@ -20,4 +20,8 @@ export const queryKeys = {
     all: ["auth"] as const,
     session: () => [...queryKeys.auth.all, "session"] as const,
   },
+  addresses: {
+    all: ["addresses"] as const,
+    list: () => [...queryKeys.addresses.all, "list"] as const,
+  },
 };
