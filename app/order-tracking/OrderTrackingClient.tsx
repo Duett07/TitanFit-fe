@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback, useSyncExternalStore } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -11,6 +11,7 @@ import { useCartStore } from "@/stores/useCartStore";
 import orderApiRequest from "@/apiRequest/order";
 import { OrderResponse } from "@/types/order.type";
 import { useAutoSync } from "@/lib/sync";
+import { useHydrated } from "@/hooks/useHydrated";
 
 export interface TrackingOrderItem {
   id?: string;
@@ -222,11 +223,7 @@ export default function OrderTrackingClient() {
   const [activeTab, setActiveTab] = useState<string>("ALL");
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const isHydrated = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
+  const isHydrated = useHydrated();
 
   // Enforce authentication: Redirect to login immediately if not logged in once hydrated
   useEffect(() => {

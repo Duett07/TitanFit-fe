@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useSyncExternalStore } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,7 @@ import { getErrorMessage, getFieldErrors } from "@/lib/error";
 import orderApiRequest from "@/apiRequest/order";
 import { CreateOrderRequest, PaymentMethod } from "@/types/order.type";
 import { emitSyncEvent } from "@/lib/sync";
+import { useHydrated } from "@/hooks/useHydrated";
 
 // Zod Validation Schema
 const checkoutSchema = z.object({
@@ -45,11 +46,7 @@ export default function CheckoutPage() {
   }, []);
 
   // Hydration-safe store subscription
-  const isHydrated = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
+  const isHydrated = useHydrated();
 
   const isAuthChecking = !isHydrated || !isAuthenticated;
 

@@ -5,15 +5,12 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useCartStore } from "@/stores/useCartStore";
 import { formatVND } from "@/lib/format";
+import { useHydrated } from "@/hooks/useHydrated";
 
 export default function CartDrawer() {
   const router = useRouter();
   const pathname = usePathname();
-  const isMounted = React.useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
+  const isMounted = useHydrated();
 
   const {
     items,

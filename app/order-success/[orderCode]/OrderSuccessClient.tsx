@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useSyncExternalStore } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { formatVND } from "@/lib/format";
 import orderApiRequest from "@/apiRequest/order";
 import { OrderResponse } from "@/types/order.type";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useAutoSync } from "@/lib/sync";
+import { useHydrated } from "@/hooks/useHydrated";
 
 interface OrderSuccessClientProps {
   orderCode: string;
@@ -28,11 +30,7 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
   const [loading, setLoading] = useState(true);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  const isHydrated = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
+  const isHydrated = useHydrated();
 
   const isAuthChecking = !isHydrated || !isAuthenticated;
 
@@ -189,10 +187,12 @@ export default function OrderSuccessClient({ orderCode }: OrderSuccessClientProp
               {/* QR Image Box (5 cols) */}
               <div className="md:col-span-5 flex flex-col items-center">
                 <div className="relative p-3 bg-white rounded-2xl border-2 border-primary/20 shadow-sm max-w-[260px] w-full">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={qrUrl}
                     alt="VietQR Code"
+                    width={260}
+                    height={260}
+                    priority
                     className="w-full h-auto rounded-lg aspect-square object-contain"
                   />
                   <div className="mt-2 text-center">
