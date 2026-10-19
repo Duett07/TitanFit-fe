@@ -14,6 +14,7 @@ import { CategoryDto } from "@/types/category.type";
 import { formatVND } from "@/lib/format";
 import { getErrorMessage } from "@/lib/error";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
+import { ConfirmModal } from "@/components/ui";
 
 // Mẫu ảnh sẵn cho tiện chọn nhanh khi thêm sản phẩm mới
 const SAMPLE_IMAGES = [
@@ -56,6 +57,10 @@ export default function AdminProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
+
+  // State cho Modal Xác Nhận Xóa Sản Phẩm
+  const [deletingProduct, setDeletingProduct] = useState<ProductSummaryDto | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState("");
@@ -352,24 +357,26 @@ export default function AdminProductsPage() {
     }
   };
 
-  // Xóa sản phẩm
-  const handleDeleteProduct = async (p: ProductSummaryDto) => {
-    if (
-      !confirm(
-        `Bạn có chắc chắn muốn XÓA sản phẩm "${p.name}" không?\nHành động này không thể hoàn tác!`
-      )
-    ) {
-      return;
-    }
+  // Mở modal xác nhận xóa sản phẩm
+  const handleDeleteProduct = (p: ProductSummaryDto) => {
+    setDeletingProduct(p);
+  };
 
+  // Thực hiện xóa sản phẩm khi người dùng xác nhận
+  const confirmDeleteProduct = async () => {
+    if (!deletingProduct) return;
+    setIsDeleting(true);
     try {
-      await productApiRequest.adminDeleteProduct(p.id);
-      showToast(`Đã xóa sản phẩm "${p.name}" thành công!`, "success");
+      await productApiRequest.adminDeleteProduct(deletingProduct.id);
+      showToast(`Đã xóa sản phẩm "${deletingProduct.name}" thành công!`, "success");
       emitSyncEvent("PRODUCT_UPDATED");
       emitSyncEvent("INVENTORY_UPDATED");
+      setDeletingProduct(null);
       fetchProducts(true);
     } catch (err: unknown) {
       showToast(getErrorMessage(err, "Không thể xóa sản phẩm lúc này."), "error");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -1189,6 +1196,19 @@ export default function AdminProductsPage() {
           </div>
         </div>
       )}
+
+      {/* Modal Xác Nhận Xóa Sản Phẩm */}
+      <ConfirmModal
+        isOpen={Boolean(deletingProduct)}
+        onClose={() => !isDeleting && setDeletingProduct(null)}
+        onConfirm={confirmDeleteProduct}
+        title="Xóa sản phẩm"
+        message={`Bạn có chắc chắn muốn XÓA sản phẩm "${deletingProduct?.name}" không?\nHành động này không thể hoàn tác và sẽ xóa toàn bộ biến thể của sản phẩm!`}
+        confirmText="Xác nhận xóa"
+        cancelText="Giữ lại"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

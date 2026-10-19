@@ -7,7 +7,7 @@ import orderApiRequest from "@/apiRequest/order";
 import { formatVND } from "@/lib/format";
 import { getErrorMessage } from "@/lib/error";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
-import { EmptyState, Modal, StatusBadge, Toast } from "@/components/ui";
+import { ConfirmModal, EmptyState, Modal, StatusBadge, Toast } from "@/components/ui";
 import { PaymentMethod, OrderStatus, PaymentStatus } from "@/types/order.type";
 
 export interface AdminOrderItem {
@@ -46,6 +46,7 @@ export default function AdminOrdersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
   const [updatingCode, setUpdatingCode] = useState<string | null>(null);
+  const [cancellingOrderCode, setCancellingOrderCode] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<{
     type: "success" | "error" | "info";
     text: string;
@@ -268,6 +269,13 @@ export default function AdminOrdersPage() {
     } finally {
       setUpdatingCode(null);
     }
+  };
+
+  const confirmCancelOrder = async () => {
+    if (!cancellingOrderCode) return;
+    const code = cancellingOrderCode;
+    setCancellingOrderCode(null);
+    await handleUpdateStatus(code, "CANCELLED");
   };
 
   // Đếm số lượng đơn theo từng bộ lọc
@@ -738,15 +746,7 @@ export default function AdminOrdersPage() {
                           <button
                             type="button"
                             disabled={updatingCode === ord.code}
-                            onClick={() => {
-                              if (
-                                confirm(
-                                  `Bạn có chắc chắn muốn HỦY đơn #${ord.code}?\nHệ thống sẽ tự động hoàn trả lại số lượng tồn kho cho các sản phẩm trong đơn!`
-                                )
-                              ) {
-                                handleUpdateStatus(ord.code, "CANCELLED");
-                              }
-                            }}
+                            onClick={() => setCancellingOrderCode(ord.code)}
                             className="px-2 py-1.5 rounded-lg border border-rose-500/30 hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[11px] font-semibold transition-all cursor-pointer active:scale-95 disabled:opacity-50"
                             title="Click Hủy Đơn ➔ Chuyển sang CANCELLED (tự động cộng lại tồn kho!)"
                           >
@@ -918,15 +918,7 @@ export default function AdminOrdersPage() {
 
                   <button
                     type="button"
-                    onClick={() => {
-                      if (
-                        confirm(
-                          `Bạn có chắc chắn muốn HỦY đơn #${selectedOrder.code}?\nTồn kho sẽ được cộng lại tự động!`
-                        )
-                      ) {
-                        handleUpdateStatus(selectedOrder.code, "CANCELLED");
-                      }
-                    }}
+                    onClick={() => setCancellingOrderCode(selectedOrder.code)}
                     className="px-3 py-1.5 rounded-lg border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs transition-all cursor-pointer"
                   >
                     Hủy Đơn (CANCELLED - Hoàn Kho)
@@ -937,6 +929,22 @@ export default function AdminOrdersPage() {
           </div>
         </Modal>
       )}
+
+      <ConfirmModal
+        isOpen={Boolean(cancellingOrderCode)}
+        onClose={() => setCancellingOrderCode(null)}
+        onConfirm={confirmCancelOrder}
+        title="Xác nhận hủy đơn hàng"
+        message={
+          cancellingOrderCode
+            ? `Bạn có chắc chắn muốn HỦY đơn #${cancellingOrderCode}? Hệ thống sẽ tự động hoàn trả lại số lượng tồn kho cho các sản phẩm trong đơn!`
+            : ""
+        }
+        confirmText="Hủy đơn"
+        cancelText="Giữ lại"
+        variant="danger"
+        isLoading={Boolean(cancellingOrderCode && updatingCode === cancellingOrderCode)}
+      />
     </div>
   );
 }
