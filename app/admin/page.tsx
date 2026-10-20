@@ -9,7 +9,7 @@ import { PaymentMethod, OrderStatus, PaymentStatus } from "@/types/order.type";
 import { formatVND } from "@/lib/format";
 import { getErrorMessage } from "@/lib/error";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
-import { ConfirmModal } from "@/components/ui";
+import { ConfirmModal, Toast } from "@/components/ui";
 import { extractOrdersList } from "@/hooks/queries/useOrders";
 
 interface UrgentOrder {
@@ -340,20 +340,11 @@ export default function AdminDashboardPage() {
     <div className="space-y-7 max-w-7xl mx-auto">
       {/* Toast Notification */}
       {toastMessage && (
-        <div
-          className={`fixed top-6 right-6 z-50 px-4 py-3 rounded-xl shadow-xl border text-sm font-semibold flex items-center gap-2.5 animate-in fade-in slide-in-from-top-4 duration-200 ${
-            toastMessage.type === "success"
-              ? "bg-emerald-950 text-emerald-100 border-emerald-800"
-              : toastMessage.type === "error"
-                ? "bg-rose-950 text-rose-100 border-rose-800"
-                : "bg-zinc-900 text-zinc-100 border-zinc-700"
-          }`}
-        >
-          {toastMessage.type === "success" && (
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          )}
-          <span>{toastMessage.text}</span>
-        </div>
+        <Toast
+          text={toastMessage.text}
+          type={toastMessage.type}
+          onClose={() => setToastMessage(null)}
+        />
       )}
 
       {/* Top Page Header */}

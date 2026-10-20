@@ -358,4 +358,120 @@ test.describe("TitanFit Comprehensive UI Suite", () => {
     // Verify updated name reflects in sidebar
     await expect(page.locator("aside h2:has-text('Titan Pro Athlete')")).toBeVisible();
   });
+
+  test("8. Register Page UI & Form Validation", async ({ page }) => {
+    await page.goto("/register");
+    await expect(page).toHaveURL(/register/);
+
+    // Verify form elements exist
+    await expect(page.locator("#regFullName")).toBeVisible();
+    await expect(page.locator("#regEmail")).toBeVisible();
+    await expect(page.locator("#regPhone")).toBeVisible();
+    await expect(page.locator("#regPassword")).toBeVisible();
+    await expect(page.locator("#regConfirmPassword")).toBeVisible();
+
+    // Submit empty form and verify client validation errors appear
+    const submitBtn = page.locator("button[type='submit']").first();
+    await submitBtn.click();
+
+    // Verify error text appears for required fields
+    await expect(
+      page
+        .locator("text=Họ và tên phải có ít nhất 2 ký tự")
+        .or(page.locator(".text-destructive"))
+        .first()
+    ).toBeVisible();
+  });
+
+  test("9. Login Page Direct Access & UI Elements", async ({ page }) => {
+    await page.goto("/login");
+    await expect(page).toHaveURL(/login/);
+
+    // Check login inputs
+    const emailInput = page.locator("#loginEmail");
+    const passwordInput = page.locator("#loginPassword");
+    const submitBtn = page.getByRole("button", { name: /Đăng Nhập/i }).first();
+
+    await expect(emailInput).toBeVisible();
+    await expect(passwordInput).toBeVisible();
+    await expect(submitBtn).toBeVisible();
+
+    // Verify link to registration page
+    const registerLink = page.locator("a[href^='/register']").first();
+    await expect(registerLink).toBeVisible();
+  });
+
+  test("10. Order Success Page Direct Access & Redirect Guard", async ({ page }) => {
+    // Unauthenticated access should redirect to login with redirect param
+    await page.goto("/order-success/TF-SAMPLE123");
+    await expect(page).toHaveURL(/\/login\?redirect=%2Forder-success%2FTF-SAMPLE123/);
+  });
+
+  test("11. Admin Portal Navigation & Sidebar (Authenticated Admin)", async ({ page, context }) => {
+    // Generate valid mock JWT with ROLE_ADMIN
+    const exp = Math.floor(Date.now() / 1000) + 7200;
+    const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
+    const payload = Buffer.from(
+      JSON.stringify({
+        sub: "admin@titanfit.vn",
+        role: "ROLE_ADMIN",
+        fullName: "Titan Super Admin",
+        userId: "admin-1",
+        exp,
+      })
+    ).toString("base64url");
+    const mockAdminJwt = `${header}.${payload}.mockSignature`;
+
+    await context.addCookies([
+      {
+        name: "accessToken",
+        value: mockAdminJwt,
+        url: "http://localhost:3000",
+      },
+    ]);
+
+    await page.addInitScript(() => {
+      window.localStorage.setItem(
+        "titanfit_auth",
+        JSON.stringify({
+          state: {
+            user: {
+              id: "admin-1",
+              fullName: "Titan Super Admin",
+              email: "admin@titanfit.vn",
+              role: "ROLE_ADMIN",
+            },
+            isAuthenticated: true,
+            isLoading: false,
+          },
+          version: 0,
+        })
+      );
+    });
+
+    // Intercept admin endpoints for reliable e2e test execution
+    await page.route("**/api/admin/orders**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ data: [], message: "Success", statusCode: 200 }),
+      });
+    });
+
+    await page.route("**/api/admin/products**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ data: [], message: "Success", statusCode: 200 }),
+      });
+    });
+
+    await page.goto("/admin");
+    await expect(page).toHaveURL(/admin/);
+
+    // Verify admin navigation items render
+    await expect(page.locator("text=Tổng Quan").first()).toBeVisible();
+    await expect(page.locator("text=Sản Phẩm").first()).toBeVisible();
+    await expect(page.locator("text=Đơn Hàng").first()).toBeVisible();
+  });
 });

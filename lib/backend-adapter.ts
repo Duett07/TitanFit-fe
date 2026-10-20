@@ -238,7 +238,10 @@ export function transformBackendProductSummary(item: ProductSummaryDto): UIProdu
     catSlug.includes("apparel");
 
   const minPrice = item.basePrice || (item.variants?.[0]?.price ?? 0);
-  const imageUrl = item.thumbnailUrl || (item as unknown as { primaryImage?: string }).primaryImage || "/images/placeholder.jpg";
+  const imageUrl =
+    item.thumbnailUrl ||
+    (item as unknown as { primaryImage?: string }).primaryImage ||
+    "/images/placeholder.jpg";
 
   return {
     id: item.id,

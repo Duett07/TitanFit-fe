@@ -18,7 +18,6 @@ export const authApiRequest = {
     http.post<ApiResponse<UserResponse>>("/api/auth/register", body),
   refreshToken: () => http.post<ApiResponse<AuthResponse>>("/api/auth/refresh"),
   logout: () => http.post<ApiResponse<void>>("/api/auth/logout"),
-  getMe: () => http.get<ApiResponse<UserResponse>>("/api/auth/me"),
   updateProfile: (body: UpdateProfileRequest) =>
     http.put<ApiResponse<UserResponse>>("/api/auth/profile", body),
   changePassword: (body: ChangePasswordRequest) =>
