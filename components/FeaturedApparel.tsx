@@ -9,6 +9,7 @@ import productApiRequest from "@/apiRequest/product";
 import { transformBackendProductSummary } from "@/lib/backend-adapter";
 import { useCartStore } from "@/stores/useCartStore";
 import { useAutoSync } from "@/lib/sync";
+import { Toast } from "@/components/ui";
 
 interface FeaturedApparelProps {
   initialProducts?: ProductDetail[];
@@ -18,7 +19,7 @@ export default function FeaturedApparel({ initialProducts }: FeaturedApparelProp
   const [products, setProducts] = useState<ProductDetail[]>(initialProducts || []);
   const [loading, setLoading] = useState(!initialProducts || initialProducts.length === 0);
   const [toastText, setToastText] = useState<string | null>(null);
-  const { addItem } = useCartStore();
+  const { addItem, openDrawer } = useCartStore();
 
   const loadApparel = useCallback(async () => {
     try {
@@ -222,20 +223,19 @@ export default function FeaturedApparel({ initialProducts }: FeaturedApparelProp
 
       {/* Toast Notification */}
       {toastText && (
-        <div
-          className="fixed bottom-6 right-6 z-50 bg-[#18181b] text-white border border-[#27272a] shadow-2xl px-5 py-3 rounded-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-3 duration-200"
-          role="status"
-          aria-live="polite"
-        >
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-sm font-medium">{toastText}</span>
-          <button
-            onClick={() => setToastText(null)}
-            className="text-zinc-400 hover:text-white ml-2 text-xs"
-          >
-            ✕
-          </button>
-        </div>
+        <Toast
+          text={toastText}
+          type="success"
+          action={
+            <button
+              onClick={openDrawer}
+              className="text-xs text-emerald-300 font-bold ml-2 underline hover:no-underline cursor-pointer"
+            >
+              Xem giỏ
+            </button>
+          }
+          onClose={() => setToastText(null)}
+        />
       )}
     </section>
   );

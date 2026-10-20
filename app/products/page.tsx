@@ -4,12 +4,14 @@ import React, { Suspense, useState, useTransition, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Product, ProductCategory, PriceFilterKey, SortOptionKey } from "@/data/products";
+import { Product, ProductCategory, PriceFilterKey, SortOptionKey, UIProductDetail } from "@/data/products";
 import { formatVND } from "@/lib/format";
 import { getErrorMessage } from "@/lib/error";
 import productApiRequest from "@/apiRequest/product";
 import { transformBackendProductSummary } from "@/lib/backend-adapter";
 import { useAutoSync } from "@/lib/sync";
+import { useCartStore } from "@/stores/useCartStore";
+import { Toast } from "@/components/ui";
 
 // Fallback loader while searchParams resolve
 function ProductsLoading() {
@@ -38,6 +40,9 @@ function ProductsContent() {
 
   // Mobile Filter Drawer state
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  // Cart store actions
+  const { addItem, openDrawer } = useCartStore();
 
   // Cart toast notification
   const [toastText, setToastText] = useState<string | null>(null);
@@ -128,6 +133,24 @@ function ProductsContent() {
 
   // Quick add to cart
   const handleAddToCart = (product: Product) => {
+    const detailedProduct = product as UIProductDetail;
+    const defaultVariant = detailedProduct.variants?.[0];
+
+    addItem({
+      productId: product.id,
+      variantId: defaultVariant?.id,
+      slug: product.slug,
+      name: product.name,
+      image: defaultVariant?.image || product.image,
+      price: defaultVariant?.price ?? product.price,
+      originalPrice: defaultVariant?.originalPrice ?? product.originalPrice,
+      selectedVariants: defaultVariant?.options || {},
+      variantSummary: defaultVariant
+        ? Object.values(defaultVariant.options).join(" • ")
+        : product.categoryLabel,
+      stock: defaultVariant?.stock ?? 50,
+    });
+
     setToastText(`Đã thêm "${product.name}" vào giỏ hàng!`);
     setTimeout(() => {
       setToastText(null);
@@ -255,20 +278,19 @@ function ProductsContent() {
     <>
       {/* Toast Notification */}
       {toastText && (
-        <div
-          className="fixed bottom-6 right-6 z-50 bg-[#18181b] text-white border border-[#27272a] shadow-2xl px-5 py-3 rounded-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-3 duration-200"
-          role="status"
-          aria-live="polite"
-        >
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-sm font-medium">{toastText}</span>
-          <button
-            onClick={() => setToastText(null)}
-            className="text-zinc-400 hover:text-white ml-2 text-xs"
-          >
-            ✕
-          </button>
-        </div>
+        <Toast
+          text={toastText}
+          type="success"
+          action={
+            <button
+              onClick={openDrawer}
+              className="text-xs text-emerald-300 font-bold ml-2 underline hover:no-underline cursor-pointer"
+            >
+              Xem giỏ
+            </button>
+          }
+          onClose={() => setToastText(null)}
+        />
       )}
 
       {/* Clean Breadcrumbs Header */}

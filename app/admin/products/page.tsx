@@ -14,7 +14,7 @@ import { CategoryDto } from "@/types/category.type";
 import { formatVND } from "@/lib/format";
 import { getErrorMessage } from "@/lib/error";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
-import { ConfirmModal } from "@/components/ui";
+import { ConfirmModal, Toast } from "@/components/ui";
 
 // Mẫu ảnh sẵn cho tiện chọn nhanh khi thêm sản phẩm mới
 const SAMPLE_IMAGES = [
@@ -445,64 +445,11 @@ export default function AdminProductsPage() {
     <div className="space-y-6">
       {/* Toast Notification */}
       {toastMessage && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-sm font-semibold transition-all transform animate-in fade-in slide-in-from-bottom-4 duration-200 border ${
-            toastMessage.type === "success"
-              ? "bg-emerald-600 text-white border-emerald-500 shadow-emerald-950/20"
-              : toastMessage.type === "error"
-                ? "bg-rose-600 text-white border-rose-500 shadow-rose-950/20"
-                : "bg-zinc-800 text-white border-zinc-700 shadow-zinc-950/20"
-          }`}
-        >
-          {toastMessage.type === "success" && (
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <path d="M20 6 9 17l-5-5" />
-            </svg>
-          )}
-          {toastMessage.type === "error" && (
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="15" y1="9" x2="9" y2="15" />
-              <line x1="9" y1="9" x2="15" y2="15" />
-            </svg>
-          )}
-          {toastMessage.type === "info" && (
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="16" x2="12" y2="12" />
-              <line x1="12" y1="8" x2="12.01" y2="8" />
-            </svg>
-          )}
-          <span>{toastMessage.text}</span>
-          <button
-            type="button"
-            onClick={() => setToastMessage(null)}
-            className="ml-2 hover:opacity-75 text-white/80 cursor-pointer"
-          >
-            ✕
-          </button>
-        </div>
+        <Toast
+          text={toastMessage.text}
+          type={toastMessage.type}
+          onClose={() => setToastMessage(null)}
+        />
       )}
 
       {/* Header & Nút Thêm Mới */}

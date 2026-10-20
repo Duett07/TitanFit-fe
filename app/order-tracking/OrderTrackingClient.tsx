@@ -12,6 +12,7 @@ import orderApiRequest from "@/apiRequest/order";
 import { OrderResponse } from "@/types/order.type";
 import { useAutoSync } from "@/lib/sync";
 import { useHydrated } from "@/hooks/useHydrated";
+import { Toast } from "@/components/ui";
 
 export interface TrackingOrderItem {
   id?: string;
@@ -497,7 +498,7 @@ export default function OrderTrackingClient() {
   // Refresh Tracking Logs & Order Data from Backend
   const handleRefreshData = async () => {
     showToast("Đang đồng bộ dữ liệu đơn hàng từ hệ thống TITANFIT...", "info");
-    await loadInitialData();
+    await loadInitialData(true);
     showToast("Dữ liệu đơn hàng đã được cập nhật mới nhất!", "success");
   };
 
@@ -516,20 +517,11 @@ export default function OrderTrackingClient() {
     <div className="min-h-screen bg-background text-foreground transition-colors">
       {/* Toast Notification */}
       {toastMessage && (
-        <div
-          className={`fixed top-6 right-6 z-50 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-200 ${
-            toastMessage.type === "success"
-              ? "bg-emerald-950 text-emerald-100 border-emerald-800"
-              : toastMessage.type === "error"
-                ? "bg-rose-950 text-rose-100 border-rose-800"
-                : "bg-zinc-900 text-zinc-100 border-zinc-700"
-          }`}
-        >
-          {toastMessage.type === "success" && (
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          )}
-          <span>{toastMessage.text}</span>
-        </div>
+        <Toast
+          text={toastMessage.text}
+          type={toastMessage.type}
+          onClose={() => setToastMessage(null)}
+        />
       )}
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20">
