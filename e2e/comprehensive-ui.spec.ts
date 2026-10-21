@@ -474,4 +474,45 @@ test.describe("TitanFit Comprehensive UI Suite", () => {
     await expect(page.locator("text=Sản Phẩm").first()).toBeVisible();
     await expect(page.locator("text=Đơn Hàng").first()).toBeVisible();
   });
+
+  test("12. Stale Session Purge: when accessToken is missing/expired, redirect to /login and ensure Navbar does not show logged in user", async ({
+    page,
+  }) => {
+    // Seed stale authenticated state in localStorage without any accessToken cookie
+    await page.addInitScript(() => {
+      window.localStorage.setItem(
+        "titanfit_auth",
+        JSON.stringify({
+          state: {
+            user: {
+              id: "admin-stale",
+              fullName: "Admin TitanFit",
+              email: "admin@titanfit.vn",
+              role: "ROLE_ADMIN",
+            },
+            isAuthenticated: true,
+            isLoading: false,
+          },
+          version: 0,
+        })
+      );
+    });
+
+    // Attempt to access protected /admin route without accessToken cookie
+    await page.goto("/admin");
+
+    // Verify redirected to /login with redirect parameter
+    await expect(page).toHaveURL(/\/login\?redirect=%2Fadmin/);
+
+    // Verify Navbar shows "Đăng Nhập" button and NOT the logged-in user menu trigger
+    await expect(page.getByRole("link", { name: "Đăng Nhập" })).toBeVisible();
+    await expect(page.locator("#userMenuTrigger")).not.toBeVisible();
+
+    // Verify localStorage auth state was purged
+    const storedAuth = await page.evaluate(() => {
+      const raw = window.localStorage.getItem("titanfit_auth");
+      return raw ? JSON.parse(raw) : null;
+    });
+    expect(storedAuth?.state?.isAuthenticated).toBeFalsy();
+  });
 });

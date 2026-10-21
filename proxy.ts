@@ -14,7 +14,15 @@ export function proxy(request: NextRequest) {
     if (!accessToken) {
       const redirectUrl = new URL("/login", request.url);
       redirectUrl.searchParams.set("redirect", `${pathname}${search}`);
-      return NextResponse.redirect(redirectUrl);
+      const response = NextResponse.redirect(redirectUrl);
+      response.cookies.delete("accessToken");
+      response.cookies.set("titanfit_clear_session", "1", {
+        path: "/",
+        maxAge: 30,
+        httpOnly: false,
+        sameSite: "lax",
+      });
+      return response;
     }
     return NextResponse.next();
   }
@@ -28,7 +36,15 @@ export function proxy(request: NextRequest) {
     if (!accessToken) {
       const redirectUrl = new URL("/login", request.url);
       redirectUrl.searchParams.set("redirect", `${pathname}${search}`);
-      return NextResponse.redirect(redirectUrl);
+      const response = NextResponse.redirect(redirectUrl);
+      response.cookies.delete("accessToken");
+      response.cookies.set("titanfit_clear_session", "1", {
+        path: "/",
+        maxAge: 30,
+        httpOnly: false,
+        sameSite: "lax",
+      });
+      return response;
     }
   }
 

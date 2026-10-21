@@ -9,6 +9,7 @@ import { useHydrated } from "@/hooks/useHydrated";
 
 import Logo from "@/components/Logo";
 import { Toast } from "@/components/ui";
+import { checkAndPurgeStaleSession } from "@/lib/session";
 
 const subscribeTheme = (callback: () => void) => {
   window.addEventListener("storage", callback);
@@ -53,8 +54,9 @@ export default function Navbar() {
   }, []);
 
   const isHydrated = useHydrated();
+  const isAuthPage = pathname === "/login" || pathname === "/register";
 
-  const currentUser = isHydrated && isAuthenticated ? user : null;
+  const currentUser = isHydrated && isAuthenticated && !isAuthPage ? user : null;
 
   const cartCount = isHydrated ? items.reduce((total, item) => total + item.quantity, 0) : 0;
 
@@ -86,6 +88,8 @@ export default function Navbar() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    checkAndPurgeStaleSession();
 
     const params = new URLSearchParams(window.location.search);
     const err = params.get("error");

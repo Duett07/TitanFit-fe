@@ -3,6 +3,7 @@
  */
 
 import { emitSyncEvent } from "@/lib/sync";
+import { isJwtExpired } from "@/lib/security";
 
 type ResetHandler = () => void;
 let resetHandler: ResetHandler | null = null;
@@ -22,6 +23,7 @@ export function clearLegacyAuthCookies() {
   document.cookie = "is_authenticated=; path=/; max-age=0; SameSite=Lax";
   document.cookie = "user_role=; path=/; max-age=0; SameSite=Lax";
   document.cookie = "user_name=; path=/; max-age=0; SameSite=Lax";
+  document.cookie = "titanfit_clear_session=; path=/; max-age=0; SameSite=Lax";
 }
 
 /**
@@ -48,4 +50,38 @@ export function clearSession() {
       }
     }
   }
+}
+
+/**
+ * Checks for server-issued eviction signals or expired JWT tokens in storage,
+ * and clears the session if stale.
+ * Returns true if the session was purged; false if valid or unauthenticated.
+ */
+export function checkAndPurgeStaleSession(): boolean {
+  if (typeof window === "undefined") return false;
+
+  // 1. Check for server-initiated clear flag (e.g. from proxy.ts redirect)
+  if (document.cookie.includes("titanfit_clear_session=1")) {
+    clearSession();
+    return true;
+  }
+
+  // 2. Check if auth in localStorage has an expired token
+  try {
+    const raw = localStorage.getItem("titanfit_auth");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const user = parsed?.state?.user;
+      const token = user?.accessToken || localStorage.getItem("accessToken");
+      if (token && isJwtExpired(token)) {
+        clearSession();
+        return true;
+      }
+    }
+  } catch {
+    clearSession();
+    return true;
+  }
+
+  return false;
 }
