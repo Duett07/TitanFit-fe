@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { parseVariantName } from "@/lib/backend-adapter";
+import { extractProductsList } from "@/hooks/queries/useProducts";
 
 describe("parseVariantName", () => {
   describe("empty or null input", () => {
@@ -68,5 +69,32 @@ describe("parseVariantName", () => {
       expect(result.option2Name).toBe("Khối lượng / Quy cách");
       expect(result.option2Val).toBe("2kg");
     });
+  });
+});
+
+describe("extractProductsList", () => {
+  it("returns the array directly if raw input is an array", () => {
+    const mockProducts = [{ id: "p1", name: "Whey Gold" }];
+    expect(extractProductsList(mockProducts)).toEqual(mockProducts);
+  });
+
+  it("extracts content array from Spring Boot PageResponse object", () => {
+    const mockPage = {
+      content: [{ id: "p1", name: "Whey Gold" }],
+      pageNo: 0,
+      pageSize: 10,
+      totalElements: 1,
+      totalPages: 1,
+      last: true,
+    };
+    expect(extractProductsList(mockPage)).toEqual([{ id: "p1", name: "Whey Gold" }]);
+  });
+
+  it("returns empty array for invalid, null, or undefined data", () => {
+    expect(extractProductsList(null)).toEqual([]);
+    expect(extractProductsList(undefined)).toEqual([]);
+    expect(extractProductsList({})).toEqual([]);
+    expect(extractProductsList({ content: "not-an-array" })).toEqual([]);
+    expect(extractProductsList("invalid")).toEqual([]);
   });
 });

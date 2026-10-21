@@ -1,6 +1,7 @@
 import React from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import AdminClientShell from "./AdminClientShell";
 import { UserResponse } from "@/types/auth.type";
 
@@ -40,6 +41,7 @@ function isTokenExpired(exp?: number): boolean {
 export const instant = false;
 
 export default async function AdminLayout({ children }: AdminLayoutProps) {
+  await connection();
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
 

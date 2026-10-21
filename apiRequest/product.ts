@@ -50,8 +50,12 @@ export const productApiRequest = {
     );
   },
 
-  adminGetAllProducts: (): Promise<AxiosResponse<ApiResponse<ProductSummaryDto[]>>> => {
-    return http.get<ApiResponse<ProductSummaryDto[]>>("/api/admin/products");
+  adminGetAllProducts: (): Promise<
+    AxiosResponse<ApiResponse<ProductSummaryDto[] | PageResponse<ProductSummaryDto>>>
+  > => {
+    return http.get<ApiResponse<ProductSummaryDto[] | PageResponse<ProductSummaryDto>>>(
+      "/api/admin/products"
+    );
   },
 
   adminToggleActive: (

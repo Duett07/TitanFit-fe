@@ -7,12 +7,12 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import Logo from "@/components/Logo";
 import orderApiRequest from "@/apiRequest/order";
 import productApiRequest from "@/apiRequest/product";
-import { ProductSummaryDto } from "@/types/product.type";
 import { UserResponse } from "@/types/auth.type";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/hooks/queries/queryKeys";
 import { useAutoSync } from "@/lib/sync";
 import { extractOrdersList } from "@/hooks/queries/useOrders";
+import { extractProductsList } from "@/hooks/queries/useProducts";
 
 interface AdminClientShellProps {
   children: React.ReactNode;
@@ -154,10 +154,7 @@ export default function AdminClientShell({ children, initialUser }: AdminClientS
 
       // 2. Process products / low stock
       if (productsRes.status === "fulfilled") {
-        const raw = productsRes.value.data?.data;
-        const products: ProductSummaryDto[] = Array.isArray(raw)
-          ? raw
-          : (raw as { content?: ProductSummaryDto[] })?.content || [];
+        const products = extractProductsList(productsRes.value.data?.data);
 
         let lowStockVariantsCount = 0;
         let sampleProduct = "";

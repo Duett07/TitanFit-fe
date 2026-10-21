@@ -15,6 +15,7 @@ import { formatVND } from "@/lib/format";
 import { getErrorMessage } from "@/lib/error";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
 import { ConfirmModal, Toast } from "@/components/ui";
+import { extractProductsList } from "@/hooks/queries/useProducts";
 
 // Mẫu ảnh sẵn cho tiện chọn nhanh khi thêm sản phẩm mới
 const SAMPLE_IMAGES = [
@@ -139,10 +140,10 @@ export default function AdminProductsPage() {
       let items: ProductSummaryDto[] = [];
       try {
         const adminRes = await productApiRequest.adminGetAllProducts();
-        items = adminRes.data?.data || [];
+        items = extractProductsList(adminRes.data?.data);
       } catch {
         const publicRes = await productApiRequest.getProducts({ size: 100 });
-        items = publicRes.data?.data?.content || [];
+        items = extractProductsList(publicRes.data?.data);
       }
       setProducts(items);
     } catch (err: unknown) {
@@ -423,7 +424,8 @@ export default function AdminProductsPage() {
   // Lọc sản phẩm theo tìm kiếm, danh mục, trạng thái
   const filteredProducts = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    return products.filter((p) => {
+    const safeProducts = Array.isArray(products) ? products : [];
+    return safeProducts.filter((p) => {
       const matchCat = categoryFilter === "ALL" || p.categorySlug === categoryFilter;
       const isProductActive = p.isActive !== undefined ? p.isActive : true;
       const matchStatus =
@@ -460,7 +462,7 @@ export default function AdminProductsPage() {
               Quản Lý Sản Phẩm &amp; Biến Thể
             </h1>
             <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/25">
-              {products.length} sản phẩm
+              {Array.isArray(products) ? products.length : 0} sản phẩm
             </span>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -598,7 +600,7 @@ export default function AdminProductsPage() {
 
           <div className="text-xs text-muted-foreground pl-1">
             Hiển thị <strong className="text-foreground">{filteredProducts.length}</strong> /{" "}
-            {products.length} sản phẩm
+            {Array.isArray(products) ? products.length : 0} sản phẩm
           </div>
         </div>
       </div>

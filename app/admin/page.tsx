@@ -11,6 +11,7 @@ import { getErrorMessage } from "@/lib/error";
 import { emitSyncEvent, useAutoSync } from "@/lib/sync";
 import { ConfirmModal, Toast } from "@/components/ui";
 import { extractOrdersList } from "@/hooks/queries/useOrders";
+import { extractProductsList } from "@/hooks/queries/useProducts";
 
 interface UrgentOrder {
   id: string;
@@ -121,10 +122,10 @@ export default function AdminDashboardPage() {
         let products: ProductSummaryDto[] = [];
         try {
           const adminProdRes = await productApiRequest.adminGetAllProducts();
-          products = adminProdRes.data?.data || [];
+          products = extractProductsList(adminProdRes.data?.data);
         } catch {
           const prodRes = await productApiRequest.getProducts({ size: 100 });
-          products = prodRes.data?.data?.content || [];
+          products = extractProductsList(prodRes.data?.data);
         }
 
         const alerts: LowStockAlert[] = [];
