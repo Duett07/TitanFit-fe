@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, Suspense, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { AlertCircle, Eye, EyeOff, Lock, Mail, Phone, ShieldCheck, User } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAuthStore } from "@/stores/useAuthStore";
+import { useAuthStore, clearSession } from "@/stores/useAuthStore";
 import { queryKeys } from "@/hooks/queries/queryKeys";
 import authApiRequest from "@/apiRequest/auth";
 import { getSafeRedirect } from "@/lib/security";
@@ -53,6 +53,12 @@ function RegisterFormContent() {
   const rawRedirect = searchParams.get("redirect") || searchParams.get("from");
   const redirectTarget = getSafeRedirect(rawRedirect);
   const setUser = useAuthStore((state) => state.setUser);
+
+  useEffect(() => {
+    if (rawRedirect || useAuthStore.getState().isAuthenticated) {
+      clearSession();
+    }
+  }, [rawRedirect]);
 
   const [formValues, setFormValues] = useState<RegisterFormValues>({
     fullName: "",

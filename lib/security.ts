@@ -42,3 +42,31 @@ export function getSafeRedirect(url: string | null | undefined, fallback = "/"):
     return fallback;
   }
 }
+
+/**
+ * Safely parses a JWT payload and determines if the token has expired.
+ * Returns true only if the token contains a valid numeric 'exp' claim that is in the past.
+ *
+ * @param token Candidate JWT token string
+ * @returns true if exp is present and expired; false otherwise
+ */
+export function isJwtExpired(token: string | null | undefined): boolean {
+  if (!token || typeof token !== "string") return false;
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3 || !parts[1]) return false;
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    const parsed = JSON.parse(jsonPayload);
+    if (!parsed.exp || typeof parsed.exp !== "number") return false;
+    return parsed.exp <= Math.floor(Date.now() / 1000);
+  } catch {
+    return false;
+  }
+}
+

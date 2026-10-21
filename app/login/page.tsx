@@ -1,12 +1,12 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import authApiRequest from "@/apiRequest/auth";
-import { useAuthStore } from "@/stores/useAuthStore";
+import { useAuthStore, clearSession } from "@/stores/useAuthStore";
 import { queryKeys } from "@/hooks/queries/queryKeys";
 import { getSafeRedirect } from "@/lib/security";
 import { getErrorMessage } from "@/lib/error";
@@ -19,6 +19,15 @@ function LoginFormContent() {
   const rawRedirect = searchParams.get("redirect") || searchParams.get("from");
   const redirectTarget = getSafeRedirect(rawRedirect);
   const setUser = useAuthStore((state) => state.setUser);
+
+  // If arriving at login with a redirect target (meaning server rejected session),
+  // or if local storage still has old credentials while on login page,
+  // clear the stale session immediately to keep Navbar and storage in sync with server state.
+  useEffect(() => {
+    if (rawRedirect || useAuthStore.getState().isAuthenticated) {
+      clearSession();
+    }
+  }, [rawRedirect]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

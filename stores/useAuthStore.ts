@@ -4,10 +4,15 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { UserResponse } from "@/types/auth.type";
 import authApiRequest from "@/apiRequest/auth";
-import { clearSession, registerAuthReset, clearLegacyAuthCookies } from "@/lib/session";
+import {
+  clearSession,
+  registerAuthReset,
+  clearLegacyAuthCookies,
+  checkAndPurgeStaleSession,
+} from "@/lib/session";
 import { emitSyncEvent } from "@/lib/sync";
 
-export { clearSession, clearLegacyAuthCookies };
+export { clearSession, clearLegacyAuthCookies, checkAndPurgeStaleSession };
 
 interface AuthState {
   user: UserResponse | null;
@@ -79,6 +84,9 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => () => {
+        checkAndPurgeStaleSession();
+      },
     }
   )
 );
