@@ -1,9 +1,24 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import productApiRequest from "@/apiRequest/product";
-import { ProductQueryParams, AdminProductFormDto } from "@/types/product.type";
+import { ProductQueryParams, AdminProductFormDto, ProductSummaryDto } from "@/types/product.type";
 import { queryKeys } from "./queryKeys";
 import { emitSyncEvent } from "@/lib/sync";
 import { validateProductDetail, validateProductSummaryList } from "@/lib/schemas";
+
+export function extractProductsList(raw: unknown): ProductSummaryDto[] {
+  if (Array.isArray(raw)) {
+    return raw;
+  }
+  if (
+    raw &&
+    typeof raw === "object" &&
+    "content" in raw &&
+    Array.isArray((raw as { content?: unknown }).content)
+  ) {
+    return (raw as { content: ProductSummaryDto[] }).content;
+  }
+  return [];
+}
 
 export function useProducts(params?: ProductQueryParams) {
   return useQuery({
@@ -38,7 +53,7 @@ export function useAdminProducts() {
     queryKey: queryKeys.products.adminList(),
     queryFn: async () => {
       const res = await productApiRequest.adminGetAllProducts();
-      const data = res.data?.data || [];
+      const data = extractProductsList(res.data?.data);
       if (process.env.NODE_ENV !== "production") {
         const validation = validateProductSummaryList(data);
         if (!validation.success) {

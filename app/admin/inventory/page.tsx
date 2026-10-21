@@ -7,6 +7,7 @@ import { ProductSummaryDto, VariantDto } from "@/types/product.type";
 import { formatVND } from "@/lib/format";
 import { getErrorMessage } from "@/lib/error";
 import { useAutoSync } from "@/lib/sync";
+import { extractProductsList } from "@/hooks/queries/useProducts";
 
 interface LowStockItem {
   id: string;
@@ -33,10 +34,10 @@ export default function AdminInventoryPage() {
       let products: ProductSummaryDto[] = [];
       try {
         const adminRes = await productApiRequest.adminGetAllProducts();
-        products = adminRes.data?.data || [];
+        products = extractProductsList(adminRes.data?.data);
       } catch {
         const publicRes = await productApiRequest.getProducts({ size: 100 });
-        products = publicRes.data?.data?.content || [];
+        products = extractProductsList(publicRes.data?.data);
       }
 
       const items: LowStockItem[] = [];
