@@ -175,15 +175,7 @@ function LoginFormContent() {
               >
                 Mật khẩu
               </label>
-              <button
-                type="button"
-                onClick={() =>
-                  showToast("Tính năng khôi phục mật khẩu qua SMS OTP đang được hoàn thiện", "info")
-                }
-                className="text-xs text-primary font-medium hover:underline bg-transparent border-none cursor-pointer p-0"
-              >
-                Quên mật khẩu?
-              </button>
+
             </div>
             <div className="relative flex items-center">
               <span className="absolute left-3.5 text-muted-foreground flex items-center pointer-events-none">
