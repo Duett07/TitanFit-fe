@@ -29,6 +29,8 @@ export interface TrackOrderRequest {
 export interface OrderItemResponse {
   id: string;
   variantId?: string;
+  productId?: string;
+  productSlug?: string;
   productName: string;
   variantName: string;
   price: number;
