@@ -11,6 +11,8 @@ import productApiRequest from "@/apiRequest/product";
 import { transformBackendProductDetail } from "@/lib/backend-adapter";
 import { useAutoSync } from "@/lib/sync";
 import { Toast } from "@/components/ui";
+import { Star } from "lucide-react";
+import ProductReviewsSection from "@/components/review/ProductReviewsSection";
 
 // Helper to extract initial options
 function getInitialOptions(p: UIProductDetail): Record<string, string> {
@@ -323,9 +325,26 @@ export default function ProductDetailClient({
             </div>
 
             {/* Product Title */}
-            <h1 className="text-2xl sm:text-3xl font-bold font-heading text-foreground mb-3 leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold font-heading text-foreground mb-2 leading-tight">
               {product.name}
             </h1>
+
+            {/* Rating Anchor Link */}
+            <a
+              href="#reviews-section"
+              className="inline-flex items-center gap-1.5 mb-3 text-xs text-muted-foreground hover:text-foreground transition-colors group cursor-pointer"
+            >
+              <div className="flex items-center gap-0.5 text-amber-400">
+                <Star className="w-3.5 h-3.5 fill-amber-400" />
+              </div>
+              <span className="font-bold text-foreground">
+                {product.rating ? product.rating.toFixed(1) : "5.0"}
+              </span>
+              <span>•</span>
+              <span className="group-hover:underline underline-offset-2">
+                Xem đánh giá & nhận xét
+              </span>
+            </a>
 
             {/* Price & Discount */}
             <div className="flex items-baseline gap-2.5 mb-5">
@@ -469,6 +488,13 @@ export default function ProductDetailClient({
             )}
           </div>
         </div>
+
+        {/* Product Reviews & Rating Section */}
+        <ProductReviewsSection
+          productId={product.id ? String(product.id) : undefined}
+          productSlug={product.slug || slug}
+          productName={product.name}
+        />
       </main>
 
       {/* Toast Notification */}

@@ -4,18 +4,24 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
+import { Star, CheckCircle2, Sparkles } from "lucide-react";
 import { formatVND } from "@/lib/format";
 import { getErrorMessage } from "@/lib/error";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useCartStore } from "@/stores/useCartStore";
 import orderApiRequest from "@/apiRequest/order";
+import reviewApiRequest from "@/apiRequest/review";
+import ReviewModal from "@/components/review/ReviewModal";
 import { OrderResponse } from "@/types/order.type";
 import { useAutoSync } from "@/lib/sync";
 import { useHydrated } from "@/hooks/useHydrated";
 import { Toast } from "@/components/ui";
+import { extractOrdersList } from "@/hooks/queries/useOrders";
 
 export interface TrackingOrderItem {
   id?: string;
+  productId?: string;
+  productSlug?: string;
   name: string;
   variant: string;
   price: number;
@@ -26,7 +32,7 @@ export interface TrackingOrderItem {
 export interface TrackingOrder {
   code: string;
   time: string;
-  status: "PENDING" | "SHIPPING" | "COMPLETED" | "CANCELLED" | string;
+  status: "PENDING" | "CONFIRMED" | "SHIPPING" | "COMPLETED" | "CANCELLED" | string;
   customer: string;
   phone: string;
   address: string;
@@ -89,11 +95,13 @@ function mapApiOrderToTracking(apiOrder: OrderResponse): TrackingOrder {
   } else if (rawStatus === "CANCELLED") {
     mappedStatus = "CANCELLED";
   } else if (rawStatus === "CONFIRMED") {
-    mappedStatus = "PENDING";
+    mappedStatus = "CONFIRMED";
   }
 
   const items: TrackingOrderItem[] = (apiOrder.items || []).map((it) => ({
     id: it.id,
+    productId: it.productId,
+    productSlug: it.productSlug,
     name: it.productName || "Sản Phẩm TITANFIT",
     variant: it.variantName || "Tiêu Chuẩn",
     price: Number(it.price) || 0,
@@ -161,8 +169,19 @@ function mapApiOrderToTracking(apiOrder: OrderResponse): TrackingOrder {
       },
       { time: orderTimeOnly, text: `Đơn hàng #${apiOrder.orderCode} đã được tạo thành công` },
     ];
+  } else if (mappedStatus === "CONFIRMED") {
+    logs = [
+      {
+        time: "Đã duyệt",
+        text: `Đơn hàng #${apiOrder.orderCode} đã được Quản trị viên TITANFIT xác nhận và chuyển kho đóng gói.`,
+      },
+      {
+        time: orderTimeOnly,
+        text: `Đơn hàng #${apiOrder.orderCode} đã được tạo thành công trên hệ thống trực tuyến TITANFIT`,
+      },
+    ];
   } else {
-    // PENDING / CONFIRMED
+    // PENDING
     logs = [
       {
         time: "Đang xử lý",
@@ -214,7 +233,8 @@ function mapApiOrderToTracking(apiOrder: OrderResponse): TrackingOrder {
 export default function OrderTrackingClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const requestedOrderParam = searchParams.get("order") || "";
+  const requestedOrderParam =
+    searchParams.get("orderCode") || searchParams.get("order") || "";
 
   const { isAuthenticated } = useAuthStore();
   const { addItem, openDrawer } = useCartStore();
@@ -246,6 +266,12 @@ export default function OrderTrackingClient() {
   const [searchSuccess, setSearchSuccess] = useState<string | null>(null);
   const [isLookupFormOpen, setIsLookupFormOpen] = useState<boolean>(false);
 
+  useEffect(() => {
+    if (requestedOrderParam) {
+      setSearchCode(requestedOrderParam);
+    }
+  }, [requestedOrderParam]);
+
   // Copy code feedback
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
 
@@ -273,13 +299,10 @@ export default function OrderTrackingClient() {
       try {
         // 1. Fetch real orders of the authenticated user from Backend API
         const res = await orderApiRequest.getMyOrders();
-        let apiOrders: TrackingOrder[] = [];
+        const rawOrders = extractOrdersList(res.data?.data);
+        let apiOrders: TrackingOrder[] = rawOrders.map(mapApiOrderToTracking);
 
-        if (res.data?.data && Array.isArray(res.data.data)) {
-          apiOrders = res.data.data.map(mapApiOrderToTracking);
-        }
-
-        // 2. If a specific order is requested via query param (?order=TF-xxxxxx), verify presence
+        // 2. If a specific order is requested via query param (?orderCode=TF-xxxxxx or ?order=TF-xxxxxx), verify presence
         if (requestedOrderParam) {
           const found = apiOrders.find(
             (o) => o.code.toLowerCase() === requestedOrderParam.toLowerCase()
@@ -301,8 +324,15 @@ export default function OrderTrackingClient() {
 
         setOrders(apiOrders);
 
-        // Determine active order preserving current selection
+        // Determine active order preserving selection or requested order
         setActiveOrder((prev) => {
+          if (requestedOrderParam) {
+            const found = apiOrders.find(
+              (o) => o.code.toLowerCase() === requestedOrderParam.toLowerCase()
+            );
+            if (found) return found;
+          }
+
           if (prev?.code) {
             const updatedCurrent = apiOrders.find(
               (o) => o.code.toLowerCase() === prev.code.toLowerCase()
@@ -310,12 +340,6 @@ export default function OrderTrackingClient() {
             if (updatedCurrent) return updatedCurrent;
           }
 
-          if (requestedOrderParam) {
-            const found = apiOrders.find(
-              (o) => o.code.toLowerCase() === requestedOrderParam.toLowerCase()
-            );
-            return found || apiOrders[0] || null;
-          }
           return apiOrders[0] || null;
         });
       } catch (err) {
@@ -345,12 +369,95 @@ export default function OrderTrackingClient() {
     }
   }, [isAuthenticated, loadInitialData]);
 
+  // Review Modal state
+  const [reviewModalState, setReviewModalState] = useState<{
+    isOpen: boolean;
+    productId: string;
+    productName: string;
+    variantName?: string;
+  }>({
+    isOpen: false,
+    productId: "",
+    productName: "",
+    variantName: "",
+  });
+
+  const [reviewedProductIds, setReviewedProductIds] = useState<string[]>([]);
+
+  const loadReviewedProductIds = useCallback(async () => {
+    try {
+      const res = await reviewApiRequest.getMyReviewedProductIds();
+      if (res.data?.data) {
+        setReviewedProductIds(res.data.data);
+      }
+    } catch (err) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Could not load reviewed product IDs:", err);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      void loadReviewedProductIds();
+    }
+  }, [isAuthenticated, loadReviewedProductIds]);
+
+  const handleReviewSuccess = () => {
+    if (reviewModalState.productId) {
+      setReviewedProductIds((prev) => [...prev, reviewModalState.productId]);
+    }
+    showToast("Đánh giá sản phẩm thành công! Cảm ơn bạn đã đóng góp nhận xét.", "success");
+  };
+
+  const firstUnreviewedItem = useMemo(() => {
+    if (!activeOrder || activeOrder.status !== "COMPLETED") return null;
+    return activeOrder.items.find(
+      (it) => it.productId && !reviewedProductIds.includes(it.productId)
+    );
+  }, [activeOrder, reviewedProductIds]);
+
   // Real-time synchronization: Auto-refresh when admin changes order status,
-  // when switching back to tab (focus/visibility), and periodic heartbeat
+  // when switching back to tab (focus/visibility), and periodic 3s polling
   useAutoSync({
     eventTypes: ["ORDER_UPDATED"],
-    onSync: () => loadInitialData(true),
-    intervalMs: 30000,
+    onSync: async (msg) => {
+      // 1. Instant optimistic UI update if message includes orderCode & status
+      if (msg?.payload && typeof msg.payload === "object") {
+        const p = msg.payload as { orderCode?: string; status?: string };
+        if (p.orderCode && p.status) {
+          const upperStatus = p.status.toUpperCase();
+          const mapped =
+            upperStatus === "COMPLETED" || upperStatus === "DELIVERED"
+              ? "COMPLETED"
+              : upperStatus === "SHIPPING" || upperStatus === "DELIVERING"
+                ? "SHIPPING"
+                : upperStatus === "CANCELLED"
+                  ? "CANCELLED"
+                  : upperStatus === "CONFIRMED"
+                    ? "CONFIRMED"
+                    : "PENDING";
+
+          setOrders((prev) =>
+            prev.map((ord) =>
+              ord.code.toLowerCase() === p.orderCode?.toLowerCase()
+                ? { ...ord, status: mapped }
+                : ord
+            )
+          );
+          setActiveOrder((prev) => {
+            if (prev && prev.code.toLowerCase() === p.orderCode?.toLowerCase()) {
+              return { ...prev, status: mapped };
+            }
+            return prev;
+          });
+        }
+      }
+
+      // 2. Authoritative background sync from backend
+      await loadInitialData(true);
+    },
+    intervalMs: 3000,
     enableFocusSync: true,
   });
 
@@ -358,7 +465,7 @@ export default function OrderTrackingClient() {
   const counts = useMemo(() => {
     return {
       ALL: orders.length,
-      PENDING: orders.filter((o) => o.status === "PENDING").length,
+      PENDING: orders.filter((o) => o.status === "PENDING" || o.status === "CONFIRMED").length,
       SHIPPING: orders.filter((o) => o.status === "SHIPPING").length,
       COMPLETED: orders.filter((o) => o.status === "COMPLETED").length,
       CANCELLED: orders.filter((o) => o.status === "CANCELLED").length,
@@ -368,13 +475,21 @@ export default function OrderTrackingClient() {
   // Filtered orders list based on activeTab
   const filteredOrders = useMemo(() => {
     if (activeTab === "ALL") return orders;
+    if (activeTab === "PENDING") {
+      return orders.filter((o) => o.status === "PENDING" || o.status === "CONFIRMED");
+    }
     return orders.filter((o) => o.status === activeTab);
   }, [orders, activeTab]);
 
   // Handle Tab Switch
   const handleTabClick = (tabKey: string) => {
     setActiveTab(tabKey);
-    const matches = tabKey === "ALL" ? orders : orders.filter((o) => o.status === tabKey);
+    const matches =
+      tabKey === "ALL"
+        ? orders
+        : tabKey === "PENDING"
+          ? orders.filter((o) => o.status === "PENDING" || o.status === "CONFIRMED")
+          : orders.filter((o) => o.status === tabKey);
     if (matches.length > 0) {
       // If current active order isn't in filtered list, switch to first match
       if (!matches.some((o) => o.code === activeOrder?.code)) {
@@ -844,6 +959,11 @@ export default function OrderTrackingClient() {
                         ⏳ Chờ Xác Nhận / Thanh Toán
                       </span>
                     )}
+                    {activeOrder.status === "CONFIRMED" && (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                        📦 Đã Xác Nhận / Chuẩn Bị Hàng
+                      </span>
+                    )}
                     {activeOrder.status === "SHIPPING" && (
                       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-primary/15 text-primary border border-primary/20">
                         🚚 Đang Vận Chuyển
@@ -1005,6 +1125,49 @@ export default function OrderTrackingClient() {
                     ))}
                   </div>
                 </div>
+
+                {/* Review Callout when order is COMPLETED */}
+                {activeOrder.status === "COMPLETED" && (
+                  <div className="mt-5 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                        <Sparkles className="w-5 h-5 text-amber-500" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-bold text-foreground">
+                          Đơn hàng đã giao thành công!
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          {firstUnreviewedItem
+                            ? "Bạn hài lòng với sản phẩm? Hãy chia sẻ cảm nhận và đánh giá ngay nhé."
+                            : "Bạn đã hoàn thành đánh giá cho các sản phẩm trong đơn hàng này. Cảm ơn bạn!"}
+                        </p>
+                      </div>
+                    </div>
+                    {firstUnreviewedItem && firstUnreviewedItem.productId ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setReviewModalState({
+                            isOpen: true,
+                            productId: firstUnreviewedItem.productId!,
+                            productName: firstUnreviewedItem.name,
+                            variantName: firstUnreviewedItem.variant,
+                          })
+                        }
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-all shadow-sm shrink-0 cursor-pointer"
+                      >
+                        <Star className="w-3.5 h-3.5 fill-white text-white" />
+                        <span>Đánh Giá Ngay</span>
+                      </button>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-bold shrink-0">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Đã Đánh Giá Xong</span>
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Card 2: Recipient Details & Payment Info */}
@@ -1114,6 +1277,11 @@ export default function OrderTrackingClient() {
                                 ⏳ Chờ Duyệt
                               </span>
                             )}
+                            {ord.status === "CONFIRMED" && (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                                📦 Đã Duyệt
+                              </span>
+                            )}
                             {ord.status === "SHIPPING" && (
                               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/15 text-primary">
                                 🚚 Đang Giao
@@ -1187,39 +1355,73 @@ export default function OrderTrackingClient() {
 
                 {/* Items List */}
                 <div className="divide-y divide-border/60 mb-5">
-                  {activeOrder.items.map((item, index) => (
-                    <div
-                      key={item.id || `${activeOrder.code}-${item.name}-${item.variant}-${index}`}
-                      className="py-3 flex items-center gap-3"
-                    >
-                      <div className="relative w-14 h-14 rounded-xl bg-secondary border border-border shrink-0 overflow-hidden">
-                        <Image
-                          src={item.thumb || "/images/products/titan-iso-whey.jpg"}
-                          alt={item.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div
-                          className="font-bold text-xs sm:text-sm text-foreground truncate"
-                          title={item.name}
-                        >
-                          {item.name}
+                  {activeOrder.items.map((item, index) => {
+                    const isReviewed = item.productId
+                      ? reviewedProductIds.includes(item.productId)
+                      : false;
+
+                    return (
+                      <div
+                        key={item.id || `${activeOrder.code}-${item.name}-${item.variant}-${index}`}
+                        className="py-3 flex items-center gap-3"
+                      >
+                        <div className="relative w-14 h-14 rounded-xl bg-secondary border border-border shrink-0 overflow-hidden">
+                          <Image
+                            src={item.thumb || "/images/products/titan-iso-whey.jpg"}
+                            alt={item.name}
+                            fill
+                            className="object-cover"
+                          />
                         </div>
-                        <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
-                          {item.variant}
+                        <div className="flex-1 min-w-0">
+                          <div
+                            className="font-bold text-xs sm:text-sm text-foreground truncate"
+                            title={item.name}
+                          >
+                            {item.name}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                            {item.variant}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Số lượng: <strong className="text-foreground">{item.qty}</strong> &times;{" "}
+                            {formatVND(item.price)}
+                          </div>
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Số lượng: <strong className="text-foreground">{item.qty}</strong> &times;{" "}
-                          {formatVND(item.price)}
+                        <div className="flex flex-col items-end gap-1.5 shrink-0">
+                          <div className="font-heading font-extrabold text-xs sm:text-sm text-foreground text-right">
+                            {formatVND(item.price * item.qty)}
+                          </div>
+
+                          {/* Review Action for Completed Order */}
+                          {activeOrder.status === "COMPLETED" && item.productId && (
+                            isReviewed ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20">
+                                <CheckCircle2 className="w-2.5 h-2.5" />
+                                <span>Đã đánh giá</span>
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setReviewModalState({
+                                    isOpen: true,
+                                    productId: item.productId!,
+                                    productName: item.name,
+                                    variantName: item.variant,
+                                  })
+                                }
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold transition-all shadow-xs cursor-pointer"
+                              >
+                                <Star className="w-2.5 h-2.5 fill-white text-white" />
+                                <span>Đánh Giá</span>
+                              </button>
+                            )
+                          )}
                         </div>
                       </div>
-                      <div className="font-heading font-extrabold text-xs sm:text-sm text-foreground text-right shrink-0">
-                        {formatVND(item.price * item.qty)}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Financial Breakdown */}
@@ -1250,6 +1452,25 @@ export default function OrderTrackingClient() {
 
                 {/* Order Actions */}
                 <div className="mt-6 flex flex-col gap-2.5">
+                  {/* Primary Review Button when order is COMPLETED */}
+                  {activeOrder.status === "COMPLETED" && firstUnreviewedItem?.productId && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setReviewModalState({
+                          isOpen: true,
+                          productId: firstUnreviewedItem.productId!,
+                          productName: firstUnreviewedItem.name,
+                          variantName: firstUnreviewedItem.variant,
+                        })
+                      }
+                      className="w-full h-10 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Star className="w-3.5 h-3.5 fill-white text-white" />
+                      <span>Đánh Giá Sản Phẩm Đã Nhận</span>
+                    </button>
+                  )}
+
                   {activeOrder.status === "PENDING" && (
                     <button
                       type="button"
@@ -1505,6 +1726,16 @@ export default function OrderTrackingClient() {
           </div>
         </div>
       )}
+
+      {/* Review Modal */}
+      <ReviewModal
+        isOpen={reviewModalState.isOpen}
+        onClose={() => setReviewModalState((prev) => ({ ...prev, isOpen: false }))}
+        productId={reviewModalState.productId}
+        productName={reviewModalState.productName}
+        variantName={reviewModalState.variantName}
+        onSuccess={handleReviewSuccess}
+      />
     </div>
   );
 }
